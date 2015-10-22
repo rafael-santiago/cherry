@@ -334,6 +334,18 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     setter["flooding-police"]               = set_flooding_police
     setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
     setter["all-users-alias"]               = set_all_users_alias
+    
+    var already_set map[string]bool
+    already_set["join-message"]		         = false
+    already_set["exit-message"]		         = false
+    already_set["on-ignore-message"]	         = false
+    already_set["on-deignore-message"]           = false
+    already_set["greeting-message"]              = false
+    already_set["private-message-marker"]        = false
+    already_set["max-users"]                     = false
+    already_set["flooding-police"]               = false
+    already_set["max-flood-allowed-before-kick"] = false
+    already_set["all-users-alias"]               = false
 
     var m_set []string
     m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
@@ -342,10 +354,14 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
         if !exists {
             return NewCherryFileError(filepath, m_line, "misc configuration named as \"" + m_set[0] + "\" is unrecognized.")
         }
+        if already_set[m_set[0]] {
+    	    return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" re-configured.")
+        }
         if !verifier[m_set[0]](m_set[1]) {
             return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" has invalid value : " + m_set[1])
         }
         setter[m_set[0]](cherry_rooms, m_set[0], m_set[1])
+        already_set[m_set[0]] = true
         m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
     }
 

@@ -1,0 +1,12 @@
+include ~/toolsets/go/go.hsl
+include ~/toolsets/common/utils/lang/go/dependency_scanner.hsl
+
+var src type list;
+var dep type string;
+
+project cherry : toolset "go": dependencies $dep: $src;
+
+cherry.prologue() {
+    $dep = get_go_deps();
+    $src.ls(".*\\.go$");
+}

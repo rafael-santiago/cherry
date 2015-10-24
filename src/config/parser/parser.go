@@ -154,11 +154,29 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
         }
     }
     set := strings.Split(line, tok)
+    if len(set) == 2 {
+        set[0] = StripBlanks(set[0])
+        set[1] = StripBlanks(set[1])
+    }
     var next_data string
     if s < len(data) {
         next_data = data[s:]
     }
     return set, curr_line, next_data
+}
+
+func StripBlanks(data string) string {
+    var retval string
+    var d_start int = 0
+    for d_start < len(data) && (data[d_start] == ' ' || data[d_start] == '\t') {
+        d_start++
+    }
+    var d_end int = len(data) - 1
+    for d_end > 0 && (data[d_end] == ' ' || data[d_end] == '\t') {
+        d_end--
+    }
+    retval = data[d_start:d_end+1]
+    return retval
 }
 
 func ParseCherryFile(filepath string) (*config.CherryRooms, error) {

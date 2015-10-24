@@ -4,6 +4,7 @@ import (
     "../../config"
     "fmt"
     "strings"
+    "io/ioutil"
 )
 
 type CherryFileError struct {
@@ -13,20 +14,21 @@ type CherryFileError struct {
 }
 
 func (c *CherryFileError) Error() string {
-    return fmt.Sprintf("ERROR: %s: at line %d: %s.\n", c.src, c.line, c.msg);
+    if c.line > -1 {
+        return fmt.Sprintf("ERROR: %s: at line %d: %s.\n", c.src, c.line, c.msg);
+    }
+    return fmt.Sprintf("ERROR: %s: %s.\n", c.src, c.msg);
 }
 
 func NewCherryFileError(src string, line int, msg string) *CherryFileError {
     return &CherryFileError{src, line, msg}
 }
 
-func GetDataFromSection(section, config_data string, curr_line int) (string, int, int) {
+func GetDataFromSection(section, config_data string, curr_line int, curr_file string) (string, int, int, *CherryFileError) {
     var s int
     var temp string
     for s = 0; s < len(config_data); s++ {
         switch config_data[s] {
-            case  ' ', '\t':
-                continue
             case '#':
                 for config_data[s] != '\n' && s < len(config_data) {
                     s++
@@ -35,12 +37,12 @@ func GetDataFromSection(section, config_data string, curr_line int) (string, int
                     curr_line++;
                 }
                 continue
-            case '(', '\n':
+            case '(', '\n', ' ', '\t':
                 if config_data[s] == '\n' {
                     curr_line++;
                 }
                 if temp == section {
-                    if config_data[s] == '\n' {
+                    if config_data[s] == '\n' || config_data[s] == ' ' || config_data[s] == '\t' {
                         for s < len(config_data) && config_data[s] != '(' {
                             s++
                             if s < len(config_data) && config_data[s] == '\n' {
@@ -75,7 +77,33 @@ func GetDataFromSection(section, config_data string, curr_line int) (string, int
                         }
                         s++
                     }
-                    return data, s, curr_line
+                    return data, s, curr_line, nil
+                } else if temp == "cherry.branch" {
+                    for s < len(config_data) && (config_data[s] == ' ' || config_data[s] == '\t') {
+                        s++
+                    }
+                    if s < len(config_data) {
+                        var branch_filepath string
+                        for s < len(config_data) && config_data[s] != '\n' {
+                            branch_filepath += string(config_data[s])
+                            s++
+                        }
+                        if s < len(config_data) {
+                            curr_line++
+                        }
+                        branch_buffer, err := ioutil.ReadFile(branch_filepath)
+                        if err != nil {
+                            fmt.Println(fmt.Sprintf("WARNING: %s: at line %d: %s. Be tidy... removing or commenting this dry branch from your cherry.", curr_file, curr_line - 1, err.Error()))
+                            //return "", s, curr_line, NewCherryFileError(curr_file,
+                            //                                            curr_line - 1,
+                            //                                            "unable to read cherry.branch from \"" + branch_filepath + "\" [ details: " + err.Error() + " ]")
+                        } else {
+                            branch_data, branch_offset, branch_line, _ := GetDataFromSection(section, string(branch_buffer), 1, branch_filepath)
+                            if len(branch_data) > 0 {
+                                return branch_data, branch_offset, branch_line, nil
+                            }
+                        }
+                    }
                 }
                 temp = ""
                 break
@@ -84,7 +112,7 @@ func GetDataFromSection(section, config_data string, curr_line int) (string, int
                 break
         }
     }
-    return "", s, curr_line
+    return "", s, curr_line, NewCherryFileError(curr_file, -1, "section not found")
 }
 
 func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, string) {

@@ -19,6 +19,7 @@ type RoomMisc struct {
     allow_brief bool
     flooding_police bool
     max_flood_allowed_before_kick int
+    all_users_alias string
 }
 
 type RoomAction struct {
@@ -128,4 +129,48 @@ func (c *CherryRooms) AddTemplate(room_name, id, template string) {
 func (c *CherryRooms) HasTemplate(room_name, id string) bool {
     _, ok := c.configs[room_name].templates[id]
     return ok
+}
+
+func (c *CherryRooms) SetJoinMessage(room_name, message string) {
+    c.configs[room_name].misc.join_message = message
+}
+
+func (c *CherryRooms) SetExitMessage(room_name, message string) {
+    c.configs[room_name].misc.exit_message = message
+}
+
+func (c *CherryRooms) SetOnIgnoreMessage(room_name, message string) {
+    c.configs[room_name].misc.on_ignore_message = message
+}
+
+func (c *CherryRooms) SetOnDeIgnoreMessage(room_name, message string) {
+    c.configs[room_name].misc.on_deignore_message = message
+}
+
+func (c *CherryRooms) SetGreetingMessage(room_name, message string) {
+    c.configs[room_name].misc.greeting_message = message
+}
+
+func (c *CherryRooms) SetPrivateMessageMarker(room_name, marker string) {
+    c.configs[room_name].misc.private_message_marker = marker
+}
+
+func (c *CherryRooms) SetMaxUsers(room_name string, value int) {
+    c.configs[room_name].misc.max_users = value
+}
+
+func (c *CherryRooms) SetAllowBrief(room_name string, value bool) {
+    c.configs[room_name].misc.allow_brief = value
+}
+
+func (c *CherryRooms) SetFloodingPolice(room_name string, value bool) {
+    c.configs[room_name].misc.flooding_police = value
+}
+
+func (c *CherryRooms) SetMaxFloodAllowedBeforeKick(room_name string, value int) {
+    c.configs[room_name].misc.max_flood_allowed_before_kick = value
+}
+
+func (c *CherryRooms) SetAllUsersAlias(room_name, alias string) {
+    c.configs[room_name].misc.all_users_alias = alias
 }

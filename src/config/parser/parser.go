@@ -240,7 +240,10 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
 
         _ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
-        //err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        if err_room_config != nil {
+            return nil, err_room_config
+        }
 
         //  INFO(Santiago): Let's transfer the next room from file to the memory.
         set, line, data = GetNextSetFromData(data, line, ":")
@@ -295,6 +298,146 @@ func GetRoomSounds(room_name string, cherry_rooms *config.CherryRooms, config_da
                                room_name, cherry_rooms, config_data, filepath)
 }
 
+func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+    var m_data string
+    var m_line int
+    var m_err *CherryFileError
+    m_data, _, m_line, m_err = GetDataFromSection("cherry." + room_name + ".misc", config_data, 1, filepath)
+    if m_err != nil {
+        return m_err
+    }
+
+    var verifier map[string]func(string) bool
+    verifier = make(map[string]func(string) bool)
+    verifier["join-message"]                  = verify_string
+    verifier["exit-message"]                  = verify_string
+    verifier["on-ignore-message"]             = verify_string
+    verifier["on-deignore-message"]           = verify_string
+    verifier["greeting-message"]              = verify_string
+    verifier["private-message-marker"]        = verify_string
+    verifier["max-users"]                     = verify_number
+    verifier["allow-brief"]                   = verify_bool
+    verifier["flooding-police"]               = verify_bool
+    verifier["max-flood-allowed-before-kick"] = verify_number
+    verifier["all-users-alias"]               = verify_string
+
+    var setter map[string]func(*config.CherryRooms, string, string)
+    setter = make(map[string]func(*config.CherryRooms, string, string))
+    setter["join-message"]                  = set_join_message
+    setter["exit-message"]                  = set_exit_message
+    setter["on-ignore-message"]             = set_on_ignore_message
+    setter["on-deignore-message"]           = set_on_deignore_message
+    setter["greeting-message"]              = set_greeting_message
+    setter["private-message-marker"]        = set_private_message_marker
+    setter["max-users"]                     = set_max_users
+    setter["allow-brief"]                   = set_allow_brief
+    setter["flooding-police"]               = set_flooding_police
+    setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
+    setter["all-users-alias"]               = set_all_users_alias
+
+    var m_set []string
+    m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
+    for len(m_set) == 2 {
+        _, exists := verifier[m_set[0]]
+        if !exists {
+            return NewCherryFileError(filepath, m_line, "misc configuration named as \"" + m_set[0] + "\" is unrecognized.")
+        }
+        if !verifier[m_set[0]](m_set[1]) {
+            return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" has invalid value : " + m_set[1])
+        }
+        setter[m_set[0]](cherry_rooms, m_set[0], m_set[1])
+        m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
+    }
+
+    return nil
+}
+
+func set_join_message(cherry_rooms *config.CherryRooms, room_name, message string) {
+    cherry_rooms.SetJoinMessage(room_name, message)
+}
+
+func set_exit_message(cherry_rooms *config.CherryRooms, room_name, message string) {
+    cherry_rooms.SetExitMessage(room_name, message)
+}
+
+func set_on_ignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
+    cherry_rooms.SetOnIgnoreMessage(room_name, message)
+}
+
+func set_on_deignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
+    cherry_rooms.SetOnDeIgnoreMessage(room_name, message)
+}
+
+func set_greeting_message(cherry_rooms *config.CherryRooms, room_name, message string) {
+    cherry_rooms.SetGreetingMessage(room_name, message)
+}
+
+func set_private_message_marker(cherry_rooms *config.CherryRooms, room_name, marker string) {
+    cherry_rooms.SetPrivateMessageMarker(room_name, marker)
+}
+
+func set_max_users(cherry_rooms *config.CherryRooms, room_name, value string) {
+    var int_value int64
+    int_value, _ = strconv.ParseInt(value, 10, 64)
+    cherry_rooms.SetMaxUsers(room_name, int(int_value))
+}
+
+func set_allow_brief(cherry_rooms *config.CherryRooms, room_name, value string) {
+    var allow bool
+    allow = (value == "yes")
+    cherry_rooms.SetAllowBrief(room_name, allow)
+}
+
+func set_flooding_police(cherry_rooms *config.CherryRooms, room_name, value string) {
+    var impose bool
+    impose = (value == "yes")
+    cherry_rooms.SetFloodingPolice(room_name, impose)
+}
+
+func set_all_users_alias(cherry_rooms *config.CherryRooms, room_name, value string) {
+    cherry_rooms.SetAllUsersAlias(room_name, value)
+}
+
+func set_max_flood_allowed_before_kick(cherry_rooms *config.CherryRooms, room_name, value string) {
+    var int_value int64
+    int_value, _ = strconv.ParseInt(value, 10, 64)
+    cherry_rooms.SetMaxFloodAllowedBeforeKick(room_name, int(int_value))
+}
+
+func verify_number(buffer string) bool {
+    if len(buffer) == 0 {
+        return false
+    }
+    for _, b := range buffer {
+        if b != '0' &&
+           b != '1' &&
+           b != '2' &&
+           b != '3' &&
+           b != '4' &&
+           b != '5' &&
+           b != '6' &&
+           b != '7' &&
+           b != '8' &&
+           b != '9' {
+            return false
+        }
+    }
+    return true
+}
+
+func verify_string(buffer string) bool {
+    if len(buffer) <= 1 {
+        return false
+    }
+    return (buffer[1] == '"' && buffer[len(buffer)-1] == '"')
+}
+
+func verify_bool(buffer string) bool {
+    if len(buffer) == 0 {
+        return false
+    }
+    return (buffer == "yes" || buffer == "no")
+}
 
 //  WARN(Santiago): The following codes are a brain damage. I am sorry.
 

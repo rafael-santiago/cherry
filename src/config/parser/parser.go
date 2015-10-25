@@ -12,6 +12,7 @@ import (
     "fmt"
     "strings"
     "io/ioutil"
+    "strconv"
 )
 
 type CherryFileError struct {
@@ -186,7 +187,147 @@ func StripBlanks(data string) string {
     return retval
 }
 
-func ParseCherryFile(filepath string) (*config.CherryRooms, error) {
+func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
     var cherry_rooms *config.CherryRooms = nil
+    var cherry_file_data []byte
+    var data string
+    var err *CherryFileError
+    var line int
+    cherry_file_data, io_err := ioutil.ReadFile(filepath)
+    if io_err != nil {
+        return nil, NewCherryFileError("(no file)", -1, fmt.Sprintf("unable to read from \"%s\" [more details: %s].", filepath, io_err.Error()))
+    }
+    data, _, line,  err = GetDataFromSection("cherry.rooms", string(cherry_file_data), 1, filepath)
+    if err != nil {
+        return nil, err
+    }
+    //  INFO(Santiago): Adding all scanned rooms from the first cherry.rooms section found
+    //                  [cherry branches were scanned too at this point].
+    var set []string
+    cherry_rooms = config.NewCherryRooms()
+    set, line, data = GetNextSetFromData(data, line, ":")
+    for len(set) == 2 {
+        if cherry_rooms.HasRoom(set[0]) {
+            return nil, NewCherryFileError(filepath, line, fmt.Sprintf("room \"%s\" redeclared.", set[0]))
+        }
+        var value int64
+        var conv_err error
+        value, conv_err = strconv.ParseInt(set[1], 10, 16)
+        if conv_err != nil {
+            return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid port value \"%s\" [more details: %s].", set[1], conv_err))
+        }
+        var port int16
+        port = int16(value)
+        if cherry_rooms.PortBusyByAnotherRoom(port) {
+            return nil, NewCherryFileError(filepath, line, fmt.Sprintf("the port \"%s\" is already busy by another room.", set[1]))
+        }
+
+        cherry_rooms.AddRoom(set[0], port)
+
+        err_room_config := GetRoomTemplates(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        if err_room_config != nil {
+            return nil, err_room_config
+        }
+
+        err_room_config = GetRoomActions(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        if err_room_config != nil {
+            return nil, err_room_config
+        }
+
+        //  TODO(Santiago): Load the images & sounds & misc configurations.
+
+        //  INFO(Santiago): until now these following section are non-mandatory
+
+        //_ = GetRoomImages(set[0], cherry_rooms, string(cherry_file_data), filepath)
+
+        //_ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
+
+        //err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
+
+        //  INFO(Santiago): Let's transfer the next room from file to the memory.
+        set, line, data = GetNextSetFromData(data, line, ":")
+    }
     return cherry_rooms, nil
+}
+
+func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+    var data string
+    var line int
+    var err *CherryFileError
+    data, _, line, err = GetDataFromSection("cherry." + room_name + ".templates",
+                                             config_data, 1, filepath)
+    if err != nil {
+        return err
+    }
+    var set []string
+    set, line, data = GetNextSetFromData(data, line, "=")
+    for len(set) == 2 {
+        if cherry_rooms.HasTemplate(room_name, set[0]) {
+            return NewCherryFileError(filepath, line, "room template \"" + set[0] + "\" redeclared.")
+        }
+        if len(set[1]) == 0 {
+            return NewCherryFileError(filepath, line, "room template with no value.")
+        }
+        if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
+            return NewCherryFileError(filepath, line, "room template must be set with a valid string.")
+        }
+        cherry_rooms.AddTemplate(room_name, set[0], set[1][1:len(set[1])-1]);
+    }
+    return nil
+}
+
+func GetRoomActions(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+    var labels string
+    var labels_line int
+    var labels_err *CherryFileError
+    labels, _, labels_line, labels_err = GetDataFromSection("cherry." + room_name + ".actions",
+                                                            config_data, 1, filepath)
+    if labels_err != nil {
+        return labels_err
+    }
+
+    var templates string
+    var templates_line int
+    var templates_err *CherryFileError
+    templates, _, templates_line, templates_err = GetDataFromSection("cherry." + room_name + ".actions.templates",
+                                                                     config_data, 1, filepath)
+
+    if templates_err != nil {
+        return templates_err
+    }
+
+    var action_labels []string
+    action_labels, labels_line, labels = GetNextSetFromData(labels, labels_line, "=")
+    for len(action_labels) == 2 {
+        if cherry_rooms.HasAction(room_name, action_labels[0]) {
+            return NewCherryFileError(filepath, labels_line, "room action \"" + action_labels[0] + "\" redeclared.")
+        }
+        if len(action_labels[1]) == 0 {
+            return NewCherryFileError(filepath, labels_line, "room action with no value.")
+        }
+        if action_labels[1][0] != '"' || action_labels[1][len(action_labels[1])-1] != '"' {
+            return NewCherryFileError(filepath, labels_line, "room action must be set with a valid string.")
+        }
+
+        //  INFO(Santiago): Getting the template for the current action label from a section to another.
+        var action_templates []string
+        var temp string = templates
+        action_templates, templates_line, temp = GetNextSetFromData(temp, templates_line, "=")
+        for len(action_templates) == 2 && action_templates[0] != action_labels[0] {
+            action_templates, templates_line, temp = GetNextSetFromData(temp, templates_line, "=")
+        }
+
+        if action_templates[0] != action_labels[0] {
+            return NewCherryFileError(filepath, templates_line, "there is no template for action \"" + action_labels[0] + "\".")
+        }
+        if len(action_templates[1]) == 0 {
+            return NewCherryFileError(filepath, templates_line, "room action template with no value.")
+        }
+        if action_templates[1][0] != '"' || action_templates[1][len(action_templates[1])-1] != '"' {
+            return NewCherryFileError(filepath, templates_line, "room action template must be set with a valid string.")
+        }
+
+        cherry_rooms.AddAction(room_name, action_labels[0], action_labels[1][1:len(action_labels[1])-1], action_templates[1][1:len(action_templates[1])-1]);
+    }
+    return nil
 }

@@ -111,7 +111,7 @@ func (c *CherryRooms) GetRoomByPort(port int16) *RoomConfig {
     return nil
 }
 
-func (c CherryRooms) init_config() *RoomConfig {
+func (c *CherryRooms) init_config() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
@@ -119,4 +119,13 @@ func (c CherryRooms) init_config() *RoomConfig {
     room_config.images = make(map[string]*RoomMediaResource)
     room_config.sounds = make(map[string]*RoomMediaResource)
     return room_config
+}
+
+func (c *CherryRooms) AddTemplate(room_name, id, template string) {
+    c.configs[room_name].templates[id] = template
+}
+
+func (c *CherryRooms) HasTemplate(room_name, id string) bool {
+    _, ok := c.configs[room_name].templates[id]
+    return ok
 }

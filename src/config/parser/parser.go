@@ -234,13 +234,11 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
             return nil, err_room_config
         }
 
-        //  TODO(Santiago): Load the images & sounds & misc configurations.
+        //  INFO(Santiago): until now these two following sections are non-mandatory.
 
-        //  INFO(Santiago): until now these following section are non-mandatory
+        _ = GetRoomImages(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
-        //_ = GetRoomImages(set[0], cherry_rooms, string(cherry_file_data), filepath)
-
-        //_ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        _ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
         //err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
@@ -277,57 +275,169 @@ func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config
 }
 
 func GetRoomActions(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-    var labels string
-    var labels_line int
-    var labels_err *CherryFileError
-    labels, _, labels_line, labels_err = GetDataFromSection("cherry." + room_name + ".actions",
-                                                            config_data, 1, filepath)
-    if labels_err != nil {
-        return labels_err
+    return get_indirect_config("cherry." + room_name + ".actions",
+                               "cherry." + room_name + ".actions.templates",
+                                room_action_main_verifier, room_action_sub_verifier, room_action_setter,
+                                room_name, cherry_rooms, config_data, filepath)
+}
+
+func GetRoomImages(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+    return get_indirect_config("cherry." + room_name + ".images",
+                               "cherry." + room_name + ".images.url",
+                               room_image_main_verifier, room_image_sub_verifier, room_image_setter,
+                               room_name, cherry_rooms, config_data, filepath)
+}
+
+func GetRoomSounds(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+    return get_indirect_config("cherry." + room_name + ".sounds",
+                               "cherry." + room_name + ".sounds.url",
+                               room_sound_main_verifier, room_sound_sub_verifier, room_sound_setter,
+                               room_name, cherry_rooms, config_data, filepath)
+}
+
+
+//  WARN(Santiago): The following codes are a brain damage. I am sorry.
+
+func get_indirect_config(main_section,
+                         sub_section string,
+                         main_verifier,
+                         sub_verifier func([]string, []string, int, int, string, string, *config.CherryRooms) *CherryFileError,
+                         setter func(*config.CherryRooms, string, []string, []string),
+                         room_name string,
+                         cherry_rooms *config.CherryRooms,
+                         config_data,
+                         filepath string) *CherryFileError {
+    var m_data string
+    var m_line int
+    var m_err *CherryFileError
+    m_data, _, m_line, m_err = GetDataFromSection(main_section, config_data, 1, filepath)
+    if m_err != nil {
+        return m_err
     }
 
-    var templates string
-    var templates_line int
-    var templates_err *CherryFileError
-    templates, _, templates_line, templates_err = GetDataFromSection("cherry." + room_name + ".actions.templates",
-                                                                     config_data, 1, filepath)
+    var s_data string
+    var s_line int
+    var s_err *CherryFileError
+    s_data, _, s_line, s_err = GetDataFromSection(sub_section, config_data, 1, filepath)
 
-    if templates_err != nil {
-        return templates_err
+    if s_err != nil {
+        return s_err
     }
 
-    var action_labels []string
-    action_labels, labels_line, labels = GetNextSetFromData(labels, labels_line, "=")
-    for len(action_labels) == 2 {
-        if cherry_rooms.HasAction(room_name, action_labels[0]) {
-            return NewCherryFileError(filepath, labels_line, "room action \"" + action_labels[0] + "\" redeclared.")
-        }
-        if len(action_labels[1]) == 0 {
-            return NewCherryFileError(filepath, labels_line, "room action with no value.")
-        }
-        if action_labels[1][0] != '"' || action_labels[1][len(action_labels[1])-1] != '"' {
-            return NewCherryFileError(filepath, labels_line, "room action must be set with a valid string.")
+    var m_set []string
+    m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
+    for len(m_set) == 2 {
+        var s_set []string
+        m_err = main_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
+        if m_err != nil {
+            return m_err
         }
 
         //  INFO(Santiago): Getting the template for the current action label from a section to another.
-        var action_templates []string
-        var temp string = templates
-        action_templates, templates_line, temp = GetNextSetFromData(temp, templates_line, "=")
-        for len(action_templates) == 2 && action_templates[0] != action_labels[0] {
-            action_templates, templates_line, temp = GetNextSetFromData(temp, templates_line, "=")
+        var temp string = s_data
+        var temp_line int = s_line
+        s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
+        for len(s_set) == 2 && s_set[0] != m_set[0] {
+            s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
         }
 
-        if action_templates[0] != action_labels[0] {
-            return NewCherryFileError(filepath, templates_line, "there is no template for action \"" + action_labels[0] + "\".")
-        }
-        if len(action_templates[1]) == 0 {
-            return NewCherryFileError(filepath, templates_line, "room action template with no value.")
-        }
-        if action_templates[1][0] != '"' || action_templates[1][len(action_templates[1])-1] != '"' {
-            return NewCherryFileError(filepath, templates_line, "room action template must be set with a valid string.")
-        }
+        s_err = sub_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
 
-        cherry_rooms.AddAction(room_name, action_labels[0], action_labels[1][1:len(action_labels[1])-1], action_templates[1][1:len(action_templates[1])-1]);
+        setter(cherry_rooms, room_name, m_set, s_set)
     }
     return nil
 }
+
+func room_action_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if cherry_rooms.HasAction(room_name, m_set[0]) {
+        return NewCherryFileError(filepath, m_line, "room action \"" + m_set[0] + "\" redeclared.")
+    }
+    if len(m_set[1]) == 0 {
+        return NewCherryFileError(filepath, m_line, "unlabeled room action.")
+    }
+    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, m_line, "room action must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_action_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if s_set[0] != m_set[0] {
+        return NewCherryFileError(filepath, s_line, "there is no template for action \"" + m_set[0] + "\".")
+    }
+    if len(s_set[1]) == 0 {
+        return NewCherryFileError(filepath, s_line, "empty room action template.")
+    }
+    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, s_line, "room action template must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_action_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+    cherry_rooms.AddAction(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], s_set[1][1:len(s_set[1])-1])
+}
+
+func room_image_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if cherry_rooms.HasImage(room_name, m_set[0]) {
+        return NewCherryFileError(filepath, m_line, "room image \"" + m_set[0] + "\" redeclared.")
+    }
+    if len(m_set[1]) == 0 {
+        return NewCherryFileError(filepath, m_line, "unlabeled room image.")
+    }
+    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, m_line, "room image must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_image_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if s_set[0] != m_set[0] {
+        return NewCherryFileError(filepath, s_line, "there is no url for image \"" + m_set[0] + "\".")
+    }
+    if len(s_set[1]) == 0 {
+        return NewCherryFileError(filepath, s_line, "empty room image url.")
+    }
+    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, s_line, "room image url must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_image_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+    //  WARN(Santiago): by now we will pass the image template as empty.
+    cherry_rooms.AddImage(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
+}
+
+func room_sound_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if cherry_rooms.HasImage(room_name, m_set[0]) {
+        return NewCherryFileError(filepath, m_line, "room sound \"" + m_set[0] + "\" redeclared.")
+    }
+    if len(m_set[1]) == 0 {
+        return NewCherryFileError(filepath, m_line, "unlabeled room sound.")
+    }
+    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, m_line, "room sound must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_sound_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+    if s_set[0] != m_set[0] {
+        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + m_set[0] + "\".")
+    }
+    if len(s_set[1]) == 0 {
+        return NewCherryFileError(filepath, s_line, "empty room sound url.")
+    }
+    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
+        return NewCherryFileError(filepath, s_line, "room sound url must be set with a valid string.")
+    }
+    return nil
+}
+
+func room_sound_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+    //  WARN(Santiago): by now we will pass the sound template as empty.
+    cherry_rooms.AddSound(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
+}
+
+

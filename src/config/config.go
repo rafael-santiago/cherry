@@ -116,6 +116,7 @@ func (c *CherryRooms) init_config() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
+    room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)
     room_config.images = make(map[string]*RoomMediaResource)
     room_config.sounds = make(map[string]*RoomMediaResource)

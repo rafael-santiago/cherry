@@ -23,9 +23,9 @@ type CherryFileError struct {
 
 func (c *CherryFileError) Error() string {
     if c.line > -1 {
-        return fmt.Sprintf("ERROR: %s: at line %d: %s.\n", c.src, c.line, c.msg);
+        return fmt.Sprintf("ERROR: %s: at line %d: %s\n", c.src, c.line, c.msg);
     }
-    return fmt.Sprintf("ERROR: %s: %s.\n", c.src, c.msg);
+    return fmt.Sprintf("ERROR: %s: %s\n", c.src, c.msg);
 }
 
 func NewCherryFileError(src string, line int, msg string) *CherryFileError {
@@ -120,7 +120,7 @@ func GetDataFromSection(section, config_data string, curr_line int, curr_file st
                 break
         }
     }
-    return "", s, curr_line, NewCherryFileError(curr_file, -1, "section not found")
+    return "", s, curr_line, NewCherryFileError(curr_file, -1, "section \"" + section + "\" not found.")
 }
 
 func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, string) {
@@ -150,6 +150,13 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
             }
             if s < len(data) {
                 line += string(data[s])
+            }
+        } else if data[s] == '#' {
+            for s < len(data) && data[s] != '\n' {
+                s++
+            }
+            if s < len(data) {
+                curr_line++
             }
         } else {
             line += string(data[s])
@@ -272,7 +279,8 @@ func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config
         if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
             return NewCherryFileError(filepath, line, "room template must be set with a valid string.")
         }
-        cherry_rooms.AddTemplate(room_name, set[0], set[1][1:len(set[1])-1]);
+        cherry_rooms.AddTemplate(room_name, set[0], set[1][1:len(set[1])-1])
+        set, line, data = GetNextSetFromData(data, line, "=")
     }
     return nil
 }
@@ -334,11 +342,12 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     setter["flooding-police"]               = set_flooding_police
     setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
     setter["all-users-alias"]               = set_all_users_alias
-    
+
     var already_set map[string]bool
-    already_set["join-message"]		         = false
-    already_set["exit-message"]		         = false
-    already_set["on-ignore-message"]	         = false
+    already_set = make(map[string]bool)
+    already_set["join-message"]                  = false
+    already_set["exit-message"]                  = false
+    already_set["on-ignore-message"]             = false
     already_set["on-deignore-message"]           = false
     already_set["greeting-message"]              = false
     already_set["private-message-marker"]        = false
@@ -355,12 +364,12 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
             return NewCherryFileError(filepath, m_line, "misc configuration named as \"" + m_set[0] + "\" is unrecognized.")
         }
         if already_set[m_set[0]] {
-    	    return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" re-configured.")
+            return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" re-configured.")
         }
         if !verifier[m_set[0]](m_set[1]) {
             return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" has invalid value : " + m_set[1])
         }
-        setter[m_set[0]](cherry_rooms, m_set[0], m_set[1])
+        setter[m_set[0]](cherry_rooms, room_name, m_set[1])
         already_set[m_set[0]] = true
         m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
     }
@@ -445,7 +454,7 @@ func verify_string(buffer string) bool {
     if len(buffer) <= 1 {
         return false
     }
-    return (buffer[1] == '"' && buffer[len(buffer)-1] == '"')
+    return (buffer[0] == '"' && buffer[len(buffer)-1] == '"')
 }
 
 func verify_bool(buffer string) bool {
@@ -503,6 +512,8 @@ func get_indirect_config(main_section,
         s_err = sub_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
 
         setter(cherry_rooms, room_name, m_set, s_set)
+
+        m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
     }
     return nil
 }

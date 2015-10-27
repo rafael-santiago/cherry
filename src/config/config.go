@@ -7,6 +7,12 @@
  */
 package config
 
+import (
+    "sync"
+    "container/list"
+    "net"
+)
+
 type RoomMisc struct {
     listen_port int16
     join_message string
@@ -33,7 +39,28 @@ type RoomMediaResource struct {
     url string
 }
 
+type Message struct {
+    from string
+    to string
+    action string
+    sound string
+    image string
+    say string
+    priv string
+}
+
+type RoomUser struct {
+    id string
+    color string
+    ignorelist *list.List
+    kickout bool
+    conn *net.Conn
+}
+
 type RoomConfig struct {
+    mutex *sync.Mutex
+    message_queue *list.List
+    users map[string]*RoomUser
     templates map[string]string
     misc *RoomMisc
     actions map[string]*RoomAction
@@ -47,6 +74,30 @@ type CherryRooms struct {
 
 func NewCherryRooms() *CherryRooms {
     return &CherryRooms{make(map[string]*RoomConfig)}
+}
+
+func (c *CherryRooms) AddUser(room_name, nickname, id, color string, kickout bool, conn *net.Conn) {
+    c.configs[room_name].mutex.Lock()
+    c.configs[room_name].users[nickname] = &RoomUser{id, color, new(list.List), kickout, conn}
+    c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) RemoveUser(room_name, nickname string) {
+    c.configs[room_name].mutex.Lock()
+    delete(c.configs[room_name].users, nickname)
+    c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, sound, image, say, priv string) {
+    c.configs[room_name].mutex.Lock()
+    c.configs[room_name].message_queue.PushBack(Message{from, to, action, sound, image, say, priv})
+    c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) DequeueMessage(room_name string) {
+    c.configs[room_name].mutex.Lock()
+    c.configs[room_name].message_queue.Remove(c.configs[room_name].message_queue.Front())
+    c.configs[room_name].mutex.Unlock()
 }
 
 func (c *CherryRooms) AddRoom(room_name string, listen_port int16) bool {
@@ -116,10 +167,13 @@ func (c *CherryRooms) init_config() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
+    room_config.message_queue = list.New()
+    room_config.users = make(map[string]*RoomUser)
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)
     room_config.images = make(map[string]*RoomMediaResource)
     room_config.sounds = make(map[string]*RoomMediaResource)
+    room_config.mutex = new(sync.Mutex)
     return room_config
 }
 

@@ -50,7 +50,7 @@ type Message struct {
 }
 
 type RoomUser struct {
-    id string
+    session_id string
     color string
     ignorelist *list.List
     kickout bool
@@ -228,4 +228,12 @@ func (c *CherryRooms) SetMaxFloodAllowedBeforeKick(room_name string, value int) 
 
 func (c *CherryRooms) SetAllUsersAlias(room_name, alias string) {
     c.configs[room_name].misc.all_users_alias = alias
+}
+
+func (c *CherryRooms) Lock(room_name string) {
+    c.configs[room_name].mutex.Lock()
+}
+
+func (c *CherryRooms) Unlock(room_name string) {
+    c.configs[room_name].mutex.Unlock()
 }

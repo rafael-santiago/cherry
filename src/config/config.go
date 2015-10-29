@@ -9,7 +9,7 @@ package config
 
 import (
     "sync"
-    "container/list"
+//    "container/list"
     "net"
 )
 
@@ -40,26 +40,28 @@ type RoomMediaResource struct {
 }
 
 type Message struct {
-    from string
-    to string
-    action string
-    sound string
-    image string
-    say string
-    priv string
+    From string
+    To string
+    Action string
+    Sound string
+    Image string
+    Say string
+    Priv string
 }
 
 type RoomUser struct {
     session_id string
     color string
-    ignorelist *list.List
+    //ignorelist *list.List
+    ignorelist []string
     kickout bool
     conn *net.Conn
 }
 
 type RoomConfig struct {
     mutex *sync.Mutex
-    message_queue *list.List
+    //message_queue *list.List
+    message_queue []Message
     users map[string]*RoomUser
     templates map[string]string
     misc *RoomMisc
@@ -78,7 +80,7 @@ func NewCherryRooms() *CherryRooms {
 
 func (c *CherryRooms) AddUser(room_name, nickname, id, color string, kickout bool, conn *net.Conn) {
     c.configs[room_name].mutex.Lock()
-    c.configs[room_name].users[nickname] = &RoomUser{id, color, new(list.List), kickout, conn}
+    c.configs[room_name].users[nickname] = &RoomUser{id, color, make([]string, 0)/*new(list.List)*/, kickout, conn}
     c.configs[room_name].mutex.Unlock()
 }
 
@@ -90,14 +92,24 @@ func (c *CherryRooms) RemoveUser(room_name, nickname string) {
 
 func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, sound, image, say, priv string) {
     c.configs[room_name].mutex.Lock()
-    c.configs[room_name].message_queue.PushBack(Message{from, to, action, sound, image, say, priv})
+    c.configs[room_name].message_queue = append(c.configs[room_name].message_queue, Message{from, to, action, sound, image, say, priv})
+    //c.configs[room_name].message_queue.PushBack(Message{from, to, action, sound, image, say, priv})
     c.configs[room_name].mutex.Unlock()
 }
 
 func (c *CherryRooms) DequeueMessage(room_name string) {
     c.configs[room_name].mutex.Lock()
-    c.configs[room_name].message_queue.Remove(c.configs[room_name].message_queue.Front())
+    //c.configs[room_name].message_queue.Remove(c.configs[room_name].message_queue.Front())
+    c.configs[room_name].message_queue = c.configs[room_name].message_queue[1:]
     c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) GetNextMessage(room_name string) Message {
+    c.configs[room_name].mutex.Lock()
+    var message Message
+    message = c.configs[room_name].message_queue[0]
+    c.configs[room_name].mutex.Unlock()
+    return message
 }
 
 func (c *CherryRooms) AddRoom(room_name string, listen_port int16) bool {
@@ -167,7 +179,7 @@ func (c *CherryRooms) init_config() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
-    room_config.message_queue = list.New()
+    room_config.message_queue = make([]Message, 0)//list.New()
     room_config.users = make(map[string]*RoomUser)
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)

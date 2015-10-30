@@ -11,6 +11,7 @@ import (
     "sync"
 //    "container/list"
     "net"
+    "fmt"
 )
 
 type RoomMisc struct {
@@ -110,6 +111,197 @@ func (c *CherryRooms) GetNextMessage(room_name string) Message {
     message = c.configs[room_name].message_queue[0]
     c.configs[room_name].mutex.Unlock()
     return message
+}
+
+func (c *CherryRooms) GetSessionId(from, room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var session_id string
+    session_id = c.configs[room_name].users[from].session_id
+    c.configs[room_name].mutex.Unlock()
+    return session_id
+}
+
+func (c *CherryRooms) GetColor(from, room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var color string
+    color = c.configs[room_name].users[from].color
+    c.configs[room_name].mutex.Unlock()
+    return color
+}
+
+func (c *CherryRooms) GetIgnoreList(from, room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var ignore_list string
+    ignoring := c.configs[room_name].users[from].ignorelist
+    last_index := len(ignoring) - 1
+    for c, who := range ignoring {
+        ignore_list += "\"" + who + "\""
+        if c != last_index {
+            who += ", "
+        }
+    }
+    c.configs[room_name].mutex.Unlock()
+    return ignore_list
+}
+
+func (c *CherryRooms) GetGreetingMessage(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.greeting_message
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetJoinMessage(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.join_message
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetExitMessage(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.exit_message
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetOnIgnoreMessage(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.on_ignore_message
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetOnDeIgnoreMessage(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.on_deignore_message
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetPrivateMessageMarker(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var message string
+    message = c.configs[room_name].misc.private_message_marker
+    c.configs[room_name].mutex.Unlock()
+    return message
+}
+
+func (c *CherryRooms) GetMaxUsers(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var max string
+    max = fmt.Sprintf("%d", c.configs[room_name].misc.max_users)
+    c.configs[room_name].mutex.Unlock()
+    return max
+}
+
+func (c *CherryRooms) GetAllUsersAlias(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var alias string
+    alias = c.configs[room_name].misc.all_users_alias
+    c.configs[room_name].mutex.Unlock()
+    return alias
+}
+
+func (c *CherryRooms) GetActionList(room_name string) string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetImageList(room_name string) string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetSoundList(room_name string) string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetUsersList(room_name string) string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetTopTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["top"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetBodyTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["body"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetBannerTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["banner"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetHighlightTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["highlight"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetEntranceTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["entrance"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetExitTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["exit"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetNickclashTemplate(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var data string
+    data = c.configs[room_name].templates["nickclash"]
+    c.configs[room_name].mutex.Unlock()
+    return data
+}
+
+func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetServername() string {
+    return "TODO(Santiago): what?"
+}
+
+func (c *CherryRooms) GetListenPort(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var port string
+    port = fmt.Sprintf("%d", c.configs[room_name].misc.listen_port)
+    c.configs[room_name].mutex.Unlock()
+    return port
+}
+
+func (c *CherryRooms) GetUsersTotal(room_name string) string {
+    c.configs[room_name].mutex.Lock()
+    var total string
+    total = fmt.Sprintf("%d", len(c.configs[room_name].users))
+    c.configs[room_name].mutex.Unlock()
+    return total
 }
 
 func (c *CherryRooms) AddRoom(room_name string, listen_port int16) bool {

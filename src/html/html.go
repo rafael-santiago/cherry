@@ -79,18 +79,18 @@ func nick_name_expander(p *Preprocessor, room_name, var_name, data string) strin
 }
 
 func session_id_expander(p *Preprocessor, room_name, var_name, data string) string {
-//  TODO(Santiago):    return strings.Replace(data, var_name, p.rooms.GetSessionId(from, room_name).Id, -1)
-    return ""
+    from := p.rooms.GetNextMessage(room_name).From
+    return strings.Replace(data, var_name, p.rooms.GetSessionId(from, room_name), -1)
 }
 
 func color_expander(p *Preprocessor, room_name, var_name, data string) string {
-//  TODO(Santiago):    return strings.Replace(data, var_name, p.rooms.GetColor(from, room_name).Color, -1)
-    return ""
+    from := p.rooms.GetNextMessage(room_name).From
+    return strings.Replace(data, var_name, p.rooms.GetColor(from, room_name), -1)
 }
 
 func ignore_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-//  TODO(Santiago):    return strings.Replace(data, var_name, p.rooms.GetIgnoreList(from, room_name), -1)
-    return ""
+    from := p.rooms.GetNextMessage(room_name).From
+    return strings.Replace(data, var_name, p.rooms.GetIgnoreList(from, room_name), -1)
 }
 
 func hour_expander(p *Preprocessor, room_name, var_name, data string) string {
@@ -118,91 +118,91 @@ func year_expander(p *Preprocessor, room_name, var_name, data string) string {
 }
 
 func greeting_message_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetGreetingMessage(room_name), -1)
 }
 
 func join_message_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetJoinMessage(room_name), -1)
 }
 
 func exit_message_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetExitMessage(room_name), -1)
 }
 
 func on_ignore_message_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetOnIgnoreMessage(room_name), -1)
 }
 
 func on_deignore_message_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetOnDeIgnoreMessage(room_name), -1)
 }
 
 func private_message_marker_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetPrivateMessageMarker(room_name), -1)
 }
 
 func max_users_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetMaxUsers(room_name), -1)
 }
 
 func all_users_alias_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetAllUsersAlias(room_name), -1)
 }
 
 func action_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetActionList(room_name), -1)
 }
 
 func image_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetImageList(room_name), -1)
 }
 
 func sound_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetSoundList(room_name), -1)
 }
 
 func users_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetUsersList(room_name), -1)
 }
 
 func top_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetTopTemplate(room_name), -1)
 }
 
 func body_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetBodyTemplate(room_name), -1)
 }
 
 func banner_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetBannerTemplate(room_name), -1)
 }
 
 func highlight_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetHighlightTemplate(room_name), -1)
 }
 
 func entrance_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetEntranceTemplate(room_name), -1)
 }
 
 func exit_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetExitTemplate(room_name), -1)
 }
 
 func nickclash_template_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetNickclashTemplate(room_name), -1)
 }
 
 func last_public_messages_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetLastPublicMessages(room_name), -1)
 }
 
 func servername_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetServername(), -1)
 }
 
 func listen_port_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetListenPort(room_name), -1)
 }
 
 func room_name_expander(p *Preprocessor, room_name, var_name, data string) string {
@@ -210,5 +210,5 @@ func room_name_expander(p *Preprocessor, room_name, var_name, data string) strin
 }
 
 func users_total_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, p.rooms.GetUsersTotal(room_name), -1)
 }

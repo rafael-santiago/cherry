@@ -61,6 +61,7 @@ type RoomUser struct {
 
 type RoomConfig struct {
     mutex *sync.Mutex
+    MainPeer net.Listener
     //message_queue *list.List
     message_queue []Message
     users map[string]*RoomUser

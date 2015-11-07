@@ -279,7 +279,13 @@ func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config
         if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
             return NewCherryFileError(filepath, line, "room template must be set with a valid string.")
         }
-        cherry_rooms.AddTemplate(room_name, set[0], set[1][1:len(set[1])-1])
+        var template_data []byte
+        var template_data_err error
+        template_data, template_data_err = ioutil.ReadFile(set[1][1:len(set[1])-1])
+        if template_data_err != nil {
+            return NewCherryFileError(filepath, line, "unable to access room template file [more details: " + template_data_err.Error() + "].")
+        }
+        cherry_rooms.AddTemplate(room_name, set[0], string(template_data))
         set, line, data = GetNextSetFromData(data, line, "=")
     }
     return nil

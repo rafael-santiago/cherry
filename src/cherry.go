@@ -50,6 +50,16 @@ func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.Che
             new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /banner") {
             //  TODO(Santiago): Return the room's banner frame.
+            user_data := rawhttp.GetFieldsFromGet(http_payload)
+            if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
+                reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+            } else {
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name)),
+                                                       200,
+                                                       true)
+            }
+            new_conn.Write(reply_buffer)
+            new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /body") {
             //  TODO(Santiago): Return the room's body frame and do not close this connection.
         } else if strings.HasPrefix(http_payload, "POST /exit") {
@@ -76,6 +86,9 @@ func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.Che
                 rooms.AddUser(room_name, user_data["user"], user_data["color"], false)
                 preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(user_data["user"], room_name))
                 reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetSkeletonTemplate(room_name)), 200, true)
+                //  INFO(Santiago): At this point the others and this user will get the join notification of him.
+                //                  Yes, he/she could "hack" the join notification message for fun :^)
+                rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", user_data["says"], "")
             }
             new_conn.Write(reply_buffer)
             new_conn.Close()

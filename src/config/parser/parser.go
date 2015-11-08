@@ -407,27 +407,27 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
 }
 
 func set_join_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetJoinMessage(room_name, message)
+    cherry_rooms.SetJoinMessage(room_name, message[1:len(message)-1])
 }
 
 func set_exit_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetExitMessage(room_name, message)
+    cherry_rooms.SetExitMessage(room_name, message[1:len(message)-1])
 }
 
 func set_on_ignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetOnIgnoreMessage(room_name, message)
+    cherry_rooms.SetOnIgnoreMessage(room_name, message[1:len(message)-1])
 }
 
 func set_on_deignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetOnDeIgnoreMessage(room_name, message)
+    cherry_rooms.SetOnDeIgnoreMessage(room_name, message[1:len(message)-1])
 }
 
 func set_greeting_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetGreetingMessage(room_name, message)
+    cherry_rooms.SetGreetingMessage(room_name, message[1:len(message)-1])
 }
 
 func set_private_message_marker(cherry_rooms *config.CherryRooms, room_name, marker string) {
-    cherry_rooms.SetPrivateMessageMarker(room_name, marker)
+    cherry_rooms.SetPrivateMessageMarker(room_name, marker[1:len(marker)-1])
 }
 
 func set_max_users(cherry_rooms *config.CherryRooms, room_name, value string) {
@@ -449,7 +449,7 @@ func set_flooding_police(cherry_rooms *config.CherryRooms, room_name, value stri
 }
 
 func set_all_users_alias(cherry_rooms *config.CherryRooms, room_name, value string) {
-    cherry_rooms.SetAllUsersAlias(room_name, value)
+    cherry_rooms.SetAllUsersAlias(room_name, value[1:len(value)-1])
 }
 
 func set_max_flood_allowed_before_kick(cherry_rooms *config.CherryRooms, room_name, value string) {

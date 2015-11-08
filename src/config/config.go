@@ -13,6 +13,7 @@ import (
     "fmt"
     "crypto/md5"
     "io"
+    "sort"
 )
 
 type RoomMisc struct {
@@ -228,7 +229,19 @@ func (c *CherryRooms) GetAllUsersAlias(room_name string) string {
 }
 
 func (c *CherryRooms) GetActionList(room_name string) string {
-    return "TODO(Santiago): what?"
+    c.Lock(room_name)
+    var action_list string = ""
+    var actions []string
+    actions = make([]string, 0)
+    for action, _ := range c.configs[room_name].actions {
+        actions = append(actions, action)
+    }
+    sort.Strings(actions)
+    for _, action := range actions {
+        action_list += "<option value = \"" + action + "\">" + c.configs[room_name].actions[action].label + "\n"
+    }
+    c.Unlock(room_name)
+    return action_list
 }
 
 func (c *CherryRooms) GetImageList(room_name string) string {
@@ -240,7 +253,21 @@ func (c *CherryRooms) GetSoundList(room_name string) string {
 }
 
 func (c *CherryRooms) GetUsersList(room_name string) string {
-    return "TODO(Santiago): what?"
+    c.Lock(room_name)
+    var users []string
+    users = make([]string, 0)
+    for user, _ := range c.configs[room_name].users {
+        users = append(users, user)
+    }
+    //  WARN(Santiago): Already locked, we can acquire this piece of information directly... otherwise we got a deadlock.
+    all_users_alias := c.configs[room_name].misc.all_users_alias
+    var users_list string = "<option value = \"" + all_users_alias + "\">" + all_users_alias + "\n"
+    sort.Strings(users)
+    for _, user := range users {
+        users_list += "<option value = \"" + user + "\">" + user + "\n"
+    }
+    c.Unlock(room_name)
+    return users_list
 }
 
 func (c *CherryRooms) get_room_template(room_name, template string) string {

@@ -15,6 +15,7 @@ import (
 type Preprocessor struct {
     rooms *config.CherryRooms
     data_expander map[string]func(*Preprocessor, string, string, string) string
+    data_value map[string]string
 }
 
 func NewHtmlPreprocessor(rooms *config.CherryRooms) *Preprocessor {
@@ -24,21 +25,28 @@ func NewHtmlPreprocessor(rooms *config.CherryRooms) *Preprocessor {
     return preprocessor
 }
 
+func (p *Preprocessor) SetDataValue(field, data string) {
+    p.data_value[field] = data
+}
 
+func (p *Preprocessor) UnsetDataValue(field string) {
+    p.data_value[field] = ""
+}
 
 func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.rooms = rooms
+    p.data_value = make(map[string]string)
     p.data_expander = make(map[string]func(*Preprocessor, string, string, string) string)
     p.data_expander["{{.nickname}}"] = nick_name_expander
     p.data_expander["{{.session-id}}"] = session_id_expander
     p.data_expander["{{.color}}"] = color_expander
     p.data_expander["{{.ignore-list}}"] = ignore_list_expander
-    p.data_expander["{{.hour}}"] = hour_expander
-    p.data_expander["{{.minute}}"] = minute_expander
-    p.data_expander["{{.second}}"] = second_expander
-    p.data_expander["{{.month}}"] = month_expander
-    p.data_expander["{{.day}}"] = day_expander
-    p.data_expander["{{.year}}"] = year_expander
+//    p.data_expander["{{.hour}}"] = hour_expander
+//    p.data_expander["{{.minute}}"] = minute_expander
+//    p.data_expander["{{.second}}"] = second_expander
+//    p.data_expander["{{.month}}"] = month_expander
+//    p.data_expander["{{.day}}"] = day_expander
+//    p.data_expander["{{.year}}"] = year_expander
     p.data_expander["{{.greeting-message}}"] = greeting_message_expander
     p.data_expander["{{.join-message}}"] = join_message_expander
     p.data_expander["{{.exit-message}}"] = exit_message_expander
@@ -68,7 +76,12 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
 func (p *Preprocessor) ExpandData(room_name, data string) string {
     if p.rooms.HasRoom(room_name) {
         for var_name, expander := range p.data_expander {
-            data = expander(p, room_name, var_name, data)
+            local_value, exists := p.data_value[var_name]
+            if exists && len(local_value) > 0 {
+                data = strings.Replace(data, var_name, local_value, -1)
+            } else {
+                data = expander(p, room_name, var_name, data)
+            }
         }
     }
     return data
@@ -206,9 +219,13 @@ func listen_port_expander(p *Preprocessor, room_name, var_name, data string) str
 }
 
 func room_name_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return room_name
+    return strings.Replace(data, var_name, room_name, -1)
 }
 
 func users_total_expander(p *Preprocessor, room_name, var_name, data string) string {
     return strings.Replace(data, var_name, p.rooms.GetUsersTotal(room_name), -1)
+}
+
+func GetBadAssErrorData() string {
+    return "<html><h1>404 Bad ass error</h1><h3>No cherry for you!</h3></html>"
 }

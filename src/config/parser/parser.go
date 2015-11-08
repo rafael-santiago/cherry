@@ -204,14 +204,37 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
     if io_err != nil {
         return nil, NewCherryFileError("(no file)", -1, fmt.Sprintf("unable to read from \"%s\" [more details: %s].", filepath, io_err.Error()))
     }
+    data, _, line, err = GetDataFromSection("cherry.root", string(cherry_file_data), 1, filepath)
+    if err != nil {
+        return nil, err
+    }
+    var set []string
+    cherry_rooms = config.NewCherryRooms()
+    set, line, data = GetNextSetFromData(data, line, "=")
+    for len(set) == 2 {
+        switch set[0] {
+            case "servername":
+                if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
+                    return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid string."))
+                }
+                cherry_rooms.SetServername(set[1][1:len(set[1])-1])
+                break
+
+            default:
+                return nil, NewCherryFileError(filepath, line, fmt.Sprintf("unknown config set \"%s\".", set[0]))
+                break
+        }
+        set, line, data = GetNextSetFromData(data, line, "=")
+    }
+    if cherry_rooms.GetServername() == "localhost" {
+        fmt.Println("WARN: cherry.root.servername is equals to \"localhost\". Things will not work outside this node.")
+    }
     data, _, line,  err = GetDataFromSection("cherry.rooms", string(cherry_file_data), 1, filepath)
     if err != nil {
         return nil, err
     }
     //  INFO(Santiago): Adding all scanned rooms from the first cherry.rooms section found
     //                  [cherry branches were scanned too at this point].
-    var set []string
-    cherry_rooms = config.NewCherryRooms()
     set, line, data = GetNextSetFromData(data, line, ":")
     for len(set) == 2 {
         if cherry_rooms.HasRoom(set[0]) {

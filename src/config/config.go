@@ -9,9 +9,10 @@ package config
 
 import (
     "sync"
-//    "container/list"
     "net"
     "fmt"
+    "crypto/md5"
+    "io"
 )
 
 type RoomMisc struct {
@@ -74,15 +75,19 @@ type RoomConfig struct {
 
 type CherryRooms struct {
     configs map[string]*RoomConfig
+    servername string
 }
 
 func NewCherryRooms() *CherryRooms {
-    return &CherryRooms{make(map[string]*RoomConfig)}
+    return &CherryRooms{make(map[string]*RoomConfig), "localhost"}
 }
 
-func (c *CherryRooms) AddUser(room_name, nickname, id, color string, kickout bool, conn *net.Conn) {
+func (c *CherryRooms) AddUser(room_name, nickname, color string, kickout bool) {
     c.configs[room_name].mutex.Lock()
-    c.configs[room_name].users[nickname] = &RoomUser{id, color, make([]string, 0)/*new(list.List)*/, kickout, conn}
+    md := md5.New()
+    io.WriteString(md, room_name + nickname + color)
+    id := fmt.Sprintf("%x", md.Sum(nil))
+    c.configs[room_name].users[nickname] = &RoomUser{id, color, make([]string, 0), kickout, nil}
     c.configs[room_name].mutex.Unlock()
 }
 
@@ -109,12 +114,19 @@ func (c *CherryRooms) DequeueMessage(room_name string) {
 func (c *CherryRooms) GetNextMessage(room_name string) Message {
     c.configs[room_name].mutex.Lock()
     var message Message
-    message = c.configs[room_name].message_queue[0]
+    if len(c.configs[room_name].message_queue) > 0 {
+        message = c.configs[room_name].message_queue[0]
+    } else {
+        message = Message{}
+    }
     c.configs[room_name].mutex.Unlock()
     return message
 }
 
 func (c *CherryRooms) GetSessionId(from, room_name string) string {
+    if len(from) == 0 {
+        return ""
+    }
     c.configs[room_name].mutex.Lock()
     var session_id string
     session_id = c.configs[room_name].users[from].session_id
@@ -123,6 +135,9 @@ func (c *CherryRooms) GetSessionId(from, room_name string) string {
 }
 
 func (c *CherryRooms) GetColor(from, room_name string) string {
+    if len(from) == 0 {
+        return ""
+    }
     c.configs[room_name].mutex.Lock()
     var color string
     color = c.configs[room_name].users[from].color
@@ -131,6 +146,9 @@ func (c *CherryRooms) GetColor(from, room_name string) string {
 }
 
 func (c *CherryRooms) GetIgnoreList(from, room_name string) string {
+    if len(from) == 0 {
+        return ""
+    }
     c.configs[room_name].mutex.Lock()
     var ignore_list string
     ignoring := c.configs[room_name].users[from].ignorelist
@@ -225,67 +243,47 @@ func (c *CherryRooms) GetUsersList(room_name string) string {
     return "TODO(Santiago): what?"
 }
 
-func (c *CherryRooms) GetTopTemplate(room_name string) string {
+func (c *CherryRooms) get_room_template(room_name, template string) string {
     c.configs[room_name].mutex.Lock()
     var data string
-    data = c.configs[room_name].templates["top"]
+    data = c.configs[room_name].templates[template]
     c.configs[room_name].mutex.Unlock()
     return data
+}
+
+func (c *CherryRooms) GetTopTemplate(room_name string) string {
+    return c.get_room_template(room_name, "top")
 }
 
 func (c *CherryRooms) GetBodyTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["body"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "body")
 }
 
 func (c *CherryRooms) GetBannerTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["banner"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "banner")
 }
 
 func (c *CherryRooms) GetHighlightTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["highlight"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "highlight")
 }
 
 func (c *CherryRooms) GetEntranceTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["entrance"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "entrance")
 }
 
 func (c *CherryRooms) GetExitTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["exit"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "exit")
 }
 
 func (c *CherryRooms) GetNickclashTemplate(room_name string) string {
-    c.configs[room_name].mutex.Lock()
-    var data string
-    data = c.configs[room_name].templates["nickclash"]
-    c.configs[room_name].mutex.Unlock()
-    return data
+    return c.get_room_template(room_name, "nickclash")
+}
+
+func (c *CherryRooms) GetSkeletonTemplate(room_name string) string {
+    return c.get_room_template(room_name, "skeleton")
 }
 
 func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
-    return "TODO(Santiago): what?"
-}
-
-func (c *CherryRooms) GetServername() string {
     return "TODO(Santiago): what?"
 }
 
@@ -372,7 +370,7 @@ func (c *CherryRooms) init_config() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
-    room_config.message_queue = make([]Message, 0)//list.New()
+    room_config.message_queue = make([]Message, 0)
     room_config.users = make(map[string]*RoomUser)
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)
@@ -441,4 +439,29 @@ func (c *CherryRooms) Lock(room_name string) {
 
 func (c *CherryRooms) Unlock(room_name string) {
     c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) GetServername() string {
+    return c.servername
+}
+
+func (c *CherryRooms) SetServername(servername string) {
+    c.servername = servername
+}
+
+func (c *CherryRooms) HasUser(room_name, user string) bool {
+    _, ok := c.configs[room_name]
+    if !ok {
+        return false
+    }
+    _, ok = c.configs[room_name].users[user]
+    return ok
+}
+
+func (c *CherryRooms) IsValidUserRequest(room_name, user, id string) bool {
+    var valid bool = false
+    if (c.HasUser(room_name, user)) {
+        valid = (id == c.GetSessionId(user, room_name))
+    }
+    return valid
 }

@@ -15,20 +15,39 @@ import (
     "net"
     "strconv"
     "strings"
+    "./rawhttp"
+    "./html"
 )
 
-func ProcessNewConnection(new_conn net.Conn, room *config.RoomConfig) {
+func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.CherryRooms) {
     buf := make([]byte, 4096)
     buf_len, err := new_conn.Read(buf)
     var http_payload string
+    var reply_buffer []byte
+    preprocessor := html.NewHtmlPreprocessor(rooms)
     if err == nil {
         http_payload = string(buf[:buf_len])
         if strings.HasPrefix(http_payload, "GET /join") {
-            //  TODO(Santiago): Return the join form.
+            //  INFO(Santiago): The form for room joining was requested, so we will flush it to the client.
+            reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetEntranceTemplate(room_name)),
+                                                   200,
+                                                   true)
+            new_conn.Write(reply_buffer)
+            new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /brief") {
             //  TODO(Santiago): Return the brief for this room.
         } else if strings.HasPrefix(http_payload, "GET /top") {
             //  TODO(Santiago): Return the room's top frame.
+            user_data := rawhttp.GetFieldsFromGet(http_payload)
+            if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
+                reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+            } else {
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetTopTemplate(room_name)),
+                                                       200,
+                                                       true)
+            }
+            new_conn.Write(reply_buffer)
+            new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /banner") {
             //  TODO(Santiago): Return the room's banner frame.
         } else if strings.HasPrefix(http_payload, "GET /body") {
@@ -36,12 +55,37 @@ func ProcessNewConnection(new_conn net.Conn, room *config.RoomConfig) {
         } else if strings.HasPrefix(http_payload, "POST /exit") {
             //  TODO(Santiago): Clear user's information from room's context and return to him the exit document.
         } else if strings.HasPrefix(http_payload, "POST /join") {
-            //  TODO(Santiago): Process the join request, adding (if allowed) the user inside room's context, and
-            //                  return the room's basic struct [TOP/BODY/BANNER]
+            //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
+            //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton
+            //                  [TOP/BODY/BANNER]. Then we finally close the connection.
+            user_data := rawhttp.GetFieldsFromPost(http_payload)
+            if _, posted := user_data["user"]; !posted {
+                new_conn.Close()
+            }
+            if _, posted := user_data["color"]; !posted {
+                new_conn.Close()
+            }
+            if _, posted := user_data["says"]; !posted {
+                new_conn.Close()
+            }
+            preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+            preprocessor.SetDataValue("{{.session-id}}", "0")
+            if rooms.HasUser(room_name, user_data["user"]) {
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetNickclashTemplate(room_name)), 200, true)
+            } else {
+                rooms.AddUser(room_name, user_data["user"], user_data["color"], false)
+                preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(user_data["user"], room_name))
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetSkeletonTemplate(room_name)), 200, true)
+            }
+            new_conn.Write(reply_buffer)
+            new_conn.Close()
         } else if strings.HasPrefix(http_payload, "POST /banner") {
             //  TODO(Santiago): Enqueue user's message for future processing.
         } else if strings.HasPrefix(http_payload, "POST /query") {
             //  TODO(Santiago): Return the search results.
+        } else {
+            new_conn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
+            new_conn.Close()
         }
     }
 }
@@ -53,7 +97,7 @@ func MainPeer(room_name string, c *config.CherryRooms) {
     var err error
     var room *config.RoomConfig
     room = c.GetRoomByPort(int16(port_num))
-    room.MainPeer, err = net.Listen("tcp", ":" + port)
+    room.MainPeer, err = net.Listen("tcp", "192.30.70.3:" + port)
     if err != nil {
         fmt.Println("ERROR: " + err.Error())
         os.Exit(1)
@@ -66,7 +110,7 @@ func MainPeer(room_name string, c *config.CherryRooms) {
             os.Exit(1)
         }
         //  TODO(Santiago): Process the user's initial request.
-        go ProcessNewConnection(conn, room)
+        go ProcessNewConnection(conn, room_name, c)
     }
 }
 

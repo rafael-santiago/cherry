@@ -244,12 +244,28 @@ func (c *CherryRooms) GetActionList(room_name string) string {
     return action_list
 }
 
+func(c *CherryRooms) get_media_resource_list(room_name string, media_resource map[string]*RoomMediaResource) string {
+    c.Lock(room_name)
+    var media_rsrc_list string = ""
+    var resources []string
+    resources = make([]string, 0)
+    for resource, _ := range media_resource {
+        resources = append(resources, resource)
+    }
+    sort.Strings(resources)
+    for _, resource := range resources {
+        media_rsrc_list += "<option value = \"" + resource + "\">" + media_resource[resource].label + "\n"
+    }
+    c.Unlock(room_name)
+    return media_rsrc_list
+}
+
 func (c *CherryRooms) GetImageList(room_name string) string {
-    return "TODO(Santiago): what?"
+    return c.get_media_resource_list(room_name, c.configs[room_name].images)
 }
 
 func (c *CherryRooms) GetSoundList(room_name string) string {
-    return "TODO(Santiago): what?"
+    return c.get_media_resource_list(room_name, c.configs[room_name].sounds)
 }
 
 func (c *CherryRooms) GetUsersList(room_name string) string {

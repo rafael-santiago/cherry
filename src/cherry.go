@@ -49,7 +49,6 @@ func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.Che
             new_conn.Write(reply_buffer)
             new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /banner") {
-            //  TODO(Santiago): Return the room's banner frame.
             user_data := rawhttp.GetFieldsFromGet(http_payload)
             if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
                 reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)

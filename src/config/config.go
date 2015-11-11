@@ -58,7 +58,7 @@ type RoomUser struct {
     //ignorelist *list.List
     ignorelist []string
     kickout bool
-    conn *net.Conn
+    conn net.Conn
 }
 
 type RoomConfig struct {
@@ -507,4 +507,10 @@ func (c *CherryRooms) IsValidUserRequest(room_name, user, id string) bool {
         valid = (id == c.GetSessionId(user, room_name))
     }
     return valid
+}
+
+func (c *CherryRooms) SetUserConnection(room_name, user string, conn net.Conn) {
+    c.Lock(room_name)
+    c.configs[room_name].users[user].conn = conn
+    c.Unlock(room_name)
 }

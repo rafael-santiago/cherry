@@ -61,8 +61,34 @@ func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.Che
             new_conn.Close()
         } else if strings.HasPrefix(http_payload, "GET /body") {
             //  TODO(Santiago): Return the room's body frame and do not close this connection.
-        } else if strings.HasPrefix(http_payload, "POST /exit") {
+            user_data := rawhttp.GetFieldsFromGet(http_payload)
+            valid_room := rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"])
+            if !valid_room {
+                reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+            } else {
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBodyTemplate(room_name)),
+                                                       200,
+                                                       false)
+            }
+            new_conn.Write(reply_buffer)
+            if valid_room {
+                rooms.SetUserConnection(room_name, user_data["user"], new_conn)  //  INFO(Santiago): this connection will closed only on exit request.
+            }
+        } else if strings.HasPrefix(http_payload, "GET /exit") {
             //  TODO(Santiago): Clear user's information from room's context and return to him the exit document.
+            user_data := rawhttp.GetFieldsFromGet(http_payload)
+            if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
+                reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+            } else {
+                preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+                preprocessor.SetDataValue("{{.session-id}}", "0")
+                reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetExitTemplate(room_name)),
+                                                       200,
+                                                       true)
+            }
+            new_conn.Write(reply_buffer)
+            rooms.RemoveUser(room_name, user_data["user"])
+            new_conn.Close()
         } else if strings.HasPrefix(http_payload, "POST /join") {
             //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
             //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton

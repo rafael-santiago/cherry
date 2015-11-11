@@ -17,28 +17,30 @@ func cherry_default_http_reply_header(status_code int, close_connection bool) st
     var header string = "HTTP/1.1 "
     switch (status_code) {
         case 200:
-            header += "200 OK\n\r"
+            header += "200 OK"
             break
 
         case 404:
-            header += "404 NOT FOUND\n\r"
+            header += "404 NOT FOUND"
             break
 
         case 403:
-            header += "403 FORBIDDEN\n\r"
+            header += "403 FORBIDDEN"
             break
 
         default:
-            header += "501 NOT IMPLEMENTED\n\r"
+            header += "501 NOT IMPLEMENTED"
             break
     }
     if close_connection {
-        header += "Connection: close\n\r"
+        header += "\n\rConnection: close\n" +
+                  "Server: Cherry/0.1\n" +
+                  "Accept-ranges: bytes\n" +
+                  "Content-type: text/html\n" +
+                  "Content-length: {{.content-length}}\n\n"
+    } else {
+        header += "Document follows\nContent-type: text/html\n\n"
     }
-    header += "Server: Cherry/0.1\n\r" +
-              "Accept-ranges: bytes\n\r" +
-              "Content-type: text/html\n\r" +
-              "Content-length: {{.content-length}}\n\r\n\r"
     return header
 }
 

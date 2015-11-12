@@ -49,11 +49,11 @@ func (t *GetJoinRequestTrap) Handle() {
     t.write()
 }
 
-type GetTopTrap struct {
+type GetTopRequestTrap struct {
     RequestTrapBase
 }
 
-func (t *GetTopTrap) Handle() {
+func (t *GetTopRequestTrap) Handle() {
     user_data := rawhttp.GetFieldsFromGet(t.http_payload)
     if !t.rooms.IsValidUserRequest(t.room_name, user_data["user"], user_data["id"]) {
         t.reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
@@ -63,11 +63,11 @@ func (t *GetTopTrap) Handle() {
     t.write()
 }
 
-type GetBannerTrap struct {
+type GetBannerRequestTrap struct {
     RequestTrapBase
 }
 
-func (t *GetBannerTrap) Handle() {
+func (t *GetBannerRequestTrap) Handle() {
     user_data := rawhttp.GetFieldsFromGet(t.http_payload)
     if !t.rooms.IsValidUserRequest(t.room_name, user_data["user"], user_data["id"]) {
         t.reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
@@ -77,12 +77,12 @@ func (t *GetBannerTrap) Handle() {
     t.write()
 }
 
-type GetExitTrap struct {
+type GetExitRequestTrap struct {
     RequestTrapBase
     user_data map[string]string
 }
 
-func (t *GetExitTrap) Handle() {
+func (t *GetExitRequestTrap) Handle() {
     t.user_data = rawhttp.GetFieldsFromGet(t.http_payload)
     if !t.rooms.IsValidUserRequest(t.room_name, t.user_data["user"], t.user_data["id"]) {
         t.reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
@@ -94,17 +94,17 @@ func (t *GetExitTrap) Handle() {
     t.write()
 }
 
-func (t *GetExitTrap) write() {
+func (t *GetExitRequestTrap) write() {
     t.new_conn.Write(t.reply_buffer)
     t.rooms.RemoveUser(t.room_name, t.user_data["user"])
     t.new_conn.Close()
 }
 
-type PostJoinTrap struct {
+type PostJoinRequestTrap struct {
     RequestTrapBase
 }
 
-func (t *PostJoinTrap) Handle() {
+func (t *PostJoinRequestTrap) Handle() {
     //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
     //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton
     //                  [TOP/BODY/BANNER]. Then we finally close the connection.
@@ -133,13 +133,13 @@ func (t *PostJoinTrap) Handle() {
     t.write()
 }
 
-type GetBodyTrap struct {
+type GetBodyRequestTrap struct {
     RequestTrapBase
     valid_user bool
     user_data map[string]string
 }
 
-func (t *GetBodyTrap) Handle() {
+func (t *GetBodyRequestTrap) Handle() {
     t.user_data = rawhttp.GetFieldsFromGet(t.http_payload)
     t.valid_user = t.rooms.IsValidUserRequest(t.room_name, t.user_data["user"], t.user_data["id"])
     if !t.valid_user {
@@ -150,7 +150,7 @@ func (t *GetBodyTrap) Handle() {
     t.write()
 }
 
-func (t *GetBodyTrap) write() {
+func (t *GetBodyRequestTrap) write() {
     t.new_conn.Write(t.reply_buffer)
     if t.valid_user {
         t.rooms.SetUserConnection(t.room_name, t.user_data["user"], t.new_conn) //  INFO(Santiago): This connection will closed only on exit request.

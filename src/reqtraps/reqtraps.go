@@ -60,9 +60,9 @@ func GetRequestTrap(http_payload string) RequestTrap {
     if strings.HasPrefix(http_method_part, "POST /join$") {
         return BuildRequestTrap(PostJoin_Handle)
     }
-    //if strings.HasPrefix(http_method_part, "POST /banner$") {
-    //    return BuildRequestTrap(PostBanner_Handle) //  TODO(Santiago): Enqueue user's message for further processing.
-    //}
+    if strings.HasPrefix(http_method_part, "POST /banner&") {
+        return BuildRequestTrap(PostBanner_Handle) //  TODO(Santiago): Enqueue user's message for further processing.
+    }
     //if strins.HasPrefix(http_method_part, "POST /query&") {
     //    return BuildRequestTrap(PostQuery_Handle) //  TODO(Santiago): Return the search results.
     //}
@@ -175,5 +175,39 @@ func GetBody_Handle(new_conn net.Conn, room_name, http_payload string, rooms *co
 
 func BadAssError_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     new_conn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
+    new_conn.Close()
+}
+
+func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var user_data map[string]string
+    var reply_buffer []byte
+    var invalid_request bool = false
+    user_data = rawhttp.GetFieldsFromPost(http_payload)
+    if _ , has := user_data["user"]; !has {
+        invalid_request = true
+    } else if _, has := user_data["id"]; !has {
+        invalid_request = true
+    } else if _, has := user_data["action"]; !has {
+        invalid_request = true
+    } else if _, has := user_data["whoto"]; !has {
+        invalid_request = true
+    } else if _, has := user_data["sound"]; !has {
+        invalid_request = true
+    } else if  _, has := user_data["image"]; !has {
+        invalid_request = true
+    } else if _, has := user_data["says"]; !has {
+        invalid_request = true
+    }
+    if invalid_request || !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
+        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+    } else {
+        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name)), 200, true)
+        var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
+        if something_to_say {
+            //  INFO(Santiago): Any further antiflood control would go from here.
+            rooms.EnqueueMessage(room_name, user_data["user"], user_data["whoto"], user_data["action"], user_data["sound"], user_data["image"], user_data["says"], user_data["priv"])
+        }
+    }
+    new_conn.Write(reply_buffer)
     new_conn.Close()
 }

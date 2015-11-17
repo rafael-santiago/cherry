@@ -5,6 +5,7 @@ import (
     "../config"
     "../html"
     "../rawhttp"
+    "strings"
 )
 
 type RequestTrapInterface interface {
@@ -17,12 +18,55 @@ func (h RequestTrapHandleFunc) Handle(new_conn net.Conn, room_name, http_payload
     h(new_conn, room_name, http_payload, rooms, preprocessor)
 }
 
-type RequestTrap func(RequestTrapInterface) RequestTrapInterface
+type RequestTrap func() RequestTrapInterface
 
 func BuildRequestTrap(handle RequestTrapHandleFunc) RequestTrap {
-    return func (r RequestTrapInterface) RequestTrapInterface {
+    return func () RequestTrapInterface {
         return RequestTrapHandleFunc(handle)
     }
+}
+
+func GetRequestTrap(http_payload string) RequestTrap {
+    var http_method_part string
+    var space_nr int = 0
+    for _, h := range http_payload {
+        if h == ' ' {
+            space_nr++
+        }
+        if h == '\n' || h == '\r' || space_nr == 2 {
+            break
+        }
+        http_method_part += string(h)
+    }
+    http_method_part += "$"
+    if strings.HasPrefix(http_method_part, "GET /join$") {
+        return BuildRequestTrap(GetJoin_Handle)
+    }
+    //if strings.HasPrefix(http_method_part, "GET /brief$") {
+    //    return nil //  TODO(Santiago): Return the brief handle for this room.
+    //}
+    if strings.HasPrefix(http_method_part, "GET /top&") {
+        return BuildRequestTrap(GetTop_Handle)
+    }
+    if strings.HasPrefix(http_method_part, "GET /banner&") {
+        return BuildRequestTrap(GetBanner_Handle)
+    }
+    if strings.HasPrefix(http_method_part, "GET /body&") {
+        return BuildRequestTrap(GetBody_Handle)
+    }
+    if strings.HasPrefix(http_method_part, "GET /exit&") {
+        return BuildRequestTrap(GetExit_Handle)
+    }
+    if strings.HasPrefix(http_method_part, "POST /join$") {
+        return BuildRequestTrap(PostJoin_Handle)
+    }
+    //if strings.HasPrefix(http_method_part, "POST /banner$") {
+    //    return BuildRequestTrap(PostBanner_Handle) //  TODO(Santiago): Enqueue user's message for further processing.
+    //}
+    //if strins.HasPrefix(http_method_part, "POST /query&") {
+    //    return BuildRequestTrap(PostQuery_Handle) //  TODO(Santiago): Return the search results.
+    //}
+    return BuildRequestTrap(BadAssError_Handle)
 }
 
 func GetJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
@@ -127,4 +171,9 @@ func GetBody_Handle(new_conn net.Conn, room_name, http_payload string, rooms *co
     } else {
         new_conn.Close()
     }
+}
+
+func BadAssError_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    new_conn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
+    new_conn.Close()
 }

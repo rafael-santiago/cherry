@@ -125,7 +125,7 @@ func (c *CherryRooms) GetNextMessage(room_name string) Message {
 }
 
 func (c *CherryRooms) GetSessionId(from, room_name string) string {
-    if len(from) == 0 {
+    if len(from) == 0 || !c.HasUser(room_name, from) {
         return ""
     }
     c.configs[room_name].mutex.Lock()
@@ -136,7 +136,7 @@ func (c *CherryRooms) GetSessionId(from, room_name string) string {
 }
 
 func (c *CherryRooms) GetColor(from, room_name string) string {
-    if len(from) == 0 {
+    if len(from) == 0 || !c.HasUser(room_name, from) {
         return ""
     }
     c.configs[room_name].mutex.Lock()
@@ -147,7 +147,7 @@ func (c *CherryRooms) GetColor(from, room_name string) string {
 }
 
 func (c *CherryRooms) GetIgnoreList(from, room_name string) string {
-    if len(from) == 0 {
+    if len(from) == 0 || !c.HasUser(room_name, from) {
         return ""
     }
     c.configs[room_name].mutex.Lock()

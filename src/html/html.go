@@ -52,7 +52,6 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.exit-message}}"] = exit_message_expander
     p.data_expander["{{.on-ignore-message}}"] = on_ignore_message_expander
     p.data_expander["{{.on-deignore-message}}"] = on_deignore_message_expander
-    p.data_expander["{{.private-message-marker}}"] = private_message_marker_expander
     p.data_expander["{{.max-users}}"] = max_users_expander
     p.data_expander["{{.all-users-alias}}"] = all_users_alias_expander
     p.data_expander["{{.action-list}}"] = action_list_expander
@@ -71,6 +70,13 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.listen-port}}"] = listen_port_expander
     p.data_expander["{{.room-name}}"] = room_name_expander
     p.data_expander["{{.users-total}}"] = users_total_expander
+//    p.data_expander["{{.message-action-label}}"] = nil
+//    p.data_expander["{{.message-whoto}}"] = nil
+//    p.data_expander["{{.message-user}}"] = nil
+//    p.data_expander["{{.message-says}}"] = nil
+//    p.data_expander["{{.message-sound}}"] = nil
+//    p.data_expander["{{.message-image}}"] = nil
+    p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
 }
 
 func (p *Preprocessor) ExpandData(room_name, data string) string {
@@ -150,7 +156,7 @@ func on_deignore_message_expander(p *Preprocessor, room_name, var_name, data str
     return strings.Replace(data, var_name, p.rooms.GetOnDeIgnoreMessage(room_name), -1)
 }
 
-func private_message_marker_expander(p *Preprocessor, room_name, var_name, data string) string {
+func message_private_marker_expander(p *Preprocessor, room_name, var_name, data string) string {
     return strings.Replace(data, var_name, p.rooms.GetPrivateMessageMarker(room_name), -1)
 }
 

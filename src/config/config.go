@@ -83,6 +83,22 @@ func NewCherryRooms() *CherryRooms {
     return &CherryRooms{make(map[string]*RoomConfig), "localhost"}
 }
 
+/*func (c *CherryRooms) GetRoomActionLabel(room_name, action string) string {
+    c.Lock(room_name)
+    var label string
+    label = c.configs[room_name].actions[action].label
+    c.Unlock(room_name)
+    return label
+}*/
+
+func (c *CherryRooms) GetRoomActionTemplate(room_name, action string) string {
+    c.Lock(room_name)
+    var template string
+    template = c.configs[room_name].actions[action].template
+    c.Unlock(room_name)
+    return template
+}
+
 func (c *CherryRooms) AddUser(room_name, nickname, color string, kickout bool) {
     c.configs[room_name].mutex.Lock()
     md := md5.New()

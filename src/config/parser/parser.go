@@ -540,6 +540,10 @@ func get_indirect_config(main_section,
 
         s_err = sub_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
 
+        if s_err != nil {
+            return s_err
+        }
+
         setter(cherry_rooms, room_name, m_set, s_set)
 
         m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
@@ -570,11 +574,17 @@ func room_action_sub_verifier(m_set, s_set []string, m_line, s_line int, room_na
     if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
         return NewCherryFileError(filepath, s_line, "room action template must be set with a valid string.")
     }
+    var template_path string = s_set[1][1:len(s_set[1])-1]
+    _, err := ioutil.ReadFile(template_path)
+    if err != nil {
+        return NewCherryFileError(filepath, s_line, fmt.Sprintf("unable to access file, details: [ %s ]", err.Error()))
+    }
     return nil
 }
 
 func room_action_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
-    cherry_rooms.AddAction(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], s_set[1][1:len(s_set[1])-1])
+    data, _ := ioutil.ReadFile(s_set[1][1:len(s_set[1])-1])
+    cherry_rooms.AddAction(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], string(data))
 }
 
 func room_image_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
@@ -638,5 +648,3 @@ func room_sound_setter(cherry_rooms *config.CherryRooms, room_name string, m_set
     //  WARN(Santiago): by now we will pass the sound template as empty.
     cherry_rooms.AddSound(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
 }
-
-

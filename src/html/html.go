@@ -10,6 +10,8 @@ package html
 import (
     "../config"
     "strings"
+    "time"
+    "fmt"
 )
 
 type Preprocessor struct {
@@ -41,9 +43,9 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.session-id}}"] = session_id_expander
     p.data_expander["{{.color}}"] = color_expander
     p.data_expander["{{.ignore-list}}"] = ignore_list_expander
-//    p.data_expander["{{.hour}}"] = hour_expander
-//    p.data_expander["{{.minute}}"] = minute_expander
-//    p.data_expander["{{.second}}"] = second_expander
+    p.data_expander["{{.hour}}"] = hour_expander
+    p.data_expander["{{.minute}}"] = minute_expander
+    p.data_expander["{{.second}}"] = second_expander
 //    p.data_expander["{{.month}}"] = month_expander
 //    p.data_expander["{{.day}}"] = day_expander
 //    p.data_expander["{{.year}}"] = year_expander
@@ -113,15 +115,15 @@ func ignore_list_expander(p *Preprocessor, room_name, var_name, data string) str
 }
 
 func hour_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, fmt.Sprintf("%.2d", time.Now().Hour()), -1)
 }
 
 func minute_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, fmt.Sprintf("%.2d", time.Now().Minute()), -1)
 }
 
 func second_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
+    return strings.Replace(data, var_name, fmt.Sprintf("%.2d", time.Now().Second()), -1)
 }
 
 func month_expander(p *Preprocessor, room_name, var_name, data string) string {

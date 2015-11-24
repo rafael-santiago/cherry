@@ -83,13 +83,13 @@ func NewCherryRooms() *CherryRooms {
     return &CherryRooms{make(map[string]*RoomConfig), "localhost"}
 }
 
-/*func (c *CherryRooms) GetRoomActionLabel(room_name, action string) string {
+func (c *CherryRooms) GetRoomActionLabel(room_name, action string) string {
     c.Lock(room_name)
     var label string
     label = c.configs[room_name].actions[action].label
     c.Unlock(room_name)
     return label
-}*/
+}
 
 func (c *CherryRooms) GetRoomUsers(room_name string) []string {
     var users []string

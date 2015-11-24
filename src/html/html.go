@@ -72,12 +72,12 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.listen-port}}"] = listen_port_expander
     p.data_expander["{{.room-name}}"] = room_name_expander
     p.data_expander["{{.users-total}}"] = users_total_expander
-//    p.data_expander["{{.message-action-label}}"] = nil
-//    p.data_expander["{{.message-whoto}}"] = nil
-//    p.data_expander["{{.message-user}}"] = nil
-//    p.data_expander["{{.message-says}}"] = nil
-//    p.data_expander["{{.message-sound}}"] = nil
-//    p.data_expander["{{.message-image}}"] = nil
+    p.data_expander["{{.message-action-label}}"] = message_action_label_expander
+    p.data_expander["{{.message-whoto}}"] = message_whoto_expander
+    p.data_expander["{{.message-user}}"] = nick_name_expander
+    p.data_expander["{{.message-says}}"] = message_says_expander
+    p.data_expander["{{.message-sound}}"] = message_sound_expander
+    p.data_expander["{{.message-image}}"] = message_image_expander
     p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
 }
 
@@ -93,6 +93,36 @@ func (p *Preprocessor) ExpandData(room_name, data string) string {
         }
     }
     return data
+}
+
+func message_action_label_expander(p *Preprocessor, room_name, var_name, data string) string {
+    action := p.rooms.GetNextMessage(room_name).Action
+    if !p.rooms.HasAction(room_name, action) {
+        return data
+    }
+    return strings.Replace(data, var_name, p.rooms.GetRoomActionLabel(room_name, action), -1)
+}
+
+func message_whoto_expander(p *Preprocessor, room_name, var_name, data string) string {
+    return strings.Replace(data, var_name, p.rooms.GetNextMessage(room_name).To, -1)
+}
+
+func message_says_expander(p *Preprocessor, room_name, var_name, data string) string {
+    return strings.Replace(data, var_name, p.rooms.GetNextMessage(room_name).Say, -1)
+}
+
+func message_sound_expander(p *Preprocessor, room_name, var_name, data string) string {
+    sound := p.rooms.GetNextMessage(room_name).Sound
+    if len(sound) > 0 {
+    }
+    return strings.Replace(data, var_name, sound, -1)
+}
+
+func message_image_expander(p *Preprocessor, room_name, var_name, data string) string {
+    image := p.rooms.GetNextMessage(room_name).Image
+    if len(image) > 0 {
+    }
+    return strings.Replace(data, var_name, image, -1)
 }
 
 func nick_name_expander(p *Preprocessor, room_name, var_name, data string) string {
@@ -159,7 +189,11 @@ func on_deignore_message_expander(p *Preprocessor, room_name, var_name, data str
 }
 
 func message_private_marker_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return strings.Replace(data, var_name, p.rooms.GetPrivateMessageMarker(room_name), -1)
+    var private_marker string = ""
+    if p.rooms.GetNextMessage(room_name).Priv == "1" {
+        private_marker = p.rooms.GetPrivateMessageMarker(room_name)
+    }
+    return strings.Replace(data, var_name, private_marker, -1)
 }
 
 func max_users_expander(p *Preprocessor, room_name, var_name, data string) string {

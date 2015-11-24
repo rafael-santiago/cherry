@@ -6,7 +6,6 @@ import (
     "../html"
     "../rawhttp"
     "strings"
-    "fmt"
 )
 
 type RequestTrapInterface interface {
@@ -201,9 +200,6 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
     } else if _, has := user_data["says"]; !has {
         invalid_request = true
     }
-    fmt.Println(user_data)
-    fmt.Println(room_name)
-    fmt.Println(rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]))
     if invalid_request || !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
         reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {

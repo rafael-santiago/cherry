@@ -6,6 +6,7 @@ import (
     "../html"
     "../rawhttp"
     "strings"
+    "fmt"
 )
 
 type RequestTrapInterface interface {
@@ -94,6 +95,8 @@ func GetBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms *
     var user_data map[string]string
     var reply_buffer []byte
     user_data = rawhttp.GetFieldsFromGet(http_payload)
+    preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+    preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
     if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
         reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
@@ -198,9 +201,14 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
     } else if _, has := user_data["says"]; !has {
         invalid_request = true
     }
+    fmt.Println(user_data)
+    fmt.Println(room_name)
+    fmt.Println(rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]))
     if invalid_request || !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
         reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
+        preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+        preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name)), 200, true)
         var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
         if something_to_say {

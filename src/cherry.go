@@ -16,6 +16,7 @@ import (
     "strconv"
     "./html"
     "./reqtraps"
+    "./messageplexer"
 )
 
 func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.CherryRooms) {
@@ -64,6 +65,11 @@ func main() {
         fmt.Println(err.Error())
     } else {
         fmt.Println("*** Configuration loaded!")
+        //MainPeer("foobar", cherry_rooms)
+        rooms := cherry_rooms.GetRooms()
+        for _, r := range rooms {
+            go messageplexer.RoomMessagePlexer(r, cherry_rooms)
+        }
         MainPeer("foobar", cherry_rooms)
     }
 }

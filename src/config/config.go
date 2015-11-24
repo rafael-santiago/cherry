@@ -91,6 +91,34 @@ func NewCherryRooms() *CherryRooms {
     return label
 }*/
 
+func (c *CherryRooms) GetRoomUsers(room_name string) []string {
+    var users []string
+    users = make([]string, 0)
+    c.Lock(room_name)
+    for user, _ := range c.configs[room_name].users {
+        users = append(users, user)
+    }
+    c.Unlock(room_name)
+    return users
+}
+
+func (c *CherryRooms) GetRooms() []string {
+    var rooms []string
+    rooms = make([]string, 0)
+    for room, _ := range c.configs {
+        rooms = append(rooms, room)
+    }
+    return rooms
+}
+
+func (c *CherryRooms) GetUserConnection(room_name, user string) net.Conn {
+    var conn net.Conn
+    c.Lock(room_name)
+    conn = c.configs[room_name].users[user].conn
+    c.Unlock(room_name)
+    return conn
+}
+
 func (c *CherryRooms) GetRoomActionTemplate(room_name, action string) string {
     c.Lock(room_name)
     var template string
@@ -124,7 +152,9 @@ func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, sound, image, 
 func (c *CherryRooms) DequeueMessage(room_name string) {
     c.configs[room_name].mutex.Lock()
     //c.configs[room_name].message_queue.Remove(c.configs[room_name].message_queue.Front())
-    c.configs[room_name].message_queue = c.configs[room_name].message_queue[1:]
+    if len(c.configs[room_name].message_queue) >= 1 {
+        c.configs[room_name].message_queue = c.configs[room_name].message_queue[1:]
+    }
     c.configs[room_name].mutex.Unlock()
 }
 

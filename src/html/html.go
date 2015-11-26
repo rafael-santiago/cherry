@@ -79,6 +79,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.message-sound}}"] = message_sound_expander
     p.data_expander["{{.message-image}}"] = message_image_expander
     p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
+    p.data_expander["{{.current-formatted-message}}"] = nil
 }
 
 func (p *Preprocessor) ExpandData(room_name, data string) string {
@@ -88,6 +89,9 @@ func (p *Preprocessor) ExpandData(room_name, data string) string {
             if exists && len(local_value) > 0 {
                 data = strings.Replace(data, var_name, local_value, -1)
             } else {
+                if expander == nil {
+                    continue
+                }
                 data = expander(p, room_name, var_name, data)
             }
         }

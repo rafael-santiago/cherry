@@ -205,7 +205,17 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
     } else {
         preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
         preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name)), 200, true)
+        if user_data["priv"] == "1" {
+            preprocessor.SetDataValue("{{.priv}}", "checked")
+        }
+        temp_banner := preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name))
+        temp_banner = strings.Replace(temp_banner,
+                                      "<option value = \"" + user_data["whoto"] + "\">",
+                                      "<option value = \"" + user_data["whoto"] + "\" selected>", -1)
+        temp_banner = strings.Replace(temp_banner,
+                                      "<option value = \"" + user_data["action"] + "\">",
+                                      "<option value = \"" + user_data["action"] + "\" selected>", -1)
+        reply_buffer = rawhttp.MakeReplyBuffer(temp_banner, 200, true)
         var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
         if something_to_say {
             //  INFO(Santiago): Any further antiflood control would go from here.

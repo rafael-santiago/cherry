@@ -1,6 +1,6 @@
 <html>
     <head></head>
-    <body bgcolor="#5AA8CE" text="#000000">
+    <body bgcolor="#5AA8CE" text="#000000" onload="setfocus()">
         <table cellpadding="0" cellspacing="2" border="0" width="100%" valign="top">
             <tr valign="top"><td valign="top" colspan="3">
                 <form method="post" action="http://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" name="banner">
@@ -39,4 +39,5 @@
             </tr>
         </table>
     </body>
+    <script>function setfocus() { document.forms["banner"]["says"].focus(); }</script>
 </html>

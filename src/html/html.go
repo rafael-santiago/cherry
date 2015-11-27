@@ -80,6 +80,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.message-image}}"] = message_image_expander
     p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
     p.data_expander["{{.current-formatted-message}}"] = nil
+    p.data_expander["{{.priv}}"] = nil
 }
 
 func (p *Preprocessor) ExpandData(room_name, data string) string {

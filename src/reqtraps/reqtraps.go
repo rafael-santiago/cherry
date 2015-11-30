@@ -116,6 +116,7 @@ func GetExit_Handle(new_conn net.Conn, room_name, http_payload string, rooms *co
         preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetExitTemplate(room_name)), 200, true)
     }
+    rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "",  rooms.GetExitMessage(room_name), "")
     new_conn.Write(reply_buffer)
     rooms.RemoveUser(room_name, user_data["user"])
     new_conn.Close()
@@ -142,7 +143,7 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
     }
     preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
     preprocessor.SetDataValue("{{.session-id}}", "0")
-    if rooms.HasUser(room_name, user_data["user"]) {
+    if rooms.HasUser(room_name, user_data["user"]) || user_data["user"] == rooms.GetAllUsersAlias(room_name) {
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetNickclashTemplate(room_name)), 200, true)
     } else {
         rooms.AddUser(room_name, user_data["user"], user_data["color"], true)

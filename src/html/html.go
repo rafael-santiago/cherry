@@ -75,6 +75,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.message-action-label}}"] = message_action_label_expander
     p.data_expander["{{.message-whoto}}"] = message_whoto_expander
     p.data_expander["{{.message-user}}"] = nick_name_expander
+    p.data_expander["{{.message-colored-user}}"] = colored_nick_name_expander
     p.data_expander["{{.message-says}}"] = message_says_expander
     p.data_expander["{{.message-sound}}"] = message_sound_expander
     p.data_expander["{{.message-image}}"] = message_image_expander
@@ -126,12 +127,32 @@ func message_sound_expander(p *Preprocessor, room_name, var_name, data string) s
 func message_image_expander(p *Preprocessor, room_name, var_name, data string) string {
     image := p.rooms.GetNextMessage(room_name).Image
     if len(image) > 0 {
+        image = "<br><img src = \"" + image + "\">"
     }
     return strings.Replace(data, var_name, image, -1)
 }
 
 func nick_name_expander(p *Preprocessor, room_name, var_name, data string) string {
     return strings.Replace(data, var_name, p.rooms.GetNextMessage(room_name).From, -1)
+}
+
+func get_hex_color(cl_key string) string {
+    var hex_colors map[string]string = make(map[string]string)
+    hex_colors["0"] = "#000000"
+    hex_colors["1"] = "#d10019"
+    hex_colors["2"] = "#0d7000"
+    hex_colors["3"] = "#c0c0c0"
+    hex_colors["4"] = "#b533ff"
+    hex_colors["5"] = "#ff3db5"
+    hex_colors["6"] = "#0019d1"
+    hex_colors["7"] = "#3de5ff"
+    return hex_colors[cl_key]
+}
+
+func colored_nick_name_expander(p *Preprocessor, room_name, var_name, data string) string {
+    color := p.rooms.GetColor(p.rooms.GetNextMessage(room_name).From, room_name)
+    colored_nick_name := "<font color = \"" + get_hex_color(color) + "\">" + p.rooms.GetNextMessage(room_name).From + "</font>"
+    return strings.Replace(data, var_name, colored_nick_name, -1)
 }
 
 func session_id_expander(p *Preprocessor, room_name, var_name, data string) string {
@@ -159,18 +180,6 @@ func minute_expander(p *Preprocessor, room_name, var_name, data string) string {
 
 func second_expander(p *Preprocessor, room_name, var_name, data string) string {
     return strings.Replace(data, var_name, fmt.Sprintf("%.2d", time.Now().Second()), -1)
-}
-
-func month_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
-}
-
-func day_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
-}
-
-func year_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return ""
 }
 
 func greeting_message_expander(p *Preprocessor, room_name, var_name, data string) string {

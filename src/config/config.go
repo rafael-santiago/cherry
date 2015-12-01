@@ -66,6 +66,7 @@ type RoomConfig struct {
     MainPeer net.Listener
     //message_queue *list.List
     message_queue []Message
+    public_messages []string
     users map[string]*RoomUser
     templates map[string]string
     misc *RoomMisc
@@ -373,7 +374,29 @@ func (c *CherryRooms) GetSkeletonTemplate(room_name string) string {
 }
 
 func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
-    return "TODO(Santiago): what?"
+    if !c.HasRoom(room_name) {
+        return ""
+    }
+    var retval string
+    c.Lock(room_name)
+    msgs := c.configs[room_name].public_messages;
+    c.Unlock(room_name)
+    for mi := len(msgs)-1 ; mi >= 0; mi-- {
+        retval += msgs[mi]
+    }
+    return retval
+}
+
+func (c *CherryRooms) AddPublicMessage(room_name, message string) {
+    if !c.HasRoom(room_name) {
+        return
+    }
+    c.Lock(room_name)
+    if (len(c.configs[room_name].public_messages) == 10) {
+        c.configs[room_name].public_messages = c.configs[room_name].public_messages[1:len(c.configs[room_name].public_messages)-1]
+    }
+    c.configs[room_name].public_messages = append(c.configs[room_name].public_messages, message)
+    c.Unlock(room_name)
 }
 
 func (c *CherryRooms) GetListenPort(room_name string) string {
@@ -460,6 +483,7 @@ func (c *CherryRooms) init_config() *RoomConfig {
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
     room_config.message_queue = make([]Message, 0)
+    room_config.public_messages = make([]string, 0)
     room_config.users = make(map[string]*RoomUser)
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)

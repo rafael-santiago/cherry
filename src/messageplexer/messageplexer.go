@@ -4,6 +4,7 @@ import (
     "../config"
     "../html"
     "net"
+    "fmt"
 )
 
 func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
@@ -22,6 +23,10 @@ func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
             action_template = "<p>({{.hour}}:{{.minute}}:{{.second}}) <b>{{.message-colored-user}}</b>: {{.message-says}}" //  INFO(Santiago): A very basic action template.
         }
         message := preprocessor.ExpandData(room_name, action_template)
+        if curr_message.Priv != "1" {
+            rooms.AddPublicMessage(room_name, message)
+            fmt.Println(rooms.GetLastPublicMessages(room_name))
+        }
         preprocessor.SetDataValue("{{.current-formatted-message}}", message)
         message_highlighted := preprocessor.ExpandData(room_name, rooms.GetHighlightTemplate(room_name))
         preprocessor.UnsetDataValue("{{.current-formatted-message}}")

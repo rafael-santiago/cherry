@@ -48,7 +48,11 @@ func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
             if conn == nil {
                 continue
             }
-            conn.Write(message_buffer)
+            _, e := conn.Write(message_buffer)
+            if e != nil {
+                rooms.EnqueueMessage(room_name, user, "", "", "", "", rooms.GetExitMessage(room_name), "")
+                rooms.RemoveUser(room_name, user)
+            }
         }
         rooms.DequeueMessage(room_name)
     }

@@ -42,9 +42,9 @@ func GetRequestTrap(http_payload string) RequestTrap {
     if strings.HasPrefix(http_method_part, "GET /join$") {
         return BuildRequestTrap(GetJoin_Handle)
     }
-    //if strings.HasPrefix(http_method_part, "GET /brief$") {
-    //    return nil //  TODO(Santiago): Return the brief handle for this room.
-    //}
+    if strings.HasPrefix(http_method_part, "GET /brief$") {
+        return BuildRequestTrap(GetBrief_Handle)
+    }
     if strings.HasPrefix(http_method_part, "GET /top&") {
         return BuildRequestTrap(GetTop_Handle)
     }
@@ -153,6 +153,13 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
         //                  Yes, he/she could "hack" the join notification message just for fun :^)
         rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", user_data["says"], "")
     }
+    new_conn.Write(reply_buffer)
+    new_conn.Close()
+}
+
+func GetBrief_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var reply_buffer []byte
+    reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBriefTemplate(room_name)), 200, true)
     new_conn.Write(reply_buffer)
     new_conn.Close()
 }

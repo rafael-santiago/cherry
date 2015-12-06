@@ -373,16 +373,21 @@ func (c *CherryRooms) GetSkeletonTemplate(room_name string) string {
     return c.get_room_template(room_name, "skeleton")
 }
 
+func (c *CherryRooms) GetBriefTemplate(room_name string) string {
+    return c.get_room_template(room_name, "brief")
+}
+
 func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
     if !c.HasRoom(room_name) {
         return ""
     }
     var retval string
     c.Lock(room_name)
-    msgs := c.configs[room_name].public_messages;
+    msgs := c.configs[room_name].public_messages
     c.Unlock(room_name)
-    for mi := len(msgs)-1 ; mi >= 0; mi-- {
-        retval += msgs[mi]
+    //for mi := len(msgs)-1 ; mi >= 0; mi-- {
+    for _, m := range msgs {
+        retval += m
     }
     return retval
 }

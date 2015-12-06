@@ -82,6 +82,9 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
     p.data_expander["{{.current-formatted-message}}"] = nil
     p.data_expander["{{.priv}}"] = nil
+    p.data_expander["{{.brief-last-public-messages}}"] = brief_last_public_messages
+    p.data_expander["{{.brief-who-are-talking}}"] = brief_who_are_talking
+    p.data_expander["{{.brief-users-total}}"] = brief_users_total
 }
 
 func (p *Preprocessor) ExpandData(room_name, data string) string {
@@ -99,6 +102,25 @@ func (p *Preprocessor) ExpandData(room_name, data string) string {
         }
     }
     return data
+}
+
+func brief_users_total(p *Preprocessor, room_name, var_name, data string) string {
+    return strings.Replace(data, var_name, p.rooms.GetUsersTotal(room_name), -1)
+}
+
+func brief_who_are_talking(p *Preprocessor, room_name, var_name, data string) string {
+    var users []string = p.rooms.GetRoomUsers(room_name)
+    var table_data string
+    table_data = "<table border = 0>"
+    for _, u := range users {
+        table_data += "\n\t<tr><td>" + u + "</td></tr>"
+    }
+    table_data += "\n</table>"
+    return strings.Replace(data, var_name, table_data, -1)
+}
+
+func brief_last_public_messages(p *Preprocessor, room_name, var_name, data string) string {
+    return strings.Replace(data, var_name, p.rooms.GetLastPublicMessages(room_name), -1)
 }
 
 func message_action_label_expander(p *Preprocessor, room_name, var_name, data string) string {

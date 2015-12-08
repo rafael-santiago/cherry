@@ -85,6 +85,9 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.brief-last-public-messages}}"] = brief_last_public_messages
     p.data_expander["{{.brief-who-are-talking}}"] = brief_who_are_talking
     p.data_expander["{{.brief-users-total}}"] = brief_users_total
+    p.data_expander["{{.find-result-user}}"] = nil
+    p.data_expander["{{.find-result-room-name}}"] = nil
+    p.data_expander["{{.find-result-users-total}}"] = nil
 }
 
 func (p *Preprocessor) ExpandData(room_name, data string) string {

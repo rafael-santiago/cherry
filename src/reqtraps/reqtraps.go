@@ -61,12 +61,54 @@ func GetRequestTrap(http_payload string) RequestTrap {
         return BuildRequestTrap(PostJoin_Handle)
     }
     if strings.HasPrefix(http_method_part, "POST /banner&") {
-        return BuildRequestTrap(PostBanner_Handle) //  TODO(Santiago): Enqueue user's message for further processing.
+        return BuildRequestTrap(PostBanner_Handle)
     }
-    //if strins.HasPrefix(http_method_part, "POST /query&") {
-    //    return BuildRequestTrap(PostQuery_Handle) //  TODO(Santiago): Return the search results.
-    //}
+    if strings.HasPrefix(http_method_part, "GET /find$") {
+        return BuildRequestTrap(GetFind_Handle)
+    }
+    if strings.HasPrefix(http_method_part, "POST /find$") {
+        return BuildRequestTrap(PostFind_Handle)
+    }
     return BuildRequestTrap(BadAssError_Handle)
+}
+
+func GetFind_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var reply_buffer []byte
+    reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetFindBotTemplate(room_name)), 200, true)
+    new_conn.Write(reply_buffer)
+    new_conn.Close()
+}
+
+func PostFind_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var user_data map[string]string
+    user_data = rawhttp.GetFieldsFromPost(http_payload)
+    var reply_buffer []byte
+    if _, posted := user_data["user"]; !posted {
+        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+    } else {
+        var result string
+        result = preprocessor.ExpandData(room_name, rooms.GetFindResultsHeadTemplate(room_name))
+        listing := rooms.GetFindResultsBodyTemplate(room_name)
+        avail_rooms := rooms.GetRooms()
+        user := strings.ToUpper(user_data["user"])
+        if len(user) > 0 {
+            for _, r := range avail_rooms {
+                users := rooms.GetRoomUsers(r)
+                preprocessor.SetDataValue("{{.find-result-users-total}}", rooms.GetUsersTotal(r))
+                preprocessor.SetDataValue("{{.find-result-room-name}}", r)
+                for _, u := range users {
+                    if strings.HasPrefix(strings.ToUpper(u), user) {
+                        preprocessor.SetDataValue("{{.find-result-user}}", u)
+                        result += preprocessor.ExpandData(room_name, listing)
+                    }
+                }
+            }
+        }
+        result += preprocessor.ExpandData(room_name, rooms.GetFindResultsTailTemplate(room_name))
+        reply_buffer = rawhttp.MakeReplyBuffer(result, 200, true)
+    }
+    new_conn.Write(reply_buffer)
+    new_conn.Close()
 }
 
 func GetJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {

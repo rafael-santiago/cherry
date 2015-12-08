@@ -377,6 +377,22 @@ func (c *CherryRooms) GetBriefTemplate(room_name string) string {
     return c.get_room_template(room_name, "brief")
 }
 
+func (c *CherryRooms) GetFindResultsHeadTemplate(room_name string) string {
+    return c.get_room_template(room_name, "find-results-head")
+}
+
+func (c *CherryRooms) GetFindResultsBodyTemplate(room_name string) string {
+    return c.get_room_template(room_name, "find-results-body")
+}
+
+func (c *CherryRooms) GetFindResultsTailTemplate(room_name string) string {
+    return c.get_room_template(room_name, "find-results-tail")
+}
+
+func (c *CherryRooms) GetFindBotTemplate(room_name string) string {
+    return c.get_room_template(room_name, "find-bot")
+}
+
 func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
     if !c.HasRoom(room_name) {
         return ""

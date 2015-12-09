@@ -39,7 +39,7 @@ func cherry_default_http_reply_header(status_code int, close_connection bool) st
                   "Content-type: text/html\n" +
                   "Content-length: {{.content-length}}\n\n"
     } else {
-        header += "Document follows\nContent-type: text/html\n\n"
+        header += "200 Document follows\nContent-type: text/html\n\n"
     }
     return header
 }

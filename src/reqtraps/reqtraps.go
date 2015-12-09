@@ -179,10 +179,6 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
         new_conn.Close()
         return
     }
-    if _, posted := user_data["says"]; !posted {
-        new_conn.Close()
-        return
-    }
     preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
     preprocessor.SetDataValue("{{.session-id}}", "0")
     if rooms.HasUser(room_name, user_data["user"]) || user_data["user"] == rooms.GetAllUsersAlias(room_name) {
@@ -191,9 +187,7 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
         rooms.AddUser(room_name, user_data["user"], user_data["color"], true)
         preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(user_data["user"], room_name))
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetSkeletonTemplate(room_name)), 200, true)
-        //  INFO(Santiago): At this point the others and this user will get the join notification of him.
-        //                  Yes, he/she could "hack" the join notification message just for fun :^)
-        rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", user_data["says"], "")
+        rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetJoinMessage(room_name), "")
     }
     new_conn.Write(reply_buffer)
     new_conn.Close()

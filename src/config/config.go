@@ -73,6 +73,8 @@ type RoomConfig struct {
     actions map[string]*RoomAction
     images map[string]*RoomMediaResource
     sounds map[string]*RoomMediaResource
+    ignore_action string
+    deignore_action string
 }
 
 type CherryRooms struct {
@@ -209,6 +211,21 @@ func (c *CherryRooms) GetIgnoreList(from, room_name string) string {
     }
     c.configs[room_name].mutex.Unlock()
     return ignore_list
+}
+
+func (c *CherryRooms) AddToIgnoreList(from, to, room_name string) {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+        return
+    }
+    c.configs[room_name].mutex.Lock()
+    for _, t := range c.configs[room_name].users[from].ignorelist {
+        if t == to {
+            c.configs[room_name].mutex.Unlock()
+            return
+        }
+    }
+    c.configs[room_name].users[from].ignorelist = append(c.configs[room_name].users[from].ignorelist, to)
+    c.configs[room_name].mutex.Unlock()
 }
 
 func (c *CherryRooms) GetGreetingMessage(room_name string) string {
@@ -598,6 +615,34 @@ func (c *CherryRooms) IsValidUserRequest(room_name, user, id string) bool {
         valid = (id == c.GetSessionId(user, room_name))
     }
     return valid
+}
+
+func (c *CherryRooms) SetIgnoreAction(room_name, action string) {
+    c.Lock(room_name)
+    c.configs[room_name].ignore_action = action
+    c.Unlock(room_name)
+}
+
+func (c *CherryRooms) SetDeIgnoreAction(room_name, action string) {
+    c.Lock(room_name)
+    c.configs[room_name].deignore_action = action
+    c.Unlock(room_name)
+}
+
+func (c *CherryRooms) GetIgnoreAction(room_name string) string {
+    c.Lock(room_name)
+    var retval string
+    retval = c.configs[room_name].ignore_action
+    c.Unlock(room_name)
+    return retval
+}
+
+func (c *CherryRooms) GetDeIgnoreAction(room_name string) string {
+    c.Lock(room_name)
+    var retval string
+    retval = c.configs[room_name].deignore_action
+    c.Unlock(room_name)
+    return retval
 }
 
 func (c *CherryRooms) SetUserConnection(room_name, user string, conn net.Conn) {

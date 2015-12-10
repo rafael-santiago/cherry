@@ -357,6 +357,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     verifier["flooding-police"]               = verify_bool
     verifier["max-flood-allowed-before-kick"] = verify_number
     verifier["all-users-alias"]               = verify_string
+    verifier["ignore-action"]                 = verify_string
+    verifier["deignore-action"]               = verify_string
 
     var setter map[string]func(*config.CherryRooms, string, string)
     setter = make(map[string]func(*config.CherryRooms, string, string))
@@ -371,6 +373,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     setter["flooding-police"]               = set_flooding_police
     setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
     setter["all-users-alias"]               = set_all_users_alias
+    setter["ignore-action"]                 = set_ignore_action
+    setter["deignore-action"]               = set_deignore_action
 
     var already_set map[string]bool
     already_set = make(map[string]bool)
@@ -384,6 +388,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     already_set["flooding-police"]               = false
     already_set["max-flood-allowed-before-kick"] = false
     already_set["all-users-alias"]               = false
+    already_set["ignore-action"]                 = false
+    already_set["deignore-action"]               = false
 
     var m_set []string
     m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
@@ -404,6 +410,14 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     }
 
     return nil
+}
+
+func set_ignore_action(cherry_rooms *config.CherryRooms, room_name, action string) {
+    cherry_rooms.SetIgnoreAction(room_name, action[1:len(action)-1])
+}
+
+func set_deignore_action(cherry_rooms *config.CherryRooms, room_name, action string) {
+    cherry_rooms.SetDeIgnoreAction(room_name, action[1:len(action)-1])
 }
 
 func set_join_message(cherry_rooms *config.CherryRooms, room_name, message string) {

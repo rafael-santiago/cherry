@@ -34,7 +34,10 @@ func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
                user != curr_message.From &&
                user != curr_message.To &&
                curr_message.To != all_users {
-                continue;
+                continue
+            }
+            if rooms.IsIgnored(user, curr_message.From, room_name) {
+                continue
             }
             var message_buffer []byte
             if user == curr_message.From ||

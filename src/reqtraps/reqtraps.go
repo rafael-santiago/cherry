@@ -244,28 +244,43 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
     } else if _, has := user_data["says"]; !has {
         invalid_request = true
     }
+    var restore_banner bool = true
     if invalid_request || !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
         reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
-    } else {
-        preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
-        preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
-        if user_data["priv"] == "1" {
-            preprocessor.SetDataValue("{{.priv}}", "checked")
+    } else if user_data["action"] == rooms.GetIgnoreAction(room_name) {
+        if user_data["user"] != user_data["whoto"] && ! rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
+            rooms.AddToIgnoreList(user_data["user"], user_data["whoto"], room_name)
+            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetOnIgnoreMessage(room_name) + user_data["whoto"], "1")
+            restore_banner = false
         }
-        temp_banner := preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name))
-        temp_banner = strings.Replace(temp_banner,
-                                      "<option value = \"" + user_data["whoto"] + "\">",
-                                      "<option value = \"" + user_data["whoto"] + "\" selected>", -1)
-        temp_banner = strings.Replace(temp_banner,
-                                      "<option value = \"" + user_data["action"] + "\">",
-                                      "<option value = \"" + user_data["action"] + "\" selected>", -1)
-        reply_buffer = rawhttp.MakeReplyBuffer(temp_banner, 200, true)
+    } else if user_data["action"] == rooms.GetDeIgnoreAction(room_name) {
+        if rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
+            rooms.DelFromIgnoreList(user_data["user"], user_data["whoto"], room_name)
+            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetOnDeIgnoreMessage(room_name) + user_data["whoto"], "1")
+            restore_banner = false
+        }
+    } else {
         var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
         if something_to_say {
             //  INFO(Santiago): Any further antiflood control would go from here.
             rooms.EnqueueMessage(room_name, user_data["user"], user_data["whoto"], user_data["action"], user_data["sound"], user_data["image"], user_data["says"], user_data["priv"])
         }
     }
+    preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+    preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
+    if user_data["priv"] == "1" {
+        preprocessor.SetDataValue("{{.priv}}", "checked")
+    }
+    temp_banner := preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name))
+    if restore_banner {
+        temp_banner = strings.Replace(temp_banner,
+                                      "<option value = \"" + user_data["whoto"] + "\">",
+                                      "<option value = \"" + user_data["whoto"] + "\" selected>", -1)
+        temp_banner = strings.Replace(temp_banner,
+                                      "<option value = \"" + user_data["action"] + "\">",
+                                      "<option value = \"" + user_data["action"] + "\" selected>", -1)
+    }
+    reply_buffer = rawhttp.MakeReplyBuffer(temp_banner, 200, true)
     new_conn.Write(reply_buffer)
     new_conn.Close()
 }

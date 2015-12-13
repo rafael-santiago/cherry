@@ -228,6 +228,40 @@ func (c *CherryRooms) AddToIgnoreList(from, to, room_name string) {
     c.configs[room_name].mutex.Unlock()
 }
 
+func (c *CherryRooms) DelFromIgnoreList(from, to, room_name string) {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+        return
+    }
+    var index int = -1
+    c.configs[room_name].mutex.Lock()
+    for it, t := range c.configs[room_name].users[from].ignorelist {
+        if t == to {
+            index = it
+            break
+        }
+    }
+    if index != -1 {
+        c.configs[room_name].users[from].ignorelist = append(c.configs[room_name].users[from].ignorelist[:index], c.configs[room_name].users[from].ignorelist[index+1:]...)
+    }
+    c.configs[room_name].mutex.Unlock()
+}
+
+func (c *CherryRooms) IsIgnored(from, to, room_name string) bool {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+        return false
+    }
+    var retval bool = false
+    c.configs[room_name].mutex.Lock()
+    for _, t := range c.configs[room_name].users[from].ignorelist {
+        if t == to {
+            retval = true
+            break
+        }
+    }
+    c.configs[room_name].mutex.Unlock()
+    return retval
+}
+
 func (c *CherryRooms) GetGreetingMessage(room_name string) string {
     c.configs[room_name].mutex.Lock()
     var message string

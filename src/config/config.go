@@ -46,7 +46,7 @@ type Message struct {
     From string
     To string
     Action string
-    Sound string
+//    Sound string
     Image string
     Say string
     Priv string
@@ -55,7 +55,6 @@ type Message struct {
 type RoomUser struct {
     session_id string
     color string
-    //ignorelist *list.List
     ignorelist []string
     kickout bool
     conn net.Conn
@@ -64,7 +63,6 @@ type RoomUser struct {
 type RoomConfig struct {
     mutex *sync.Mutex
     MainPeer net.Listener
-    //message_queue *list.List
     message_queue []Message
     public_messages []string
     users map[string]*RoomUser
@@ -72,7 +70,7 @@ type RoomConfig struct {
     misc *RoomMisc
     actions map[string]*RoomAction
     images map[string]*RoomMediaResource
-    sounds map[string]*RoomMediaResource
+    //sounds map[string]*RoomMediaResource
     ignore_action string
     deignore_action string
 }
@@ -145,16 +143,14 @@ func (c *CherryRooms) RemoveUser(room_name, nickname string) {
     c.configs[room_name].mutex.Unlock()
 }
 
-func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, sound, image, say, priv string) {
+func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, image, say, priv string) {
     c.configs[room_name].mutex.Lock()
-    c.configs[room_name].message_queue = append(c.configs[room_name].message_queue, Message{from, to, action, sound, image, say, priv})
-    //c.configs[room_name].message_queue.PushBack(Message{from, to, action, sound, image, say, priv})
+    c.configs[room_name].message_queue = append(c.configs[room_name].message_queue, Message{from, to, action, image, say, priv})
     c.configs[room_name].mutex.Unlock()
 }
 
 func (c *CherryRooms) DequeueMessage(room_name string) {
     c.configs[room_name].mutex.Lock()
-    //c.configs[room_name].message_queue.Remove(c.configs[room_name].message_queue.Front())
     if len(c.configs[room_name].message_queue) >= 1 {
         c.configs[room_name].message_queue = c.configs[room_name].message_queue[1:]
     }
@@ -362,9 +358,9 @@ func (c *CherryRooms) GetImageList(room_name string) string {
     return c.get_media_resource_list(room_name, c.configs[room_name].images)
 }
 
-func (c *CherryRooms) GetSoundList(room_name string) string {
-    return c.get_media_resource_list(room_name, c.configs[room_name].sounds)
-}
+//func (c *CherryRooms) GetSoundList(room_name string) string {
+//    return c.get_media_resource_list(room_name, c.configs[room_name].sounds)
+//}
 
 func (c *CherryRooms) GetUsersList(room_name string) string {
     c.Lock(room_name)
@@ -452,7 +448,6 @@ func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
     c.Lock(room_name)
     msgs := c.configs[room_name].public_messages
     c.Unlock(room_name)
-    //for mi := len(msgs)-1 ; mi >= 0; mi-- {
     for _, m := range msgs {
         retval += m
     }
@@ -504,9 +499,9 @@ func (c *CherryRooms) AddImage(room_name, id, label, template, url string) {
     c.configs[room_name].images[id] = c.new_media_resource(label, template, url)
 }
 
-func (c *CherryRooms) AddSound(room_name, id, label, template, url string) {
-    c.configs[room_name].sounds[id] = c.new_media_resource(label, template, url)
-}
+//func (c *CherryRooms) AddSound(room_name, id, label, template, url string) {
+//    c.configs[room_name].sounds[id] = c.new_media_resource(label, template, url)
+//}
 
 func (c *CherryRooms) new_media_resource(label, template, url string) *RoomMediaResource {
     return &RoomMediaResource{label, template, url}
@@ -522,10 +517,10 @@ func (c *CherryRooms) HasImage(room_name, id string) bool {
     return ok
 }
 
-func (c *CherryRooms) HasSound(room_name, id string) bool {
-    _, ok := c.configs[room_name].sounds[id]
-    return ok
-}
+//func (c *CherryRooms) HasSound(room_name, id string) bool {
+//    _, ok := c.configs[room_name].sounds[id]
+//    return ok
+//}
 
 func (c *CherryRooms) HasRoom(room_name string) bool {
     _, ok := c.configs[room_name]
@@ -560,7 +555,7 @@ func (c *CherryRooms) init_config() *RoomConfig {
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)
     room_config.images = make(map[string]*RoomMediaResource)
-    room_config.sounds = make(map[string]*RoomMediaResource)
+    //room_config.sounds = make(map[string]*RoomMediaResource)
     room_config.mutex = new(sync.Mutex)
     return room_config
 }

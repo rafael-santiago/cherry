@@ -158,7 +158,7 @@ func GetExit_Handle(new_conn net.Conn, room_name, http_payload string, rooms *co
         preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetExitTemplate(room_name)), 200, true)
     }
-    rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "",  rooms.GetExitMessage(room_name), "")
+    rooms.EnqueueMessage(room_name, user_data["user"], "", "", "",  rooms.GetExitMessage(room_name), "")
     new_conn.Write(reply_buffer)
     rooms.RemoveUser(room_name, user_data["user"])
     new_conn.Close()
@@ -187,7 +187,7 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
         rooms.AddUser(room_name, user_data["user"], user_data["color"], true)
         preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(user_data["user"], room_name))
         reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetSkeletonTemplate(room_name)), 200, true)
-        rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetJoinMessage(room_name), "")
+        rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetJoinMessage(room_name), "")
     }
     new_conn.Write(reply_buffer)
     new_conn.Close()
@@ -237,8 +237,6 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
         invalid_request = true
     } else if _, has := user_data["whoto"]; !has {
         invalid_request = true
-    } else if _, has := user_data["sound"]; !has {
-        invalid_request = true
     } else if  _, has := user_data["image"]; !has {
         invalid_request = true
     } else if _, has := user_data["says"]; !has {
@@ -250,20 +248,20 @@ func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms 
     } else if user_data["action"] == rooms.GetIgnoreAction(room_name) {
         if user_data["user"] != user_data["whoto"] && ! rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
             rooms.AddToIgnoreList(user_data["user"], user_data["whoto"], room_name)
-            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetOnIgnoreMessage(room_name) + user_data["whoto"], "1")
+            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetOnIgnoreMessage(room_name) + user_data["whoto"], "1")
             restore_banner = false
         }
     } else if user_data["action"] == rooms.GetDeIgnoreAction(room_name) {
         if rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
             rooms.DelFromIgnoreList(user_data["user"], user_data["whoto"], room_name)
-            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", "", rooms.GetOnDeIgnoreMessage(room_name) + user_data["whoto"], "1")
+            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetOnDeIgnoreMessage(room_name) + user_data["whoto"], "1")
             restore_banner = false
         }
     } else {
         var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
         if something_to_say {
             //  INFO(Santiago): Any further antiflood control would go from here.
-            rooms.EnqueueMessage(room_name, user_data["user"], user_data["whoto"], user_data["action"], user_data["sound"], user_data["image"], user_data["says"], user_data["priv"])
+            rooms.EnqueueMessage(room_name, user_data["user"], user_data["whoto"], user_data["action"], user_data["image"], user_data["says"], user_data["priv"])
         }
     }
     preprocessor.SetDataValue("{{.nickname}}", user_data["user"])

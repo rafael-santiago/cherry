@@ -11,7 +11,7 @@ func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
     var all_users string = rooms.GetAllUsersAlias(room_name)
     for {
         curr_message := rooms.GetNextMessage(room_name)
-        if len(curr_message.Say) == 0 && len(curr_message.Image) == 0 && len(curr_message.Sound) == 0 {
+        if len(curr_message.Say) == 0 && len(curr_message.Image) == 0 /*&& len(curr_message.Sound) == 0*/ {
             continue
         }
         var action_template string
@@ -53,7 +53,7 @@ func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
             }
             _, e := conn.Write(message_buffer)
             if e != nil {
-                rooms.EnqueueMessage(room_name, user, "", "", "", "", rooms.GetExitMessage(room_name), "")
+                rooms.EnqueueMessage(room_name, user, "", "", "", rooms.GetExitMessage(room_name), "")
                 rooms.RemoveUser(room_name, user)
             }
         }

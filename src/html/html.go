@@ -58,7 +58,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.all-users-alias}}"] = all_users_alias_expander
     p.data_expander["{{.action-list}}"] = action_list_expander
     p.data_expander["{{.image-list}}"] = image_list_expander
-    p.data_expander["{{.sound-list}}"] = sound_list_expander
+//    p.data_expander["{{.sound-list}}"] = sound_list_expander
     p.data_expander["{{.users-list}}"] = users_list_expander
     p.data_expander["{{.top-template}}"] = top_template_expander
     p.data_expander["{{.body-template}}"] = body_template_expander
@@ -77,7 +77,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.data_expander["{{.message-user}}"] = nick_name_expander
     p.data_expander["{{.message-colored-user}}"] = colored_nick_name_expander
     p.data_expander["{{.message-says}}"] = message_says_expander
-    p.data_expander["{{.message-sound}}"] = message_sound_expander
+//    p.data_expander["{{.message-sound}}"] = message_sound_expander
     p.data_expander["{{.message-image}}"] = message_image_expander
     p.data_expander["{{.message-private-marker}}"] = message_private_marker_expander
     p.data_expander["{{.current-formatted-message}}"] = nil
@@ -142,12 +142,12 @@ func message_says_expander(p *Preprocessor, room_name, var_name, data string) st
     return strings.Replace(data, var_name, p.rooms.GetNextMessage(room_name).Say, -1)
 }
 
-func message_sound_expander(p *Preprocessor, room_name, var_name, data string) string {
-    sound := p.rooms.GetNextMessage(room_name).Sound
-    if len(sound) > 0 {
-    }
-    return strings.Replace(data, var_name, sound, -1)
-}
+//func message_sound_expander(p *Preprocessor, room_name, var_name, data string) string {
+//    sound := p.rooms.GetNextMessage(room_name).Sound
+//    if len(sound) > 0 {
+//    }
+//    return strings.Replace(data, var_name, sound, -1)
+//}
 
 func message_image_expander(p *Preprocessor, room_name, var_name, data string) string {
     image := p.rooms.GetNextMessage(room_name).Image
@@ -251,9 +251,9 @@ func image_list_expander(p *Preprocessor, room_name, var_name, data string) stri
     return strings.Replace(data, var_name, p.rooms.GetImageList(room_name), -1)
 }
 
-func sound_list_expander(p *Preprocessor, room_name, var_name, data string) string {
-    return strings.Replace(data, var_name, p.rooms.GetSoundList(room_name), -1)
-}
+//func sound_list_expander(p *Preprocessor, room_name, var_name, data string) string {
+//    return strings.Replace(data, var_name, p.rooms.GetSoundList(room_name), -1)
+//}
 
 func users_list_expander(p *Preprocessor, room_name, var_name, data string) string {
     return strings.Replace(data, var_name, p.rooms.GetUsersList(room_name), -1)

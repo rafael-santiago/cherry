@@ -268,7 +268,7 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
 
         _ = GetRoomImages(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
-        _ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        //_ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
 
         err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
         if err_room_config != nil {
@@ -328,12 +328,12 @@ func GetRoomImages(room_name string, cherry_rooms *config.CherryRooms, config_da
                                room_name, cherry_rooms, config_data, filepath)
 }
 
-func GetRoomSounds(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-    return get_indirect_config("cherry." + room_name + ".sounds",
-                               "cherry." + room_name + ".sounds.url",
-                               room_sound_main_verifier, room_sound_sub_verifier, room_sound_setter,
-                               room_name, cherry_rooms, config_data, filepath)
-}
+//func GetRoomSounds(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+//    return get_indirect_config("cherry." + room_name + ".sounds",
+//                               "cherry." + room_name + ".sounds.url",
+//                               room_sound_main_verifier, room_sound_sub_verifier, room_sound_setter,
+//                               room_name, cherry_rooms, config_data, filepath)
+//}
 
 func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
     var m_data string
@@ -632,33 +632,33 @@ func room_image_setter(cherry_rooms *config.CherryRooms, room_name string, m_set
     cherry_rooms.AddImage(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
 }
 
-func room_sound_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if cherry_rooms.HasImage(room_name, m_set[0]) {
-        return NewCherryFileError(filepath, m_line, "room sound \"" + m_set[0] + "\" redeclared.")
-    }
-    if len(m_set[1]) == 0 {
-        return NewCherryFileError(filepath, m_line, "unlabeled room sound.")
-    }
-    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, m_line, "room sound must be set with a valid string.")
-    }
-    return nil
-}
+//func room_sound_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+//    if cherry_rooms.HasImage(room_name, m_set[0]) {
+//        return NewCherryFileError(filepath, m_line, "room sound \"" + m_set[0] + "\" redeclared.")
+//    }
+//    if len(m_set[1]) == 0 {
+//        return NewCherryFileError(filepath, m_line, "unlabeled room sound.")
+//    }
+//    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
+//        return NewCherryFileError(filepath, m_line, "room sound must be set with a valid string.")
+//    }
+//    return nil
+//}
 
-func room_sound_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if s_set[0] != m_set[0] {
-        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + m_set[0] + "\".")
-    }
-    if len(s_set[1]) == 0 {
-        return NewCherryFileError(filepath, s_line, "empty room sound url.")
-    }
-    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, s_line, "room sound url must be set with a valid string.")
-    }
-    return nil
-}
+//func room_sound_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
+//    if s_set[0] != m_set[0] {
+//        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + m_set[0] + "\".")
+//    }
+//    if len(s_set[1]) == 0 {
+//        return NewCherryFileError(filepath, s_line, "empty room sound url.")
+//    }
+//    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
+//        return NewCherryFileError(filepath, s_line, "room sound url must be set with a valid string.")
+//    }
+//    return nil
+//}
 
-func room_sound_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
-    //  WARN(Santiago): by now we will pass the sound template as empty.
-    cherry_rooms.AddSound(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
-}
+//func room_sound_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+//    //  WARN(Santiago): by now we will pass the sound template as empty.
+//    cherry_rooms.AddSound(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
+//}

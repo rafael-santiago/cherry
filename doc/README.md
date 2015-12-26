@@ -194,7 +194,7 @@ Take a look at the ``Table 4`` in order to see what can be configurated in this 
 Follows a definition example:
 
 ```
-        cherry.foobar.misc (
+        cherry.aliens-on-earth.misc (
             join-message = "joined..."
             exit-message = "has left..."
             on-ignore-message = "(only you can see this) is ignoring "

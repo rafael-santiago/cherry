@@ -115,7 +115,113 @@ summarizes each special marker supported until now.
 
 ## What are actions?
 
+Actions are the ways how users can communicate each other. Your chatroom for example can admits that a user: "talks", "screams" and "mutters".
+
+The way to define it for a room is as follows:
+
+```
+        cherry.aliens-on-earth.actions {
+            a01 = "talks"
+            a02 = "screams"
+            a03 = "mutters"
+            a04 = "(IGNORE)"
+            a05 = "(STOP IGNORE)"
+        }
+
+```
+
+Each action definition should be: ``<action-identifier> = <action label string>``.
+
+Depending on action it is possible to format the message in a specific way. For this reason there is another section
+called ``cherry.[room-name].actions.templates`` where this must be defined.
+
+```
+        cherry.aliens-on-earth.actions {
+            a01 = "aliens-on-earth/templates/actions/a01.html"
+            a02 = "aliens-on-earth/templates/actions/a02.html"
+            a03 = "aliens-on-earth/templates/actions/a03.html"
+            a04 = "aliens-on-earth/templates/actions/a04.html"
+            a05 = "aliens-on-earth/templates/actions/a05.html"
+        }
+```
+
+Each action template definition should be: ``<action-identifier-previous-defined-inside-actions> = <string path to a HTML template>``.
+
 ## What are images?
+
+Similar the ``actions`` the ``images`` are labels that the user can chose inside a combo we sending messages. This message
+when formatted will include an well-known image. Usually an image should be tematic things like smiles, etc.
+
+The images are configurated using two sections. The first one defines the identifiers and their labels.
+
+```
+        cherry.aliens-on-earth.images {
+            i01 = "glad"
+            i02 = "mad"
+            i03 = "abducted"
+        }
+```
+
+Now with the identifiers and labels properly defined it is necessary indicate the URL from each resource (an image in this case).
+
+```
+        cherry.aliens-on-earth.images.url {
+            i01 = "http://www.nasa.org/chat51/glad.gif"
+            i02 = "http://www.nasa.org/chat51/mad.gif"
+            i03 = "http://www.nasa.org/chat51/abducted.gif"
+        }
+```
 
 ## What about the misc config?
 
+Misc configurations are generic configurations for a specific room. It can be accessed from section called: ``cherry.[room-name].misc``.
+Take a look at the ``Table 4`` in order to see what can be configurated in this section.
+
+|      **Configuration**                   |               **What it does**                           |  **Data type**     |
+|:----------------------------------------:|:--------------------------------------------------------:|:------------------:|
+|       ``join-message``                   | Defines a message that is displayed when a new user joins|      ``string``    |
+|       ``exit-message``                   | Defines a message that is displayed when a user exits    |      ``string``    |
+|       ``on-ignore-message``              | Message that confirms an ignore action                   |      ``string``    |
+|       ``on-deignore-message``            | Message that confirms a (de)ignore action                |      ``string``    |
+|       ``greeting-message``               | Defines a greeting message                               |      ``string``    |
+|       ``private-message-maker``          | Defines a string that indicates a private message        |      ``string``    |
+|       ``max-users``                      | Defines the maximum of users allowed for this room       |      ``number``    |
+|       ``allow-brief``                    | Defines if briefs are allowed or not                     |      ``boolean``   |
+|       ``all-users-alias``                | Defines the alias which represents everybody in the room |      ``string``    |
+|       ``ignore-action``                  | Defines the action-id used as ignore command             |      ``string``    |
+|       ``deignore-action``                | Defines the action-id used as (de)ignore commnad         |      ``string``    |
+
+Follows a definition example:
+
+```
+        cherry.foobar.misc (
+            join-message = "joined..."
+            exit-message = "has left..."
+            on-ignore-message = "(only you can see this) is ignoring "
+            on-deignore-message = "(only you can see this) is not ignoring "
+            greeting-message = "welcome"
+            private-message-marker = "(private)"
+            max-users = 10
+            allow-brief = yes
+            all-users-alias = "EVERYBODY"
+            ignore-action = "a04"
+            deignore-action = "a05"
+        )
+```
+
+## Some tricks
+
+## Opening your first chatroom
+
+I know is pretty confuse read this kind of descriptions without any concrete example. From now on we will compose each
+document necessary to create a chatroom.
+
+In ``Cherry`` there are 3 kinds of documents (HTML documents):
+
+1. The join form (where the user chose his nickname and color for it).
+2. The chatroom (with 3 parts: top, body and banner).
+3. The post-exit ``HTML`` document.
+
+### Adding the chatroom brief support to your server
+
+### Adding user find support to your server

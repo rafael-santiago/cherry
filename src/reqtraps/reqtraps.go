@@ -195,7 +195,11 @@ func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *c
 
 func GetBrief_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var reply_buffer []byte
-    reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBriefTemplate(room_name)), 200, true)
+    if rooms.IsAllowingBriefs(room_name) {
+        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBriefTemplate(room_name)), 200, true)
+    } else {
+        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+    }
     new_conn.Write(reply_buffer)
     new_conn.Close()
 }

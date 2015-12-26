@@ -601,6 +601,10 @@ func (c *CherryRooms) SetAllowBrief(room_name string, value bool) {
     c.configs[room_name].misc.allow_brief = value
 }
 
+func (c *CherryRooms) IsAllowingBriefs(room_name string) bool {
+    return c.configs[room_name].misc.allow_brief
+}
+
 func (c *CherryRooms) SetFloodingPolice(room_name string, value bool) {
     c.configs[room_name].misc.flooding_police = value
 }
@@ -678,4 +682,8 @@ func (c *CherryRooms) SetUserConnection(room_name, user string, conn net.Conn) {
     c.Lock(room_name)
     c.configs[room_name].users[user].conn = conn
     c.Unlock(room_name)
+}
+
+func (c *CherryRooms) GetServerName() string {
+    return c.servername
 }

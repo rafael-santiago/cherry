@@ -14,6 +14,6 @@ var dep type string;
 project cherry : toolset "go": dependencies $dep: $src;
 
 cherry.prologue() {
-    $dep = get_go_deps();
+#    $dep = get_go_deps();
     $src.ls(".*\\.go$");
 }

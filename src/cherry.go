@@ -17,6 +17,7 @@ import (
     "./html"
     "./reqtraps"
     "./messageplexer"
+    "strings"
 )
 
 func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.CherryRooms) {
@@ -40,7 +41,7 @@ func MainPeer(room_name string, c *config.CherryRooms) {
     var err error
     var room *config.RoomConfig
     room = c.GetRoomByPort(int16(port_num))
-    room.MainPeer, err = net.Listen("tcp", "192.30.70.3:" + port)
+    room.MainPeer, err = net.Listen("tcp", c.GetServerName() + ":" + port)
     if err != nil {
         fmt.Println("ERROR: " + err.Error())
         os.Exit(1)
@@ -52,20 +53,32 @@ func MainPeer(room_name string, c *config.CherryRooms) {
             fmt.Println(err.Error())
             os.Exit(1)
         }
-        //  TODO(Santiago): Process the user's initial request.
         go ProcessNewConnection(conn, room_name, c)
     }
+}
+
+func GetOption(option, default_value string) string {
+    for _, arg := range os.Args {
+        if strings.HasPrefix(arg, "--" + option + "=") {
+            return arg[len(option) + 3:]
+        }
+    }
+    return default_value
 }
 
 func main() {
     var cherry_rooms *config.CherryRooms
     var err *parser.CherryFileError
-    cherry_rooms, err = parser.ParseCherryFile("config.cherry")
+    var config_path string
+    config_path = GetOption("config", "")
+    if len(config_path) == 0 {
+        fmt.Println("ERROR: --config option is missing.")
+        os.Exit(1)
+    }
+    cherry_rooms, err = parser.ParseCherryFile(config_path)
     if err != nil {
         fmt.Println(err.Error())
     } else {
-        fmt.Println("*** Configuration loaded!")
-        //MainPeer("foobar", cherry_rooms)
         rooms := cherry_rooms.GetRooms()
         for _, r := range rooms {
             go messageplexer.RoomMessagePlexer(r, cherry_rooms)

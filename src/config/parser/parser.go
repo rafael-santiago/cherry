@@ -354,8 +354,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     verifier["private-message-marker"]        = verify_string
     verifier["max-users"]                     = verify_number
     verifier["allow-brief"]                   = verify_bool
-    verifier["flooding-police"]               = verify_bool
-    verifier["max-flood-allowed-before-kick"] = verify_number
+    //verifier["flooding-police"]               = verify_bool
+    //verifier["max-flood-allowed-before-kick"] = verify_number
     verifier["all-users-alias"]               = verify_string
     verifier["ignore-action"]                 = verify_string
     verifier["deignore-action"]               = verify_string
@@ -370,8 +370,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     setter["private-message-marker"]        = set_private_message_marker
     setter["max-users"]                     = set_max_users
     setter["allow-brief"]                   = set_allow_brief
-    setter["flooding-police"]               = set_flooding_police
-    setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
+    //setter["flooding-police"]               = set_flooding_police
+    //setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
     setter["all-users-alias"]               = set_all_users_alias
     setter["ignore-action"]                 = set_ignore_action
     setter["deignore-action"]               = set_deignore_action
@@ -385,8 +385,8 @@ func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data
     already_set["greeting-message"]              = false
     already_set["private-message-marker"]        = false
     already_set["max-users"]                     = false
-    already_set["flooding-police"]               = false
-    already_set["max-flood-allowed-before-kick"] = false
+    //already_set["flooding-police"]               = false
+    //already_set["max-flood-allowed-before-kick"] = false
     already_set["all-users-alias"]               = false
     already_set["ignore-action"]                 = false
     already_set["deignore-action"]               = false

@@ -218,7 +218,7 @@ document necessary to create a chatroom.
 
 In ``Cherry`` there are 3 kinds of documents (HTML documents):
 
-1. The join form (where the user chose his nickname and color for it).
+1. The join form (where the user chooses his nickname and color for it).
 2. The chatroom (with 3 parts: top, body and banner).
 3. The post-exit ``HTML`` document.
 

@@ -57,7 +57,7 @@ in the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections
 |    ``cherry.[room-name].images.url``           |                  images resources definition                           |
 |        ``cherry.[room-name].misc``             |                  generic configurations for this room                  |
 
-All information inside ``Table 2`` must be a confusion for you. For this reason we need before understand some concepts:
+All information inside ``Table 2`` must be a confusion for you. For this reason, firstly, we need understand some concepts:
 ``templates``, ``actions``, ``images`` and ``misc configs``.
 
 ## What are templates?
@@ -149,7 +149,7 @@ Each action template definition should be: ``<action-identifier-previous-defined
 
 ## What are images?
 
-Similar the ``actions`` the ``images`` are labels that the user can chose inside a combo we sending messages. This message
+Similar to the ``actions`` the ``images`` are labels that the user can choose inside a combo when sending messages. This message
 when formatted will include an well-known image. Usually an image should be tematic things like smiles, etc.
 
 The images are configurated using two sections. The first one defines the identifiers and their labels.

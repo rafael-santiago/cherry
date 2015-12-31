@@ -116,7 +116,7 @@ summarizes each special marker supported until now.
 
 ## What are actions?
 
-Actions are the ways how users can communicate each other. Your chatroom for example can admit that a user: "talks", "screams" and "mutters".
+Actions are the ways how users can communicate each other. Your chat room for example can admit that a user: "talks", "screams" and "mutters".
 
 The way to define it for a room is as follows:
 
@@ -229,17 +229,17 @@ support for code "importation". The way to do it is:
 Congrats, now your ``Cherry`` tree has branches! :) Cut off one branch from it is pretty simple, just comment it.
 In the sample case above as effect a room will stop being created.
 
-## Opening your first chatroom
+## Opening your first chat room
 
 I know is rather confuse read this kind of descriptions without any concrete example. From now on we will compose each
-document necessary to create a chatroom.
+document necessary to create a chat room.
 
 On ``Cherry`` there are 3 kinds of documents (HTML documents):
 
 1. The join form (where the user chooses his nickname and color for it).
-2. The chatroom (with 3 parts: top, body and banner).
+2. The chat room (with 3 parts: top, body and banner).
 3. The post-exit ``HTML`` document.
 
-### Adding the chatroom brief support to your server
+### Adding the chat room brief support to your server
 
 ### Adding user find support to your server

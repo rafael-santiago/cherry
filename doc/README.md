@@ -16,24 +16,25 @@ to see samples from these data types.
 
 | **Data Type** |                                         **Sample**                                         |
 |:-------------:|:------------------------------------------------------------------------------------------:|
-|   ``String``  |                        "Hey Beavis, I'm an string huh!"                                    |
+|   ``String``  |                        "Hey Beavis, I'm a string huh!"                                     |
 |   ``Number``  |                              0, 1, 2, 3, 5                                                 |
 |   ``Boolean`` |                           yes, no, true, false                                             |
 |   ``Alien``   |(Things that requires more explanation in order to express all developer's craziness about) |
 
 All configuration is defined in the ``field = value`` form. Being one configuration (``field-value``) per line.
 
-The main section in a ``cherry configuration file`` is called ``cherry.root`` and until now this only admits one information inside.
-This piece of information is the server's hostname. If your server does not have a name you can use the literal IP address as
-follows:
+The main section in a ``cherry configuration file`` is called ``cherry.root`` and until now it only admits one information inside.
+This piece of information is the server's hostname. If your server has no name you can use the literal IP address as follows:
 
+```
         cherry.root (
             # This is a comment, sorry I forgot to talk about comments.
             servername = "192.30.70.3"
         )
+```
 
 There is a section where you actually open your ``chat rooms``. This section is called ``cherry.rooms``.
-There ``alien values`` are needed. This alien value must be in this form: ``[room_name]:[listen_port]``.
+There ``alien values`` are needed. This ``alien value`` must be in this form: ``[room_name]:[listen_port]``.
 So take a look at the definition sample right below:
 
         cherry.rooms (
@@ -44,7 +45,7 @@ So take a look at the definition sample right below:
         )
 
 Each room opened inside ``cherry.rooms`` section features specific sections that must be adjusted in order to be created
-in the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections.
+on the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections.
 
 **Table 2**: Specific room's sections.
 
@@ -57,13 +58,13 @@ in the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections
 |    ``cherry.[room-name].images.url``           |                  images resources definition                           |
 |        ``cherry.[room-name].misc``             |                  generic configurations for this room                  |
 
-All information inside ``Table 2`` must be a confusion for you. For this reason, firstly, we need understand some concepts:
+All information inside ``Table 2`` must be a mess for you. For this reason, firstly, we need to understand some concepts:
 ``templates``, ``actions``, ``images`` and ``misc configs``.
 
 ## What are templates?
 
 Templates can be understood as ``HTML`` data bringing some special makers which are processed (expanded) before sent. When
-sent it means sent to the clients. These special markers in ``Cherry`` are delimited by ``{{.`` and ``}}``. ``Table 3``
+sent it means sent to the room clients. These special markers on ``Cherry`` are delimited by ``{{.`` and ``}}``. ``Table 3``
 summarizes each special marker supported until now.
 
 **Table 3**: Special markers.
@@ -115,7 +116,7 @@ summarizes each special marker supported until now.
 
 ## What are actions?
 
-Actions are the ways how users can communicate each other. Your chatroom for example can admits that a user: "talks", "screams" and "mutters".
+Actions are the ways how users can communicate each other. Your chatroom for example can admit that a user: "talks", "screams" and "mutters".
 
 The way to define it for a room is as follows:
 
@@ -149,8 +150,8 @@ Each action template definition should be: ``<action-identifier-previous-defined
 
 ## What are images?
 
-Similar to the ``actions`` the ``images`` are labels that the user can choose inside a combo when sending messages. This message
-when formatted will include an well-known image. Usually an image should be tematic things like smiles, etc.
+Similar to the ``actions`` the ``images`` are labels which the user can choose inside a combo when sending messages. This message
+when formatted will include an well-known image. Usually an image should be tematic. Well, things like smiles, emojis, etc.
 
 The images are configurated using two sections. The first one defines the identifiers and their labels.
 
@@ -191,7 +192,7 @@ Take a look at the ``Table 4`` in order to see what can be configurated in this 
 |       ``ignore-action``                  | Defines the action-id used as ignore command             |      ``string``    |
 |       ``deignore-action``                | Defines the action-id used as (de)ignore commnad         |      ``string``    |
 
-Follows a definition example:
+Follows a definition sample:
 
 ```
         cherry.aliens-on-earth.misc (
@@ -211,12 +212,29 @@ Follows a definition example:
 
 ## Some tricks
 
+It is not a good practice define the entire configuration in just one file. The ``Cherry`` configuration's language implements
+support for code "importation". The way to do it is:
+
+```
+        #
+        # "cherry.config"
+        # Description: the main configuration file.
+        #
+
+        cherry.branch aliens-on-earth.config
+        cherry.branch backyard-science.config
+        cherry.branch wonkies-lounge.config
+```
+
+Congrats, now your ``Cherry`` tree has branches! :) Cutting one branch for it is pretty simple, just comment it.
+In the sample case above a room will stop be created.
+
 ## Opening your first chatroom
 
-I know is pretty confuse read this kind of descriptions without any concrete example. From now on we will compose each
+I know is rather confuse read this kind of descriptions without any concrete example. From now on we will compose each
 document necessary to create a chatroom.
 
-In ``Cherry`` there are 3 kinds of documents (HTML documents):
+On ``Cherry`` there are 3 kinds of documents (HTML documents):
 
 1. The join form (where the user chooses his nickname and color for it).
 2. The chatroom (with 3 parts: top, body and banner).

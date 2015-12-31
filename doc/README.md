@@ -226,8 +226,8 @@ support for code "importation". The way to do it is:
         cherry.branch wonkies-lounge.config
 ```
 
-Congrats, now your ``Cherry`` tree has branches! :) Cutting one branch for it is pretty simple, just comment it.
-In the sample case above a room will stop be created.
+Congrats, now your ``Cherry`` tree has branches! :) Cut off one branch from it is pretty simple, just comment it.
+In the sample case above as effect a room will stop being created.
 
 ## Opening your first chatroom
 

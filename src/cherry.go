@@ -80,9 +80,13 @@ func main() {
         fmt.Println(err.Error())
     } else {
         rooms := cherry_rooms.GetRooms()
-        for _, r := range rooms {
+        for ri, r := range rooms {
             go messageplexer.RoomMessagePlexer(r, cherry_rooms)
+            if ri < len(rooms) - 1 {
+                go MainPeer(r, cherry_rooms)
+            } else {
+                MainPeer(r, cherry_rooms)
+            }
         }
-        MainPeer("foobar", cherry_rooms)
     }
 }

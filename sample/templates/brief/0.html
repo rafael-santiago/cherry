@@ -1,0 +1,23 @@
+<html>
+
+    <h1>What is going on at {{.room-name}}...</h1>
+
+    <frame>
+        {{.brief-last-public-messages}}
+    </frame>
+
+    <br><br>
+
+    <b>This room has {{.brief-users-total}} connected user(s)</b>
+
+    <br><br>
+
+    <h3>Who are talking...</h3>
+
+    {{.brief-who-are-talking}}
+
+    <br><br>
+
+    <a href = "http://{{.servername}}:{{.listen-port}}/join">Join</a>
+
+</html>

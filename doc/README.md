@@ -45,7 +45,7 @@ So take a look at the definition sample right below:
         )
 
 Each room opened inside ``cherry.rooms`` section features specific sections that must be adjusted in order to be created
-on the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections.
+at the moment that you run ``Cherry``. The ``Table 2`` summarizes these sections.
 
 **Table 2**: Specific room's sections.
 

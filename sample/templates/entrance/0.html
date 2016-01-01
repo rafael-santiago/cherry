@@ -1,0 +1,47 @@
+<html>
+    <title>Room entrance</title>
+    <body>
+        <h1>Aliens on earth</h1><br><br><br>
+        <center><small>take me to your leader...</small></center>
+        <form action="http://{{.servername}}:{{.listen-port}}/join" method="post" target="_top">
+            <input type="hidden" name="says" value="joined..."><br><br><br><br>
+            <p align="center">
+                <table cellpadding="0" border="0">
+                    <tr>
+                        <td>
+                            <b>Nickname</b>
+                        </td>
+                        <td>
+                            <b>Color</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type = "text" name = "user" value = "">
+                        </td>
+                        <td>
+                            <select name = "color" value = "">
+                                <option value = "0">black
+                                <option value = "1">red
+                                <option value = "2">green
+                                <option value = "3">gray
+                                <option value = "4">purple
+                                <option value = "5">pink
+                                <option value = "6">blue
+                                <option value = "7">cyan
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type = "submit" size=30 value="join"><br>
+                            <a href = "http://{{.servername}}:{{.listen-port}}/brief">Brief</a><br>
+                            <a href = "http://{{.servername}}:{{.listen-port}}/find">Search</a>
+                        </td>
+                    </tr>
+                </table>
+            </p>
+        </form>
+    </body>
+</html>

@@ -1,0 +1,49 @@
+# Aliens on earth room config.
+
+cherry.aliens-on-earth.templates (
+    top = "templates/top/0.html"
+    body = "templates/body/0.html"
+    banner = "templates/banner/0.html"
+    highlight = "templates/highlight/0.html"
+    entrance = "templates/entrance/0.html"
+    exit = "templates/exit/0.html"
+    nickclash = "templates/nickclash/0.html"
+    skeleton = "templates/skeleton/0.html"
+    brief = "templates/brief/0.html"
+    find-results-head = "templates/find/h0.html"
+    find-results-body = "templates/find/b0.html"
+    find-results-tail = "templates/find/t0.html"
+    find-bot = "templates/find/fb0.html"
+)
+
+cherry.aliens-on-earth.actions (
+    a01 = "talks to"
+    a02 = "screams with"
+    a03 = "IGNORE"
+    a04 = "NOT IGNORE"
+)
+
+cherry.aliens-on-earth.actions.templates (
+    a01 = "templates/actions/a01.html"
+    a02 = "templates/actions/a02.html"
+    a03 = "templates/actions/a01.html"
+    a04 = "templates/actions/a01.html"
+)
+
+#cherry.aliens-on-earth.images ()
+
+#cherry.aliens-on-earth.images.url ()
+
+cherry.aliens-on-earth.misc (
+    join-message = "joined...<script>scrollIt();</script>"
+    exit-message = "has left...<script>scrollIt();</script>"
+    on-ignore-message = "(only you can see it) IGNORING "
+    on-deignore-message = "(only you can see it) is NOT IGNORING "
+    greeting-message = "Take me to your leader!!!"
+    private-message-marker = "(private)"
+    max-users = 10
+    allow-brief = yes
+    all-users-alias = "EVERYBODY"
+    ignore-action = "a03"
+    deignore-action = "a04"
+)

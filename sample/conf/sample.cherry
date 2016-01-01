@@ -1,0 +1,12 @@
+# This config file shows how to open a room using cherry.
+
+cherry.root (
+    # Actually it will be accessible locally only.
+    servername = "localhost"
+)
+
+cherry.rooms (
+    aliens-on-earth:1024
+)
+
+cherry.branch conf/aliens_on_earth.cherry

@@ -240,6 +240,105 @@ On ``Cherry`` there are 3 kinds of documents (HTML documents):
 2. The chat room (with 3 parts: top, body and banner).
 3. The post-exit ``HTML`` document.
 
+### Configuration overview
+
+The directory structure that will be used for this sample is:
+
+```
+        sample/
+                conf/
+                templates/
+```
+
+Firstly, we need to compose our config file. The file where we actually open your rooms. 
+
+The config files will be within ``conf`` subdirectory and we will open just one chat room called ``aliens-on-earth``.
+The configuration is splitted in two files:
+
+
+```
+        # "sample.cherry"
+        #
+        # This config file shows how to open a room using cherry.
+
+        cherry.root (
+            # Actually it will be accessible locally only.
+            servername = "localhost"
+        )
+
+        cherry.rooms (
+            aliens-on-earth:1024
+        )
+
+        cherry.branch conf/aliens_on_earth.cherry
+```
+
+and
+
+```
+        # "aliens_on_earth.cherry"
+        #
+        # Aliens on earth room config.
+
+        cherry.aliens-on-earth.templates (
+            top = "templates/top/0.html"
+            body = "templates/body/0.html"
+            banner = "templates/banner/0.html"
+            highlight = "templates/highlight/0.html"
+            entrance = "templates/entrance/0.html"
+            exit = "templates/exit/0.html"
+            nickclash = "templates/nickclash/0.html"
+            skeleton = "templates/skeleton/0.html"
+            brief = "templates/brief/0.html"
+            find-results-head = "templates/find/h0.html"
+            find-results-body = "templates/find/b0.html"
+            find-results-tail = "templates/find/t0.html"
+            find-bot = "templates/find/fb0.html"
+        )
+
+        cherry.aliens-on-earth.actions (
+            a01 = "talks to"
+            a02 = "screams with"
+            a03 = "IGNORE"
+            a04 = "NOT IGNORE"
+        )
+
+        cherry.aliens-on-earth.actions.templates (
+            a01 = "templates/actions/a01.html"
+            a02 = "templates/actions/a02.html"
+            a03 = "templates/actions/a01.html"
+            a04 = "templates/actions/a01.html"
+        )
+
+        cherry.aliens-on-earth.misc (
+            join-message = "joined...<script>scrollIt();</script>"
+            exit-message = "has left...<script>scrollIt();</script>"
+            on-ignore-message = "(only you can see it) IGNORING "
+            on-deignore-message = "(only you can see it) is NOT IGNORING "
+            greeting-message = "Take me to your leader!!!"
+            private-message-marker = "(private)"
+            max-users = 10
+            allow-brief = yes
+            all-users-alias = "EVERYBODY"
+            ignore-action = "a03"
+            deignore-action = "a04"
+        )
+```
+
+As you can see in ``cherry.root`` section from ``sample.cherry`` file the chat rooms will be locally accessible only.
+The reason is the usage of "localhost" as ``servername``.
+
+The room ``aliens-on-earth`` is being served at port ``1024``.
+
+Looking inside the file ``aliens_on_earth.cherry`` you will see several templates path indication in ``cherry.aliens-on-earth.templates``.
+This room only admits four actions according to ``cherry.aliens-on-earth.actions`` section. The room can support ten simultaneous users.
+
+I judge that the remaining configuration data is pretty self-explanatory.
+
+What really needs attention are the templates. This is the heart and soul of any room that you create using ``Cherry``.
+
+### Detailing the used templates
+
 ### Adding the chat room brief support to your server
 
 ### Adding user find support to your server

@@ -339,6 +339,131 @@ What really needs attention are the templates. This is the heart and soul of any
 
 ### Detailing the used templates
 
+As said some lines ago templates are ``HTML`` files carrying some ``special markers``. This markers are processed (expanded) before
+sending.
+
+You can compose your templates by your own taste. However, depending on template purpose, there are some markers that you will always use.
+
+#### The join template
+
+In order to create a join template (a ``HTML`` file that will be returned when user request the virtual document called ``join``)
+it is necessary define a form action pointing to ``http://{{.server}}:{{.listen-port}}/join`` with a ``post`` method.
+
+The fields that need to be posted are: ``says`` (containing anything), ``user`` (containing the nickname), ``color`` (containg values between ``0`` and ``7`` inclusive).
+
+Follows an example:
+
+```
+        <html>
+            <title>Room entrance</title>
+            <body>
+                <h1>Aliens on earth</h1><br><br><br>
+                <center><small>take me to your leader...</small></center>
+                <form action="http://{{.servername}}:{{.listen-port}}/join" method="post" target="_top">
+                    <input type="hidden" name="says" value="joined..."><br><br><br><br>
+                    <p align="center">
+                        <table cellpadding="0" border="0">
+                            <tr>
+                                <td>
+                                    <b>Nickname</b>
+                                </td>
+                                <td>
+                                    <b>Color</b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type = "text" name = "user" value = "">
+                                </td>
+                                <td>
+                                    <select name = "color" value = "">
+                                        <option value = "0">black
+                                        <option value = "1">red
+                                        <option value = "2">green
+                                        <option value = "3">gray
+                                        <option value = "4">purple
+                                        <option value = "5">pink
+                                        <option value = "6">blue
+                                        <option value = "7">cyan
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <input type = "submit" size=30 value="join"><br>
+                                    <a href = "http://{{.servername}}:{{.listen-port}}/brief">Brief</a><br>
+                                    <a href = "http://{{.servername}}:{{.listen-port}}/find">Search</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </p>
+                </form>
+            </body>
+        </html>
+```
+
+Note that were also added links to the room's ``brief`` and server's ``find``.
+
+#### The brief template
+
+The ``brief`` template counts with three important ``markers``. The ``Table 5`` bring more details about them.
+
+|         **Brief marker**            |                          **Handy for**                             |
+|:-----------------------------------:|:------------------------------------------------------------------:|
+| ``{{.brief-last-public-messages}}`` | Showing (well-formatted) the last ten public messages in a room    |
+|      ``{{.brief-users-total}}``     | Showing the connected user total on the processing moment          |
+|   ``{{.brief-who-are-talking}}``    | Showing a nickname listing based on who are currently connected on |
+
+Look a sample:
+
+```
+        <html>
+
+            <h1>What is going on at {{.room-name}}...</h1>
+
+            <frame>
+                {{.brief-last-public-messages}}
+            </frame>
+
+            <br><br>
+
+            <b>This room has {{.brief-users-total}} connected user(s)</b>
+
+            <br><br>
+
+            <h3>Who are talking...</h3>
+
+            {{.brief-who-are-talking}}
+
+            <br><br>
+
+            <a href = "http://{{.servername}}:{{.listen-port}}/join">Join</a>
+
+        </html>
+```
+
+For navigation convenience in the sample a link to the join form was added to the brief document.
+
+#### The find template
+
+The find template is pretty simple. This must bring a form with ``action`` ponting to ``http://{{.servername}}:{{.listen-port}}/find`` (yes, this is a little bit weird, because the search echoes to all existing rooms) and the ``HTTP method`` must be a ``post``.
+This document has to post only one field that is ``user``. This field is carried with the desired nickname pattern.
+
+Yes, a sample:
+
+```
+        <html>
+            <h1>Search for user...</h1>
+            <form action="http://{{.servername}}:{{.listen-port}}/find" method="post" target="_top">
+                <table border = 0>
+                    <tr><td><b>Nickname</b></td><td><input type="text" size=100 name="user"></td></tr>
+                    <tr><td></td><td><input type="submit" value="search"></td></tr>
+                </table>
+            </form>
+        </html>
+```
+
 ### Adding the chat room brief support to your server
 
 ### Adding user find support to your server

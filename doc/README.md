@@ -526,7 +526,7 @@ This post must submit only one piece of information that is ``user``. So now we 
         </html>
 ```
 
-The result's header data is the most "higher" information that will be included in a find result report. Nothing so special, look:
+The result's header data is the highest information that will be included in a find result report. Nothing so special, look:
 
 ```
         <html>
@@ -556,3 +556,167 @@ However, this template is incomplete because it needs to have the populated tabl
 ```
 
 Done.
+
+### The top template
+
+The top template stands for the highest frame composing a room.
+
+Here follows a sample:
+
+```
+        <html>
+            <head></head>
+            <body bgcolor="#FFFFFF" text="#000000">
+                <table cellpadding="0" cellpadding="2" border="0" width="100%" valign="top">
+                    <tr valign="top"><td valign="top">
+                        <b>{{.room-name}}</b><br><br>
+                    </td>
+                    <td>
+                        <center><small>QoTD: {{.greeting-message}}</small></center>
+                    </td>
+                    <td>
+                        <center>
+                            <form name="chatconfig">
+                                <input type="checkbox" name="autoscroll" value="1" unchecked>
+                                <i>autoscroll</i>
+                            </form>
+                        </center>
+                    </td></tr>
+                </table>
+            </body>
+        </html>
+```
+
+The only special thing here (non mandatory) is the form ``chatconfig`` definition. We will use this for auto scrolling. However, this is just a trick not a feature.
+
+### The body template
+
+This template stands for the frame from the middle in the room's structure. In this frame we will see all the messages.
+
+Sample:
+
+```
+<script>
+    function scrollIt() {
+        if (top.TOP.document.chatconfig.autoscroll.checked) {
+            setTimeout("window.scroll(0, 1000000);", 100);
+        }
+    }
+
+</script>
+
+<body bgcolor="#FFFFFF" text="#000000">
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+<p>
+```
+
+Note that the ``JS`` function ``scrollIt()`` checks if the checkbox present in the form ``chatconfig`` is checked before scrolling.
+
+### The banner template
+
+Maybe this is the most complicated room structure template. Anyway, this template must define a post form with target at ``http://{{.servername}}:{{.listen-port}}/banner``.
+
+The posted fields are:
+
+- ``user (``{{.nickname}}``)
+- ``id`` (``{{.id}}``)
+- ``image`` (not included here but will be explained after)
+- ``priv`` (``{{.priv}}``)
+- ``action`` (a ``select input`` composed by the server listing the actions)
+- ``whoto`` (a ``select input`` composed by the server listing the users)
+- ``says`` (a ``text input`` where you will type your messages)
+
+```
+        <html>
+            <head></head>
+            <body bgcolor="#FFFFFF" text="#000000" onload="setfocus()">
+                <table cellpadding="0" cellspacing="2" border="0" width="100%" valign="top">
+                    <tr valign="top"><td valign="top">
+                        <form method="post" action="http://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" name="banner">
+                            <input type="hidden" name="user" value="{{.nickname}}">
+                            <input type="hidden" name="id" value="{{.session-id}}">
+                            <input type="hidden" name="image" value="">
+                            {{.nickname}}<br>
+                            <input type="checkbox" name="priv" value="1" {{.priv}}>
+                            <font face="arial" size="2">privately</font>
+                            <select name="action">
+                                {{.action-list}}
+                                <br><br>
+                            </select>
+                            <select name="whoto">
+                                {{.users-list}}
+                                <br><br>
+                            </select>
+                            <input name="says" type="text" size=110>
+                            <input type="submit" size=30 value="send"><br>
+                            <a href="http://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&" target="_top">exit</a>&nbsp;&nbsp;
+                        </form>
+                    </tr>
+                </table>
+            </body>
+            <script>function setfocus() { document.forms["banner"]["says"].focus(); }</script>
+        </html>
+```
+
+The link connecting at ``http://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&`` is used for doing a gracefully exit.
+
+The ``JS`` function ``setfocus()`` is just a trick in order to set focus to the ``says input`` by default.
+
+The ``image input`` originally has the type ``select`` but this sample has no support for images. If you want to put support for this you should use:
+
+```
+        <select name="image" size=1>
+                                <option value="">image:</option>
+                                {{.image-list}}
+        </select>
+```
+
+and the server your handle it.
+
+### The room's skeleton
+
+The room is composed by three templates: ``top``, ``body`` and ``banner``. When a user request this only one document is replied, this document can be understood as a skeleton (Does ``frameset`` scare you?) that puts all relevant parts together.
+
+```
+        <html>
+            <head>
+                <title>Now you are talking on "{{.room-name}}"</title>
+            </head>
+            <frameset rows="30,*,75">
+                <frame name="TOP" src="http://{{.servername}}:{{.listen-port}}/top&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
+                <frame name="BODY" src="http://{{.servername}}:{{.listen-port}}/body&user={{.nickname}}&id={{.session-id}}&" scrolling="yes">
+                <frame name="BANNER" src="http://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
+            </frameset>
+        </html>
+```
+
+It is important add to the frame ``src`` field the ``user`` (``{{.nickname}}``) and ``id`` (``{{.id}}``) otherwise it will never be loaded correctly.

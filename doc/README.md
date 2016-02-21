@@ -121,13 +121,13 @@ Actions are the ways how users can communicate each other. Your chat room for ex
 The way to define it for a room is as follows:
 
 ```
-        cherry.aliens-on-earth.actions {
+        cherry.aliens-on-earth.actions (
             a01 = "talks"
             a02 = "screams"
             a03 = "mutters"
             a04 = "(IGNORE)"
             a05 = "(STOP IGNORE)"
-        }
+        )
 
 ```
 
@@ -137,13 +137,13 @@ Depending on action it is possible to format the message in a specific way. For 
 called ``cherry.[room-name].actions.templates`` where this must be defined.
 
 ```
-        cherry.aliens-on-earth.actions {
+        cherry.aliens-on-earth.actions (
             a01 = "aliens-on-earth/templates/actions/a01.html"
             a02 = "aliens-on-earth/templates/actions/a02.html"
             a03 = "aliens-on-earth/templates/actions/a03.html"
             a04 = "aliens-on-earth/templates/actions/a04.html"
             a05 = "aliens-on-earth/templates/actions/a05.html"
-        }
+        )
 ```
 
 Each action template definition should be: ``<action-identifier-previous-defined-inside-actions> = <string path to a HTML template>``.
@@ -156,21 +156,21 @@ when formatted will include an well-known image. Usually an image should be tema
 The images are configurated using two sections. The first one defines the identifiers and their labels.
 
 ```
-        cherry.aliens-on-earth.images {
+        cherry.aliens-on-earth.images (
             i01 = "glad"
             i02 = "mad"
             i03 = "abducted"
-        }
+        )
 ```
 
 Now with the identifiers and labels properly defined it is necessary indicate the URL from each resource (an image in this case).
 
 ```
-        cherry.aliens-on-earth.images.url {
+        cherry.aliens-on-earth.images.url (
             i01 = "http://www.nasa.org/chat51/glad.gif"
             i02 = "http://www.nasa.org/chat51/mad.gif"
             i03 = "http://www.nasa.org/chat51/abducted.gif"
-        }
+        )
 ```
 
 ## What about the misc config?
@@ -468,11 +468,11 @@ Yes, a sample:
 
 The brief template is very straightforward too. Here is included in the ``HTML`` contents the following pieces of information:
 
-    - the room name
-    - the last public messages (not send in private mode)
-    - the total of connected users
-    - the user list
-    - a link in order to join in this room
+- the room name
+- the last public messages (not send in private mode)
+- the total of connected users
+- the user list
+- a link in order to join in this room
 
 All that was said above is here in ``HTML``:
 
@@ -506,10 +506,10 @@ All that was said above is here in ``HTML``:
 
 The find feature is a little bit more complicated than others. In the find feature we need to define four templates:
 
-    1. a template that stands for the ``find bot``
-    2. a template that includes the result's ``header data``
-    3. a template that includes the result's ``body data``
-    4. a template that includes the result's ``tail data``
+1. a template that stands for the ``find bot``
+2. a template that includes the result's ``header data``
+3. a template that includes the result's ``body data``
+4. a template that includes the result's ``tail data``
 
 The secret behind the ``find bot`` is define a post form with action at ``http://{{.servername}}:{{.listen-port}}/find/``.
 This post must submit only one piece of information that is ``user``. So now we will translated it into ordinary ``HTML``:
@@ -543,10 +543,10 @@ Remember that this is incomplete because it needs to the result's body data:
 
 Note that inside template shown above we are including some important expansive data in order to populate our ``HTML`` table with interesting data:
 
-    - The found user (``{{.find-result-user}}``)
-    - The room where this user is actually talking (``{{.find-result-room-name}}``)
-    - The total of users in this room (``{{.find-results-users-total}}``)
-    - A convinient link to join or spy the room: ``http://{{.servername}}:{{.listen-port}}/join``, ``http://{{.servername}}:{{.listen-port}}/brief``
+- The found user (``{{.find-result-user}}``)
+- The room where this user is actually talking (``{{.find-result-room-name}}``)
+- The total of users in this room (``{{.find-results-users-total}}``)
+- A convinient link to join or spy the room: ``http://{{.servername}}:{{.listen-port}}/join``, ``http://{{.servername}}:{{.listen-port}}/brief``
 
 However, this template is incomplete because it needs to have the populated table closed. We do this in the result's tail:
 

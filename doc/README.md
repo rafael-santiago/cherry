@@ -719,4 +719,4 @@ The room is composed by three templates: ``top``, ``body`` and ``banner``. When 
         </html>
 ```
 
-It is important add to the frame ``src`` field the ``user`` (``{{.nickname}}``) and ``id`` (``{{.id}}``) otherwise it will never be loaded correctly.
+It is important add to the frame ``src`` field the ``user`` (``{{.nickname}}``) and ``id`` (``{{.session-id}}``) otherwise it will never be loaded correctly.

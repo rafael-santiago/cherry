@@ -466,4 +466,93 @@ Yes, a sample:
 
 ### Adding the chat room brief support to your server
 
+The brief template is very straightforward too. Here is included in the ``HTML`` contents the following pieces of information:
+
+    - the room name
+    - the last public messages (not send in private mode)
+    - the total of connected users
+    - the user list
+    - a link in order to join in this room
+
+All that was said above is here in ``HTML``:
+
+```
+        <html>
+
+            <h1>What is going on at {{.room-name}}...</h1>
+
+            <frame>
+                {{.brief-last-public-messages}}
+            </frame>
+
+            <br><br>
+
+            <b>This room has {{.brief-users-total}} connected user(s)</b>
+
+            <br><br>
+
+            <h3>Who are talking...</h3>
+
+            {{.brief-who-are-talking}}
+
+            <br><br>
+
+            <a href = "http://{{.servername}}:{{.listen-port}}/join">Join</a>
+
+        </html>
+```
+
 ### Adding user find support to your server
+
+The find feature is a little bit more complicated than others. In the find feature we need to define four templates:
+
+    1. a template that stands for the ``find bot``
+    2. a template that includes the result's ``header data``
+    3. a template that includes the result's ``body data``
+    4. a template that includes the result's ``tail data``
+
+The secret behind the ``find bot`` is define a post form with action at ``http://{{.servername}}:{{.listen-port}}/find/``.
+This post must submit only one piece of information that is ``user``. So now we will translated it into ordinary ``HTML``:
+
+```
+        <html>
+            <h1>Search for user...</h1>
+            <form action="http://{{.servername}}:{{.listen-port}}/find" method="post" target="_top">
+                <table border = 0>
+                    <tr><td><b>Nickname</b></td><td><input type="text" size=100 name="user"></td></tr>
+                    <tr><td></td><td><input type="submit" value="search"></td></tr>
+                </table>
+            </form>
+        </html>
+```
+
+The result's header data is the most "higher" information that will be included in a find result report. Nothing so special, look:
+
+```
+        <html>
+            <h1>Find results</h1>
+            <table border = 0>
+                <tr><td><b>Nickname</b></td><td><b>Room</b></td><td><b>Users total</b></td><td><b>Join</b></td><td><b>Brief</b></td></tr>
+```
+
+Remember that this is incomplete because it needs to the result's body data:
+
+```
+    <tr><td>{{.find-result-user}}</td><td>{{.find-result-room-name}}</td><td>{{.find-result-users-total}}</td><td><a href="http://{{.servername}}:{{.listen-port}}/join">Join</a></td><td><a href="http://{{.servername}}:{{.listen-port}}/brief">Brief</a></td></tr>
+```
+
+Note that inside template shown above we are including some important expansive data in order to populate our ``HTML`` table with interesting data:
+
+    - The found user (``{{.find-result-user}}``)
+    - The room where this user is actually talking (``{{.find-result-room-name}}``)
+    - The total of users in this room (``{{.find-results-users-total}}``)
+    - A convinient link to join or spy the room: ``http://{{.servername}}:{{.listen-port}}/join``, ``http://{{.servername}}:{{.listen-port}}/brief``
+
+However, this template is incomplete because it needs to have the populated table closed. We do this in the result's tail:
+
+```
+    </table>
+</html>
+```
+
+Done.

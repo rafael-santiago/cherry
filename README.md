@@ -36,7 +36,7 @@ doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/bin# ./cherry --config=gallif
 ```
 
 Supposing that ``TARDIS`` has the ``IP`` address ``192.30.70.3`` and ``Gallifrey lounge`` opens only one room at the port 1008.
-All doctor should do is access the entrace form served at:
+All Doctor should do is to access the entrace form served at:
 
 ```
 http://192.30.70.3:1008/join

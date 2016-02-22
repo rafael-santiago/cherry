@@ -234,6 +234,10 @@ In the sample case above as effect a room will stop being created.
 I know is rather confuse read this kind of descriptions without any concrete example. From now on we will compose each
 document necessary to create a chat room.
 
+For this part is essencial not be a ``chickenshit`` and remember:
+
+![We can do it](http://www.pictus.com.br/produtos/3591.jpg =100x20)
+
 On ``Cherry`` there are 3 kinds of documents (HTML documents):
 
 1. The join form (where the user chooses his nickname and color for it).
@@ -609,34 +613,6 @@ Sample:
 <p>
 <p>
 <p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
-<p>
 ```
 
 Note that the ``JS`` function ``scrollIt()`` checks if the checkbox present in the form ``chatconfig`` is checked before scrolling.
@@ -704,7 +680,7 @@ and the server your handle it.
 
 ### The room's skeleton
 
-The room is composed by three templates: ``top``, ``body`` and ``banner``. When a user request this only one document is replied, this document can be understood as a skeleton (Does ``frameset`` scare you?) that puts all relevant parts together.
+The room is composed by three templates: ``top``, ``body`` and ``banner``. When a user request these, only one document is replied, this document can be understood as the skeleton (Does ``frameset`` scare you?). The room's skeleton puts all relevant parts together.
 
 ```
         <html>
@@ -720,3 +696,67 @@ The room is composed by three templates: ``top``, ``body`` and ``banner``. When 
 ```
 
 It is important add to the frame ``src`` field the ``user`` (``{{.nickname}}``) and ``id`` (``{{.session-id}}``) otherwise it will never be loaded correctly.
+
+### The exit template
+
+When the user requests the virtual document from:
+
+```
+http://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&
+```
+
+This user is trying to do a gracefully exit. When a gracefully exit occurs the server replies to the requester a document notifying this exit operation.
+Yes, the document replied is based on exit template.
+
+Inside this template you can use anything from the special markers that  you want to. However, the usage of some markers has more sense than others, of course.
+
+This following content could be used as an ``exit template``, look:
+
+```
+<html>
+    <frame>
+        <body>
+            <center>
+                <h1>Goodbye, "{{.nickname}}"!</h1>
+                <small><i>connection closed.</i></small>
+            </center>
+        </body>
+    </frame>
+</html>
+```
+
+You could reuse the join template in replacement, too.
+
+### The actions templates
+
+These templates are used in order to format the chat room's messages. Indirectly in this kind of template, the usage of some
+special markers are pretty important, otherwise nothing will be shown/said on your chat room. This is one sample of an ``action
+template``:
+
+```
+<p>({{.hour}}:{{.minute}}:{{.second}}) <b>{{.message-colored-user}}</b> <i>{{.message-private-marker}}</i> {{.message-action-label}} <b>{{.message-whoto}}</b>: {{.message-says}}
+{{.message-image}}
+<script>
+    scrollIt();
+</script>
+```
+
+Do you remember that inside the ``body template`` we had defined an ``JS`` function responsible for auto scrolling? So, here
+we are defining that all received message will try to scroll the message window. This is just a trick. The rest of the content
+I think is pretty clearer. It is only about the use of ``special markers`` related on user's messages. Go back to the ``Table 3``
+if you have no idea about some marker.
+
+### The highlight template
+
+This template is used in order to (oh God!) highlight personal messages from others. Here, the only ``special marker`` that
+you should use is the ``{{.current-formatted-message}}``. For instance, the template could be something like:
+
+```
+<p><table bgcolor="#FFFFFF" width="100%" cellspacing="0" border="1">
+    <tr>
+        <td>
+            {{.current-formatted-message}}
+        </td>
+    </tr>
+</table>
+```

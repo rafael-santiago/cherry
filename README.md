@@ -23,3 +23,23 @@ doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/src# hefesto
 If all worked a cherry binary was created under ``../bin/`` and
 
 All done.
+
+## How to run it?
+
+This application works based on a configuration file (again: [documentation](https://github.com/rafael-santiago/cherry/blob/master/doc/README.md)).
+
+You specify this configuration using the option ``--config``:
+
+```
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/bin# ./cherry --config=gallifrey-lounge.cherry
+
+```
+
+Supposing that ``TARDIS`` has the ``IP`` address ``192.30.70.3`` and ``Gallifrey lounge`` opens only one room at the port 1008.
+All doctor should do is access the entrace form served at:
+
+```
+http://192.30.70.3:1008/join
+```
+
+Thats all.

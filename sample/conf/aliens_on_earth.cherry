@@ -39,7 +39,7 @@ cherry.aliens-on-earth.misc (
     exit-message = "has left...<script>scrollIt();</script>"
     on-ignore-message = "(only you can see it) IGNORING "
     on-deignore-message = "(only you can see it) is NOT IGNORING "
-    greeting-message = "Take me to your leader!!!"
+    greeting-message = "Take meeeeee to your leader!!!"
     private-message-marker = "(private)"
     max-users = 10
     allow-brief = yes

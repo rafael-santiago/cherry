@@ -17,7 +17,7 @@ After following all steps to put Hefesto to work on your system just move to ``s
 inside. Something like:
 
 ```
-doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/src/# hefesto
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/src# hefesto
 ```
 
 If all worked a cherry binary was created under ``../bin/`` and

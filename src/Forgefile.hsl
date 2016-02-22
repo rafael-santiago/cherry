@@ -13,7 +13,37 @@ var dep type string;
 
 project cherry : toolset "go": dependencies $dep: $src;
 
+function bincp() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    hefesto.sys.cd("..");
+    if (hefesto.sys.cd("bin") == 0) {
+        hefesto.sys.mkdir("bin");
+        if (hefesto.sys.cd("bin") == 0) {
+            hefesto.sys.echo("ERROR: could not move to bin subdirectory.");
+            hefesto.sys.cd($oldcwd);
+            result 0;
+        }
+    }
+    var cp_res type int;
+    $cp_res = hefesto.sys.cp("../src/cherry", "cherry");
+    hefesto.sys.rm("../src/cherry");
+    hefesto.sys.cd($oldcwd);
+    result ($cp_res == 1);
+}
+
 cherry.prologue() {
 #    $dep = get_go_deps();
     $src.ls(".*\\.go$");
+}
+
+cherry.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        if (bincp() == 0) {
+            hefesto.sys.echo("ERROR: could not transfer cherry binary to ../bin subdirectory.\n");
+            hefesto.sys.exit(1);
+        } else {
+            hefesto.sys.echo("INFO: cherry binary is under ../bin subdirectory.\n");
+        }
+    }
 }

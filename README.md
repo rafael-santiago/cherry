@@ -42,4 +42,4 @@ All Doctor should do is to access the entrace form served at:
 http://192.30.70.3:1008/join
 ```
 
-Thats all.
+That's all.

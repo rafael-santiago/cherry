@@ -236,7 +236,7 @@ document necessary to create a chat room.
 
 For this part is essencial not be a ``chickenshit`` and remember:
 
-![We can do it](http://www.pictus.com.br/produtos/3591.jpg =100x20)
+![We can do it](https://github.com/rafael-santiago/cherry/blob/etc/wecan.jpg)
 
 On ``Cherry`` there are 3 kinds of documents (HTML documents):
 

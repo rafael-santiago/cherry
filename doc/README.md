@@ -767,7 +767,7 @@ Probably you have seen that the original repository counts with a configuration 
 ``Opening your first chat room`` section present in this documentation. The files are inside the subdirectory named as ``sample``.
 
 Supposing that you have a ``Cherry`` binary inside the subdirectory ``bin`` (with same level of ``sample``), being inside
-``sample/conf`` just try this:
+``sample`` just try this:
 
 ```
 doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# ../bin/cherry --config=conf/sample.cherry
@@ -779,4 +779,4 @@ Note that you will able to access this room locally. Now, from your web browser 
 http://localhost:1024/join
 ```
 
-An entrace form should be spit for you. Go ahead, fill up what it request from you and that is all folks!
+An entrace form should be spit for you. Go ahead, fill up what it requests from you and that is all folks!

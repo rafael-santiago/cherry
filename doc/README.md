@@ -779,4 +779,4 @@ Note that you will able to access this room locally. Now, from your web browser 
 http://localhost:1024/join
 ```
 
-An entrace form should be spit to you. Go ahead, fill up what it requests from you and that is all folks!
+An entrace form should be spit to you. Go ahead, fill up what it requests and that is all folks!

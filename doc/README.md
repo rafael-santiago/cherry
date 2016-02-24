@@ -234,7 +234,7 @@ In the sample case above as effect a room will stop being created.
 I know is rather confuse read this kind of descriptions without any concrete example. From now on we will compose each
 document necessary to create a chat room.
 
-For this part is essencial not be a ``chickenshit`` and remember:
+For this part is essential not be a ``chickenshit`` and remember:
 
 ![We can do it](https://github.com/rafael-santiago/cherry/blob/master/etc/wecan.jpg)
 
@@ -760,3 +760,23 @@ you should use is the ``{{.current-formatted-message}}``. For instance, the temp
     </tr>
 </table>
 ```
+
+# Running the sample
+
+Probably you have seen that the original repository counts with a configuration sample. This sample is based on
+``Opening your first chat room`` section present in this documentation. The files are inside the subdirectory named as ``sample``.
+
+Supposing that you have a ``Cherry`` binary inside the subdirectory ``bin`` (with same level of ``sample``), being inside
+``sample/conf`` just try this:
+
+```
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# ../bin/cherry --config=conf/sample.cherry
+```
+
+Note that you will able to access this room locally. Now, from your web browser you should access:
+
+```
+http://localhost:1024/join
+```
+
+An entrace form should be spit for you. Go ahead, fill up what it request from you and that is all folks!

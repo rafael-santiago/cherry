@@ -1,5 +1,5 @@
 /*
- *                               Copyright (C) 2015 by Rafael Santiago
+ *                          Copyright (C) 2015, 2016 by Rafael Santiago
  *
  * This is a free software. You can redistribute it and/or modify under
  * the terms of the GNU General Public License version 2.
@@ -8,6 +8,8 @@
 package parser
 
 import (
+    "os"
+    ".."
     "testing"
     "fmt"
 )
@@ -59,4 +61,105 @@ func TestGetNextSetFromData(t *testing.T) {
     if len(set) != 2 || len(data) == 0 || set[0] != "i03" || set[1] != "\"http://www.nowhere.com/images/i03.gif\"" {
         t.Fail()
     }
+}
+
+func TestRealCherryFileParsing(t *testing.T) {
+    //  INFO(Santiago): This Homeric test should be splitted in the future.
+    var cherry_rooms *config.CherryRooms
+    cwd, _ := os.Getwd()
+    os.Chdir("../../../sample")
+    var error *CherryFileError
+    cherry_rooms, error = ParseCherryFile("conf/sample.cherry")
+    os.Chdir(cwd)
+    if error != nil {
+        fmt.Println(error)
+       t.Fail()
+    }
+    if cherry_rooms == nil {
+        t.Fail()
+    }
+    var rooms []string
+    rooms = cherry_rooms.GetRooms()
+    if len(rooms) != 1 {
+        t.Fail()
+    }
+    if rooms[0] != "aliens-on-earth" {
+        t.Fail()
+    }
+    if cherry_rooms.GetListenPort(rooms[0]) != "1024" {
+        t.Fail()
+    }
+    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+        t.Fail()
+    }
+    var exp_action_labels map[string]string
+    exp_action_labels = make(map[string]string)
+    exp_action_labels["a01"] = "talks to"
+    exp_action_labels["a02"] = "screams with"
+    exp_action_labels["a03"] = "IGNORE"
+    exp_action_labels["a04"] = "NOT IGNORE"
+    for a, l := range exp_action_labels {
+        if cherry_rooms.GetRoomActionLabel(rooms[0], a) != l {
+            t.Fail()
+        }
+        if len(cherry_rooms.GetRoomActionTemplate(rooms[0], a)) == 0 {
+            t.Fail()
+        }
+    }
+    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+        t.Fail()
+    }
+    cherry_rooms.AddUser(rooms[0], "dunha", "0", false)
+    if cherry_rooms.GetUsersTotal(rooms[0]) != "1" {
+        t.Fail()
+    }
+    if len(cherry_rooms.GetSessionId("dunha", rooms[0])) == 0 {
+        t.Fail()
+    }
+    if cherry_rooms.GetColor("dunha", rooms[0]) != "0" {
+        t.Fail()
+    }
+    cherry_rooms.RemoveUser(rooms[0], "donha")
+    if cherry_rooms.GetUsersTotal(rooms[0]) != "1" {
+        t.Fail()
+    }
+    cherry_rooms.RemoveUser(rooms[0], "dunha")
+    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+        t.Fail()
+    }
+    if len(cherry_rooms.GetSessionId(rooms[0], "dunha")) != 0 {
+        t.Fail()
+    }
+    message := cherry_rooms.GetNextMessage(rooms[0])
+    if len(message.From)   != 0 ||
+       len(message.To)     != 0 ||
+       len(message.Action) != 0 ||
+       len(message.Image)  != 0 ||
+       len(message.Say)    != 0 ||
+       len(message.Priv)   != 0 {
+        t.Fail()
+    }
+    cherry_rooms.EnqueueMessage(rooms[0], "(null)", "(anyone)", "a01", "i01", "boo!", "1")
+    message = cherry_rooms.GetNextMessage(rooms[0])
+    if message.From   != "(null)"   ||
+       message.To     != "(anyone)" ||
+       message.Action != "a01"      ||
+       message.Image  != "i01"      ||
+       message.Say    != "boo!"     ||
+       message.Priv   != "1" {
+        t.Fail()
+    }
+    for i := 0; i < 2; i++ {
+        cherry_rooms.DequeueMessage(rooms[0])
+        message = cherry_rooms.GetNextMessage(rooms[0])
+        if len(message.From)   != 0 ||
+           len(message.To)     != 0 ||
+           len(message.Action) != 0 ||
+           len(message.Image)  != 0 ||
+           len(message.Say)    != 0 ||
+           len(message.Priv)   != 0 {
+                t.Fail()
+        }
+    }
+
 }

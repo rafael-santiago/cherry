@@ -780,3 +780,7 @@ http://localhost:1024/join
 ```
 
 An entrace form should be spit to you. Go ahead, fill up what it requests and that is all folks!
+
+Something like this:
+
+![Sample](https://github.com/rafael-santiago/cherry/blob/master/etc/sample.gif)

@@ -92,6 +92,33 @@ func TestRealCherryFileParsing(t *testing.T) {
     if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
         t.Fail()
     }
+    if cherry_rooms.GetGreetingMessage(rooms[0]) != "Take meeeeee to your leader!!!" {
+        t.Fail()
+    }
+    if cherry_rooms.GetJoinMessage(rooms[0]) != "joined...<script>scrollIt();</script>" {
+        t.Fail()
+    }
+    if cherry_rooms.GetExitMessage(rooms[0]) != "has left...<script>scrollIt();</script>" {
+        t.Fail()
+    }
+    if cherry_rooms.GetOnIgnoreMessage(rooms[0]) != "(only you can see it) IGNORING " {
+        t.Fail()
+    }
+    if cherry_rooms.GetOnDeIgnoreMessage(rooms[0]) != "(only you can see it) is NOT IGNORING " {
+        t.Fail()
+    }
+    if cherry_rooms.GetPrivateMessageMarker(rooms[0]) != "(private)" {
+        t.Fail()
+    }
+    if cherry_rooms.GetAllUsersAlias(rooms[0]) != "EVERYBODY" {
+        t.Fail()
+    }
+    if cherry_rooms.GetMaxUsers(rooms[0]) != "10" {
+        t.Fail()
+    }
+    if ! cherry_rooms.IsAllowingBriefs(rooms[0]) {
+        t.Fail()
+    }
     var exp_action_labels map[string]string
     exp_action_labels = make(map[string]string)
     exp_action_labels["a01"] = "talks to"
@@ -117,6 +144,17 @@ func TestRealCherryFileParsing(t *testing.T) {
         t.Fail()
     }
     if cherry_rooms.GetColor("dunha", rooms[0]) != "0" {
+        t.Fail()
+    }
+    if len(cherry_rooms.GetIgnoreList("dunha", rooms[0])) != 0 {
+        t.Fail()
+    }
+    cherry_rooms.AddToIgnoreList("dunha", "quiet", rooms[0])
+    if cherry_rooms.GetIgnoreList("dunha", rooms[0]) == "\"quiet\"" {
+        t.Fail()
+    }
+    cherry_rooms.DelFromIgnoreList("dunha", "quiet", rooms[0])
+    if len(cherry_rooms.GetIgnoreList("dunha", rooms[0])) != 0 {
         t.Fail()
     }
     cherry_rooms.RemoveUser(rooms[0], "donha")
@@ -161,5 +199,4 @@ func TestRealCherryFileParsing(t *testing.T) {
                 t.Fail()
         }
     }
-
 }

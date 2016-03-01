@@ -1,4 +1,6 @@
 /*
+Package html implements expanders based on the special makers recognized by Cherry.
+--
  *                               Copyright (C) 2015 by Rafael Santiago
  *
  * This is a free software. You can redistribute it and/or modify under

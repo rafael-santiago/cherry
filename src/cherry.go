@@ -1,4 +1,6 @@
 /*
+Package... errr... hum... guess what?!
+--
  *                               Copyright (C) 2015 by Rafael Santiago
  *
  * This is a free software. You can redistribute it and/or modify under

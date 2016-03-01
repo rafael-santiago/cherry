@@ -1,4 +1,7 @@
 /*
+Package rawhttp implements conveniences related with HTTP request/reply operations.
+ --
+ *
  *                               Copyright (C) 2015 by Rafael Santiago
  *
  * This is a free software. You can redistribute it and/or modify under

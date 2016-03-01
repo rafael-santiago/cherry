@@ -17,7 +17,7 @@ import (
 )
 
 func cherryDefaultHTTPReplyHeader(statusCode int, closeConnection bool) string {
-    var header string = "HTTP/1.1 "
+    var header = "HTTP/1.1 "
     switch (statusCode) {
         case 200:
             header += "200 OK"
@@ -47,6 +47,7 @@ func cherryDefaultHTTPReplyHeader(statusCode int, closeConnection bool) string {
     return header
 }
 
+// MakeReplyBuffer assembles the reply buffer based on the statusCode.
 func MakeReplyBuffer(buffer string, statusCode int, closeConnection bool) []byte {
     return []byte(strings.Replace(cherryDefaultHTTPReplyHeader(statusCode, closeConnection) + buffer,
                                   "{{.content-length}}",
@@ -54,6 +55,7 @@ func MakeReplyBuffer(buffer string, statusCode int, closeConnection bool) []byte
                                   -1))
 }
 
+// GetHTTPFieldFromBuffer returns data carried by some HTTP field inside a HTTP request.
 func GetHTTPFieldFromBuffer(field, buffer string) string {
     index := strings.Index(buffer, field + ":")
     if index == -1 {
@@ -87,6 +89,7 @@ func splitFields(buffer string) map[string]string {
     return retval
 }
 
+// GetFieldsFromPost returns a map containing all fields in a HTTP post.
 func GetFieldsFromPost(buffer string) map[string]string {
     if !strings.HasPrefix(buffer, "POST /") {
         return make(map[string]string)
@@ -98,12 +101,13 @@ func GetFieldsFromPost(buffer string) map[string]string {
     return splitFields(buffer[index+4:])
 }
 
+// GetFieldsFromGet returns a map containing all fields in a HTTP get.
 func GetFieldsFromGet(buffer string) map[string]string {
     if !strings.HasPrefix(buffer, "GET /") {
         return make(map[string]string)
     }
-    var startIndex int = 0
-    var endIndex int = 0
+    var startIndex int
+    var endIndex int
     for buffer[startIndex] != '&' {
         startIndex++
     }

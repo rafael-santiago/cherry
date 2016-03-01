@@ -15,7 +15,7 @@ import (
     "net"
 )
 
-//  INFO(Santiago): It does the all message delivering stuff.
+//  RoomMessagePlexer performs all message delivering stuff.
 func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
     preprocessor := html.NewHTMLPreprocessor(rooms)
     var allUsers = rooms.GetAllUsersAlias(roomName)

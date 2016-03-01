@@ -20,7 +20,7 @@ type Preprocessor struct {
     dataValue map[string]string
 }
 
-func NewHtmlPreprocessor(rooms *config.CherryRooms) *Preprocessor {
+func NewHTMLPreprocessor(rooms *config.CherryRooms) *Preprocessor {
     var preprocessor *Preprocessor
     preprocessor = new(Preprocessor)
     preprocessor.Init(rooms)

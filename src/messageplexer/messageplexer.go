@@ -7,7 +7,7 @@ import (
 )
 
 func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
-    preprocessor := html.NewHtmlPreprocessor(rooms)
+    preprocessor := html.NewHTMLPreprocessor(rooms)
     var allUsers string = rooms.GetAllUsersAlias(roomName)
     for {
         currMessage := rooms.GetNextMessage(roomName)

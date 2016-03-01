@@ -13,7 +13,7 @@ import (
     "net/url"
 )
 
-func cherryDefaultHttpReplyHeader(statusCode int, closeConnection bool) string {
+func cherryDefaultHTTPReplyHeader(statusCode int, closeConnection bool) string {
     var header string = "HTTP/1.1 "
     switch (statusCode) {
         case 200:
@@ -45,13 +45,13 @@ func cherryDefaultHttpReplyHeader(statusCode int, closeConnection bool) string {
 }
 
 func MakeReplyBuffer(buffer string, statusCode int, closeConnection bool) []byte {
-    return []byte(strings.Replace(cherryDefaultHttpReplyHeader(statusCode, closeConnection) + buffer,
+    return []byte(strings.Replace(cherryDefaultHTTPReplyHeader(statusCode, closeConnection) + buffer,
                                   "{{.content-length}}",
                                   fmt.Sprintf("%d", len(buffer)),
                                   -1))
 }
 
-func GetHttpFieldFromBuffer(field, buffer string) string {
+func GetHTTPFieldFromBuffer(field, buffer string) string {
     index := strings.Index(buffer, field + ":")
     if index == -1 {
         return ""
@@ -72,9 +72,9 @@ func GetHttpFieldFromBuffer(field, buffer string) string {
 }
 
 func splitFields(buffer string) map[string]string {
-    data_value := strings.Split(buffer, "&")
+    dataValue := strings.Split(buffer, "&")
     retval := make(map[string]string)
-    for _, dv := range data_value {
+    for _, dv := range dataValue {
         set := strings.Split(dv, "=")
         if len(set) == 2 {
             data, _ := url.QueryUnescape(set[1])

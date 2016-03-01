@@ -20,22 +20,22 @@ import (
     "strings"
 )
 
-func ProcessNewConnection(new_conn net.Conn, room_name string, rooms *config.CherryRooms) {
+func ProcessNewConnection(newConn net.Conn, roomName string, rooms *config.CherryRooms) {
     buf := make([]byte, 4096)
-    buf_len, err := new_conn.Read(buf)
+    bufLen, err := newConn.Read(buf)
     if err == nil {
-        preprocessor := html.NewHtmlPreprocessor(rooms)
-        http_payload := string(buf[:buf_len])
+        preprocessor := html.NewHTMLPreprocessor(rooms)
+        httpPayload := string(buf[:bufLen])
         var trap reqtraps.RequestTrap
-        trap = reqtraps.GetRequestTrap(http_payload)
-        trap().Handle(new_conn, room_name, http_payload, rooms, preprocessor)
+        trap = reqtraps.GetRequestTrap(httpPayload)
+        trap().Handle(newConn, roomName, httpPayload, rooms, preprocessor)
     } else {
-        new_conn.Close()
+        newConn.Close()
     }
 }
 
-func MainPeer(room_name string, c *config.CherryRooms) {
-    port := c.GetListenPort(room_name)
+func MainPeer(roomName string, c *config.CherryRooms) {
+    port := c.GetListenPort(roomName)
     var port_num int64
     port_num, _ = strconv.ParseInt(port, 10, 16)
     var err error
@@ -53,7 +53,7 @@ func MainPeer(room_name string, c *config.CherryRooms) {
             fmt.Println(err.Error())
             os.Exit(1)
         }
-        go ProcessNewConnection(conn, room_name, c)
+        go ProcessNewConnection(conn, roomName, c)
     }
 }
 
@@ -67,25 +67,25 @@ func GetOption(option, default_value string) string {
 }
 
 func main() {
-    var cherry_rooms *config.CherryRooms
+    var cherryRooms *config.CherryRooms
     var err *parser.CherryFileError
-    var config_path string
-    config_path = GetOption("config", "")
-    if len(config_path) == 0 {
+    var configPath string
+    configPath = GetOption("config", "")
+    if len(configPath) == 0 {
         fmt.Println("ERROR: --config option is missing.")
         os.Exit(1)
     }
-    cherry_rooms, err = parser.ParseCherryFile(config_path)
+    cherryRooms, err = parser.ParseCherryFile(configPath)
     if err != nil {
         fmt.Println(err.Error())
     } else {
-        rooms := cherry_rooms.GetRooms()
+        rooms := cherryRooms.GetRooms()
         for ri, r := range rooms {
-            go messageplexer.RoomMessagePlexer(r, cherry_rooms)
+            go messageplexer.RoomMessagePlexer(r, cherryRooms)
             if ri < len(rooms) - 1 {
-                go MainPeer(r, cherry_rooms)
+                go MainPeer(r, cherryRooms)
             } else {
-                MainPeer(r, cherry_rooms)
+                MainPeer(r, cherryRooms)
             }
         }
     }

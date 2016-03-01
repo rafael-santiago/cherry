@@ -16,7 +16,7 @@ import (
 )
 
 func PreprocessorBasicTest(t *testing.T) {
-    preprocessor := html.NewHtmlPreprocessor(nil)
+    preprocessor := html.NewHTMLPreprocessor(nil)
     if preprocessor.ExpandData("land-of-competition", "{{.FoD}} Zzz...") != "{{.FoD}} Zzz..." {
         t.Fail()
     }

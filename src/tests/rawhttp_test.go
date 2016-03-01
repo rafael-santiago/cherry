@@ -26,7 +26,7 @@ func TestGetFieldsFromPost(t *testing.T) {
 }
 
 func TestGetHttpFieldFromBuffer(t *testing.T) {
-    if rawhttp.GetHttpFieldFromBuffer("Content-Length", "GET /abc/xy/z.log HTTP/1.0\r\nContent-Length: 255\r\n") != "255" {
+    if rawhttp.GetHTTPFieldFromBuffer("Content-Length", "GET /abc/xy/z.log HTTP/1.0\r\nContent-Length: 255\r\n") != "255" {
         t.Fail()
     }
 }

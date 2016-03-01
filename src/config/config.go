@@ -17,18 +17,18 @@ import (
 )
 
 type RoomMisc struct {
-    listen_port int16
-    join_message string
-    exit_message string
-    on_ignore_message string
-    on_deignore_message string
-    greeting_message string
-    private_message_marker string
-    max_users int
-    allow_brief bool
-    flooding_police bool
-    max_flood_allowed_before_kick int
-    all_users_alias string
+    listenPort int16
+    joinMessage string
+    exitMessage string
+    onIgnoreMessage string
+    onDeIgnoreMessage string
+    greetingMessage string
+    privateMessageMarker string
+    maxUsers int
+    allowBrief bool
+    floodingPolice bool
+    maxFloodAllowedBeforeKick int
+    allUsersAlias string
 }
 
 type RoomAction struct {
@@ -84,22 +84,22 @@ func NewCherryRooms() *CherryRooms {
     return &CherryRooms{make(map[string]*RoomConfig), "localhost"}
 }
 
-func (c *CherryRooms) GetRoomActionLabel(room_name, action string) string {
-    c.Lock(room_name)
+func (c *CherryRooms) GetRoomActionLabel(roomName, action string) string {
+    c.Lock(roomName)
     var label string
-    label = c.configs[room_name].actions[action].label
-    c.Unlock(room_name)
+    label = c.configs[roomName].actions[action].label
+    c.Unlock(roomName)
     return label
 }
 
-func (c *CherryRooms) GetRoomUsers(room_name string) []string {
+func (c *CherryRooms) GetRoomUsers(roomName string) []string {
     var users []string
     users = make([]string, 0)
-    c.Lock(room_name)
-    for user, _ := range c.configs[room_name].users {
+    c.Lock(roomName)
+    for user, _ := range c.configs[roomName].users {
         users = append(users, user)
     }
-    c.Unlock(room_name)
+    c.Unlock(roomName)
     return users
 }
 
@@ -112,391 +112,391 @@ func (c *CherryRooms) GetRooms() []string {
     return rooms
 }
 
-func (c *CherryRooms) GetUserConnection(room_name, user string) net.Conn {
+func (c *CherryRooms) GetUserConnection(roomName, user string) net.Conn {
     var conn net.Conn
-    c.Lock(room_name)
-    conn = c.configs[room_name].users[user].conn
-    c.Unlock(room_name)
+    c.Lock(roomName)
+    conn = c.configs[roomName].users[user].conn
+    c.Unlock(roomName)
     return conn
 }
 
-func (c *CherryRooms) GetRoomActionTemplate(room_name, action string) string {
-    c.Lock(room_name)
+func (c *CherryRooms) GetRoomActionTemplate(roomName, action string) string {
+    c.Lock(roomName)
     var template string
-    template = c.configs[room_name].actions[action].template
-    c.Unlock(room_name)
+    template = c.configs[roomName].actions[action].template
+    c.Unlock(roomName)
     return template
 }
 
-func (c *CherryRooms) AddUser(room_name, nickname, color string, kickout bool) {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) AddUser(roomName, nickname, color string, kickout bool) {
+    c.configs[roomName].mutex.Lock()
     md := md5.New()
-    io.WriteString(md, room_name + nickname + color)
+    io.WriteString(md, roomName + nickname + color)
     id := fmt.Sprintf("%x", md.Sum(nil))
-    c.configs[room_name].users[nickname] = &RoomUser{id, color, make([]string, 0), kickout, nil}
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].users[nickname] = &RoomUser{id, color, make([]string, 0), kickout, nil}
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) RemoveUser(room_name, nickname string) {
-    c.configs[room_name].mutex.Lock()
-    delete(c.configs[room_name].users, nickname)
-    c.configs[room_name].mutex.Unlock()
+func (c *CherryRooms) RemoveUser(roomName, nickname string) {
+    c.configs[roomName].mutex.Lock()
+    delete(c.configs[roomName].users, nickname)
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) EnqueueMessage(room_name, from, to, action, image, say, priv string) {
-    c.configs[room_name].mutex.Lock()
-    c.configs[room_name].message_queue = append(c.configs[room_name].message_queue, Message{from, to, action, image, say, priv})
-    c.configs[room_name].mutex.Unlock()
+func (c *CherryRooms) EnqueueMessage(roomName, from, to, action, image, say, priv string) {
+    c.configs[roomName].mutex.Lock()
+    c.configs[roomName].message_queue = append(c.configs[roomName].message_queue, Message{from, to, action, image, say, priv})
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) DequeueMessage(room_name string) {
-    c.configs[room_name].mutex.Lock()
-    if len(c.configs[room_name].message_queue) >= 1 {
-        c.configs[room_name].message_queue = c.configs[room_name].message_queue[1:]
+func (c *CherryRooms) DequeueMessage(roomName string) {
+    c.configs[roomName].mutex.Lock()
+    if len(c.configs[roomName].message_queue) >= 1 {
+        c.configs[roomName].message_queue = c.configs[roomName].message_queue[1:]
     }
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) GetNextMessage(room_name string) Message {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetNextMessage(roomName string) Message {
+    c.configs[roomName].mutex.Lock()
     var message Message
-    if len(c.configs[room_name].message_queue) > 0 {
-        message = c.configs[room_name].message_queue[0]
+    if len(c.configs[roomName].message_queue) > 0 {
+        message = c.configs[roomName].message_queue[0]
     } else {
         message = Message{}
     }
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetSessionId(from, room_name string) string {
-    if len(from) == 0 || !c.HasUser(room_name, from) {
+func (c *CherryRooms) GetSessionId(from, roomName string) string {
+    if len(from) == 0 || !c.HasUser(roomName, from) {
         return ""
     }
-    c.configs[room_name].mutex.Lock()
-    var session_id string
-    session_id = c.configs[room_name].users[from].session_id
-    c.configs[room_name].mutex.Unlock()
-    return session_id
+    c.configs[roomName].mutex.Lock()
+    var sessionId string
+    sessionId = c.configs[roomName].users[from].session_id
+    c.configs[roomName].mutex.Unlock()
+    return sessionId
 }
 
-func (c *CherryRooms) GetColor(from, room_name string) string {
-    if len(from) == 0 || !c.HasUser(room_name, from) {
+func (c *CherryRooms) GetColor(from, roomName string) string {
+    if len(from) == 0 || !c.HasUser(roomName, from) {
         return ""
     }
-    c.configs[room_name].mutex.Lock()
+    c.configs[roomName].mutex.Lock()
     var color string
-    color = c.configs[room_name].users[from].color
-    c.configs[room_name].mutex.Unlock()
+    color = c.configs[roomName].users[from].color
+    c.configs[roomName].mutex.Unlock()
     return color
 }
 
-func (c *CherryRooms) GetIgnoreList(from, room_name string) string {
-    if len(from) == 0 || !c.HasUser(room_name, from) {
+func (c *CherryRooms) GetIgnoreList(from, roomName string) string {
+    if len(from) == 0 || !c.HasUser(roomName, from) {
         return ""
     }
-    c.configs[room_name].mutex.Lock()
-    var ignore_list string
-    ignoring := c.configs[room_name].users[from].ignorelist
-    last_index := len(ignoring) - 1
+    c.configs[roomName].mutex.Lock()
+    var ignoreList string
+    ignoring := c.configs[roomName].users[from].ignorelist
+    lastIndex := len(ignoring) - 1
     for c, who := range ignoring {
-        ignore_list += "\"" + who + "\""
-        if c != last_index {
+        ignoreList += "\"" + who + "\""
+        if c != lastIndex {
             who += ", "
         }
     }
-    c.configs[room_name].mutex.Unlock()
-    return ignore_list
+    c.configs[roomName].mutex.Unlock()
+    return ignoreList
 }
 
-func (c *CherryRooms) AddToIgnoreList(from, to, room_name string) {
-    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+func (c *CherryRooms) AddToIgnoreList(from, to, roomName string) {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(roomName, from) || !c.HasUser(roomName, to) {
         return
     }
-    c.configs[room_name].mutex.Lock()
-    for _, t := range c.configs[room_name].users[from].ignorelist {
+    c.configs[roomName].mutex.Lock()
+    for _, t := range c.configs[roomName].users[from].ignorelist {
         if t == to {
-            c.configs[room_name].mutex.Unlock()
+            c.configs[roomName].mutex.Unlock()
             return
         }
     }
-    c.configs[room_name].users[from].ignorelist = append(c.configs[room_name].users[from].ignorelist, to)
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].users[from].ignorelist = append(c.configs[roomName].users[from].ignorelist, to)
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) DelFromIgnoreList(from, to, room_name string) {
-    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+func (c *CherryRooms) DelFromIgnoreList(from, to, roomName string) {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(roomName, from) || !c.HasUser(roomName, to) {
         return
     }
     var index int = -1
-    c.configs[room_name].mutex.Lock()
-    for it, t := range c.configs[room_name].users[from].ignorelist {
+    c.configs[roomName].mutex.Lock()
+    for it, t := range c.configs[roomName].users[from].ignorelist {
         if t == to {
             index = it
             break
         }
     }
     if index != -1 {
-        c.configs[room_name].users[from].ignorelist = append(c.configs[room_name].users[from].ignorelist[:index], c.configs[room_name].users[from].ignorelist[index+1:]...)
+        c.configs[roomName].users[from].ignorelist = append(c.configs[roomName].users[from].ignorelist[:index], c.configs[roomName].users[from].ignorelist[index+1:]...)
     }
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].mutex.Unlock()
 }
 
-func (c *CherryRooms) IsIgnored(from, to, room_name string) bool {
-    if len(from) == 0 || len(to) == 0 || !c.HasUser(room_name, from) || !c.HasUser(room_name, to) {
+func (c *CherryRooms) IsIgnored(from, to, roomName string) bool {
+    if len(from) == 0 || len(to) == 0 || !c.HasUser(roomName, from) || !c.HasUser(roomName, to) {
         return false
     }
     var retval bool = false
-    c.configs[room_name].mutex.Lock()
-    for _, t := range c.configs[room_name].users[from].ignorelist {
+    c.configs[roomName].mutex.Lock()
+    for _, t := range c.configs[roomName].users[from].ignorelist {
         if t == to {
             retval = true
             break
         }
     }
-    c.configs[room_name].mutex.Unlock()
+    c.configs[roomName].mutex.Unlock()
     return retval
 }
 
-func (c *CherryRooms) GetGreetingMessage(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetGreetingMessage(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.greeting_message
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.greetingMessage
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetJoinMessage(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetJoinMessage(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.join_message
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.joinMessage
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetExitMessage(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetExitMessage(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.exit_message
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.exitMessage
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetOnIgnoreMessage(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetOnIgnoreMessage(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.on_ignore_message
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.onIgnoreMessage
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetOnDeIgnoreMessage(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetOnDeIgnoreMessage(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.on_deignore_message
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.onDeIgnoreMessage
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetPrivateMessageMarker(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetPrivateMessageMarker(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var message string
-    message = c.configs[room_name].misc.private_message_marker
-    c.configs[room_name].mutex.Unlock()
+    message = c.configs[roomName].misc.privateMessageMarker
+    c.configs[roomName].mutex.Unlock()
     return message
 }
 
-func (c *CherryRooms) GetMaxUsers(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetMaxUsers(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var max string
-    max = fmt.Sprintf("%d", c.configs[room_name].misc.max_users)
-    c.configs[room_name].mutex.Unlock()
+    max = fmt.Sprintf("%d", c.configs[roomName].misc.maxUsers)
+    c.configs[roomName].mutex.Unlock()
     return max
 }
 
-func (c *CherryRooms) GetAllUsersAlias(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetAllUsersAlias(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var alias string
-    alias = c.configs[room_name].misc.all_users_alias
-    c.configs[room_name].mutex.Unlock()
+    alias = c.configs[roomName].misc.allUsersAlias
+    c.configs[roomName].mutex.Unlock()
     return alias
 }
 
-func (c *CherryRooms) GetActionList(room_name string) string {
-    c.Lock(room_name)
-    var action_list string = ""
+func (c *CherryRooms) GetActionList(roomName string) string {
+    c.Lock(roomName)
+    var actionList string = ""
     var actions []string
     actions = make([]string, 0)
-    for action, _ := range c.configs[room_name].actions {
+    for action, _ := range c.configs[roomName].actions {
         actions = append(actions, action)
     }
     sort.Strings(actions)
     for _, action := range actions {
-        action_list += "<option value = \"" + action + "\">" + c.configs[room_name].actions[action].label + "\n"
+        actionList += "<option value = \"" + action + "\">" + c.configs[roomName].actions[action].label + "\n"
     }
-    c.Unlock(room_name)
-    return action_list
+    c.Unlock(roomName)
+    return actionList
 }
 
-func(c *CherryRooms) get_media_resource_list(room_name string, media_resource map[string]*RoomMediaResource) string {
-    c.Lock(room_name)
-    var media_rsrc_list string = ""
+func(c *CherryRooms) get_media_resource_list(roomName string, mediaResource map[string]*RoomMediaResource) string {
+    c.Lock(roomName)
+    var mediaRsrcList string = ""
     var resources []string
     resources = make([]string, 0)
-    for resource, _ := range media_resource {
+    for resource, _ := range mediaResource {
         resources = append(resources, resource)
     }
     sort.Strings(resources)
     for _, resource := range resources {
-        media_rsrc_list += "<option value = \"" + resource + "\">" + media_resource[resource].label + "\n"
+        mediaRsrcList += "<option value = \"" + resource + "\">" + mediaResource[resource].label + "\n"
     }
-    c.Unlock(room_name)
-    return media_rsrc_list
+    c.Unlock(roomName)
+    return mediaRsrcList
 }
 
-func (c *CherryRooms) GetImageList(room_name string) string {
-    return c.get_media_resource_list(room_name, c.configs[room_name].images)
+func (c *CherryRooms) GetImageList(roomName string) string {
+    return c.get_media_resource_list(roomName, c.configs[roomName].images)
 }
 
 //func (c *CherryRooms) GetSoundList(room_name string) string {
 //    return c.get_media_resource_list(room_name, c.configs[room_name].sounds)
 //}
 
-func (c *CherryRooms) GetUsersList(room_name string) string {
-    c.Lock(room_name)
+func (c *CherryRooms) GetUsersList(roomName string) string {
+    c.Lock(roomName)
     var users []string
     users = make([]string, 0)
-    for user, _ := range c.configs[room_name].users {
+    for user, _ := range c.configs[roomName].users {
         users = append(users, user)
     }
     //  WARN(Santiago): Already locked, we can acquire this piece of information directly... otherwise we got a deadlock.
-    all_users_alias := c.configs[room_name].misc.all_users_alias
-    var users_list string = "<option value = \"" + all_users_alias + "\">" + all_users_alias + "\n"
+    allUsersAlias := c.configs[roomName].misc.allUsersAlias
+    var usersList string = "<option value = \"" + allUsersAlias + "\">" + allUsersAlias + "\n"
     sort.Strings(users)
     for _, user := range users {
-        users_list += "<option value = \"" + user + "\">" + user + "\n"
+        usersList += "<option value = \"" + user + "\">" + user + "\n"
     }
-    c.Unlock(room_name)
-    return users_list
+    c.Unlock(roomName)
+    return usersList
 }
 
-func (c *CherryRooms) get_room_template(room_name, template string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) get_room_template(roomName, template string) string {
+    c.configs[roomName].mutex.Lock()
     var data string
-    data = c.configs[room_name].templates[template]
-    c.configs[room_name].mutex.Unlock()
+    data = c.configs[roomName].templates[template]
+    c.configs[roomName].mutex.Unlock()
     return data
 }
 
-func (c *CherryRooms) GetTopTemplate(room_name string) string {
-    return c.get_room_template(room_name, "top")
+func (c *CherryRooms) GetTopTemplate(roomName string) string {
+    return c.get_room_template(roomName, "top")
 }
 
-func (c *CherryRooms) GetBodyTemplate(room_name string) string {
-    return c.get_room_template(room_name, "body")
+func (c *CherryRooms) GetBodyTemplate(roomName string) string {
+    return c.get_room_template(roomName, "body")
 }
 
-func (c *CherryRooms) GetBannerTemplate(room_name string) string {
-    return c.get_room_template(room_name, "banner")
+func (c *CherryRooms) GetBannerTemplate(roomName string) string {
+    return c.get_room_template(roomName, "banner")
 }
 
-func (c *CherryRooms) GetHighlightTemplate(room_name string) string {
-    return c.get_room_template(room_name, "highlight")
+func (c *CherryRooms) GetHighlightTemplate(roomName string) string {
+    return c.get_room_template(roomName, "highlight")
 }
 
-func (c *CherryRooms) GetEntranceTemplate(room_name string) string {
-    return c.get_room_template(room_name, "entrance")
+func (c *CherryRooms) GetEntranceTemplate(roomName string) string {
+    return c.get_room_template(roomName, "entrance")
 }
 
-func (c *CherryRooms) GetExitTemplate(room_name string) string {
-    return c.get_room_template(room_name, "exit")
+func (c *CherryRooms) GetExitTemplate(roomName string) string {
+    return c.get_room_template(roomName, "exit")
 }
 
-func (c *CherryRooms) GetNickclashTemplate(room_name string) string {
-    return c.get_room_template(room_name, "nickclash")
+func (c *CherryRooms) GetNickclashTemplate(roomName string) string {
+    return c.get_room_template(roomName, "nickclash")
 }
 
-func (c *CherryRooms) GetSkeletonTemplate(room_name string) string {
-    return c.get_room_template(room_name, "skeleton")
+func (c *CherryRooms) GetSkeletonTemplate(roomName string) string {
+    return c.get_room_template(roomName, "skeleton")
 }
 
-func (c *CherryRooms) GetBriefTemplate(room_name string) string {
-    return c.get_room_template(room_name, "brief")
+func (c *CherryRooms) GetBriefTemplate(roomName string) string {
+    return c.get_room_template(roomName, "brief")
 }
 
-func (c *CherryRooms) GetFindResultsHeadTemplate(room_name string) string {
-    return c.get_room_template(room_name, "find-results-head")
+func (c *CherryRooms) GetFindResultsHeadTemplate(roomName string) string {
+    return c.get_room_template(roomName, "find-results-head")
 }
 
-func (c *CherryRooms) GetFindResultsBodyTemplate(room_name string) string {
-    return c.get_room_template(room_name, "find-results-body")
+func (c *CherryRooms) GetFindResultsBodyTemplate(roomName string) string {
+    return c.get_room_template(roomName, "find-results-body")
 }
 
-func (c *CherryRooms) GetFindResultsTailTemplate(room_name string) string {
-    return c.get_room_template(room_name, "find-results-tail")
+func (c *CherryRooms) GetFindResultsTailTemplate(roomName string) string {
+    return c.get_room_template(roomName, "find-results-tail")
 }
 
-func (c *CherryRooms) GetFindBotTemplate(room_name string) string {
-    return c.get_room_template(room_name, "find-bot")
+func (c *CherryRooms) GetFindBotTemplate(roomName string) string {
+    return c.get_room_template(roomName, "find-bot")
 }
 
-func (c *CherryRooms) GetLastPublicMessages(room_name string) string {
-    if !c.HasRoom(room_name) {
+func (c *CherryRooms) GetLastPublicMessages(roomName string) string {
+    if !c.HasRoom(roomName) {
         return ""
     }
     var retval string
-    c.Lock(room_name)
-    msgs := c.configs[room_name].public_messages
-    c.Unlock(room_name)
+    c.Lock(roomName)
+    msgs := c.configs[roomName].public_messages
+    c.Unlock(roomName)
     for _, m := range msgs {
         retval += m
     }
     return retval
 }
 
-func (c *CherryRooms) AddPublicMessage(room_name, message string) {
-    if !c.HasRoom(room_name) {
+func (c *CherryRooms) AddPublicMessage(roomName, message string) {
+    if !c.HasRoom(roomName) {
         return
     }
-    c.Lock(room_name)
-    if (len(c.configs[room_name].public_messages) == 10) {
-        c.configs[room_name].public_messages = c.configs[room_name].public_messages[1:len(c.configs[room_name].public_messages)-1]
+    c.Lock(roomName)
+    if (len(c.configs[roomName].public_messages) == 10) {
+        c.configs[roomName].public_messages = c.configs[roomName].public_messages[1:len(c.configs[roomName].public_messages)-1]
     }
-    c.configs[room_name].public_messages = append(c.configs[room_name].public_messages, message)
-    c.Unlock(room_name)
+    c.configs[roomName].public_messages = append(c.configs[roomName].public_messages, message)
+    c.Unlock(roomName)
 }
 
-func (c *CherryRooms) GetListenPort(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetListenPort(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var port string
-    port = fmt.Sprintf("%d", c.configs[room_name].misc.listen_port)
-    c.configs[room_name].mutex.Unlock()
+    port = fmt.Sprintf("%d", c.configs[roomName].misc.listenPort)
+    c.configs[roomName].mutex.Unlock()
     return port
 }
 
-func (c *CherryRooms) GetUsersTotal(room_name string) string {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) GetUsersTotal(roomName string) string {
+    c.configs[roomName].mutex.Lock()
     var total string
-    total = fmt.Sprintf("%d", len(c.configs[room_name].users))
-    c.configs[room_name].mutex.Unlock()
+    total = fmt.Sprintf("%d", len(c.configs[roomName].users))
+    c.configs[roomName].mutex.Unlock()
     return total
 }
 
-func (c *CherryRooms) AddRoom(room_name string, listen_port int16) bool {
-    if c.HasRoom(room_name) || c.PortBusyByAnotherRoom(listen_port) {
+func (c *CherryRooms) AddRoom(roomName string, listenPort int16) bool {
+    if c.HasRoom(roomName) || c.PortBusyByAnotherRoom(listenPort) {
         return false
     }
-    c.configs[room_name] = c.init_config()
-    c.configs[room_name].misc.listen_port = listen_port
-    return true;
+    c.configs[roomName] = c.init_config()
+    c.configs[roomName].misc.listenPort = listenPort
+    return true
 }
 
-func (c *CherryRooms) AddAction(room_name, id, label, template string) {
-    c.configs[room_name].actions[id] = &RoomAction{label, template}
+func (c *CherryRooms) AddAction(roomName, id, label, template string) {
+    c.configs[roomName].actions[id] = &RoomAction{label, template}
 }
 
-func (c *CherryRooms) AddImage(room_name, id, label, template, url string) {
-    c.configs[room_name].images[id] = c.new_media_resource(label, template, url)
+func (c *CherryRooms) AddImage(roomName, id, label, template, url string) {
+    c.configs[roomName].images[id] = c.new_media_resource(label, template, url)
 }
 
 //func (c *CherryRooms) AddSound(room_name, id, label, template, url string) {
@@ -507,13 +507,13 @@ func (c *CherryRooms) new_media_resource(label, template, url string) *RoomMedia
     return &RoomMediaResource{label, template, url}
 }
 
-func (c *CherryRooms) HasAction(room_name, id string) bool {
-    _, ok := c.configs[room_name].actions[id]
+func (c *CherryRooms) HasAction(roomName, id string) bool {
+    _, ok := c.configs[roomName].actions[id]
     return ok
 }
 
-func (c *CherryRooms) HasImage(room_name, id string) bool {
-    _, ok := c.configs[room_name].images[id]
+func (c *CherryRooms) HasImage(roomName, id string) bool {
+    _, ok := c.configs[roomName].images[id]
     return ok
 }
 
@@ -522,14 +522,14 @@ func (c *CherryRooms) HasImage(room_name, id string) bool {
 //    return ok
 //}
 
-func (c *CherryRooms) HasRoom(room_name string) bool {
-    _, ok := c.configs[room_name]
+func (c *CherryRooms) HasRoom(roomName string) bool {
+    _, ok := c.configs[roomName]
     return ok
 }
 
 func (c *CherryRooms) PortBusyByAnotherRoom(port int16) bool {
     for _, c := range c.configs {
-        if c.misc.listen_port == port {
+        if c.misc.listenPort == port {
             return true
         }
     }
@@ -538,7 +538,7 @@ func (c *CherryRooms) PortBusyByAnotherRoom(port int16) bool {
 
 func (c *CherryRooms) GetRoomByPort(port int16) *RoomConfig {
     for _, r := range c.configs {
-        if r.misc.listen_port == port {
+        if r.misc.listenPort == port {
             return r
         }
     }
@@ -560,69 +560,69 @@ func (c *CherryRooms) init_config() *RoomConfig {
     return room_config
 }
 
-func (c *CherryRooms) AddTemplate(room_name, id, template string) {
-    c.configs[room_name].templates[id] = template
+func (c *CherryRooms) AddTemplate(roomName, id, template string) {
+    c.configs[roomName].templates[id] = template
 }
 
-func (c *CherryRooms) HasTemplate(room_name, id string) bool {
-    _, ok := c.configs[room_name].templates[id]
+func (c *CherryRooms) HasTemplate(roomName, id string) bool {
+    _, ok := c.configs[roomName].templates[id]
     return ok
 }
 
-func (c *CherryRooms) SetJoinMessage(room_name, message string) {
-    c.configs[room_name].misc.join_message = message
+func (c *CherryRooms) SetJoinMessage(roomName, message string) {
+    c.configs[roomName].misc.joinMessage = message
 }
 
-func (c *CherryRooms) SetExitMessage(room_name, message string) {
-    c.configs[room_name].misc.exit_message = message
+func (c *CherryRooms) SetExitMessage(roomName, message string) {
+    c.configs[roomName].misc.exitMessage = message
 }
 
-func (c *CherryRooms) SetOnIgnoreMessage(room_name, message string) {
-    c.configs[room_name].misc.on_ignore_message = message
+func (c *CherryRooms) SetOnIgnoreMessage(roomName, message string) {
+    c.configs[roomName].misc.onIgnoreMessage = message
 }
 
-func (c *CherryRooms) SetOnDeIgnoreMessage(room_name, message string) {
-    c.configs[room_name].misc.on_deignore_message = message
+func (c *CherryRooms) SetOnDeIgnoreMessage(roomName, message string) {
+    c.configs[roomName].misc.onDeIgnoreMessage = message
 }
 
-func (c *CherryRooms) SetGreetingMessage(room_name, message string) {
-    c.configs[room_name].misc.greeting_message = message
+func (c *CherryRooms) SetGreetingMessage(roomName, message string) {
+    c.configs[roomName].misc.greetingMessage = message
 }
 
-func (c *CherryRooms) SetPrivateMessageMarker(room_name, marker string) {
-    c.configs[room_name].misc.private_message_marker = marker
+func (c *CherryRooms) SetPrivateMessageMarker(roomName, marker string) {
+    c.configs[roomName].misc.privateMessageMarker = marker
 }
 
-func (c *CherryRooms) SetMaxUsers(room_name string, value int) {
-    c.configs[room_name].misc.max_users = value
+func (c *CherryRooms) SetMaxUsers(roomName string, value int) {
+    c.configs[roomName].misc.maxUsers = value
 }
 
-func (c *CherryRooms) SetAllowBrief(room_name string, value bool) {
-    c.configs[room_name].misc.allow_brief = value
+func (c *CherryRooms) SetAllowBrief(roomName string, value bool) {
+    c.configs[roomName].misc.allowBrief = value
 }
 
-func (c *CherryRooms) IsAllowingBriefs(room_name string) bool {
-    return c.configs[room_name].misc.allow_brief
+func (c *CherryRooms) IsAllowingBriefs(roomName string) bool {
+    return c.configs[roomName].misc.allowBrief
 }
 
-func (c *CherryRooms) SetFloodingPolice(room_name string, value bool) {
-    c.configs[room_name].misc.flooding_police = value
+func (c *CherryRooms) SetFloodingPolice(roomName string, value bool) {
+    c.configs[roomName].misc.floodingPolice = value
 }
 
-func (c *CherryRooms) SetMaxFloodAllowedBeforeKick(room_name string, value int) {
-    c.configs[room_name].misc.max_flood_allowed_before_kick = value
+func (c *CherryRooms) SetMaxFloodAllowedBeforeKick(roomName string, value int) {
+    c.configs[roomName].misc.maxFloodAllowedBeforeKick = value
 }
 
-func (c *CherryRooms) SetAllUsersAlias(room_name, alias string) {
-    c.configs[room_name].misc.all_users_alias = alias
+func (c *CherryRooms) SetAllUsersAlias(roomName, alias string) {
+    c.configs[roomName].misc.allUsersAlias = alias
 }
 
-func (c *CherryRooms) Lock(room_name string) {
-    c.configs[room_name].mutex.Lock()
+func (c *CherryRooms) Lock(roomName string) {
+    c.configs[roomName].mutex.Lock()
 }
 
-func (c *CherryRooms) Unlock(room_name string) {
-    c.configs[room_name].mutex.Unlock()
+func (c *CherryRooms) Unlock(roomName string) {
+    c.configs[roomName].mutex.Unlock()
 }
 
 func (c *CherryRooms) GetServername() string {
@@ -633,55 +633,55 @@ func (c *CherryRooms) SetServername(servername string) {
     c.servername = servername
 }
 
-func (c *CherryRooms) HasUser(room_name, user string) bool {
-    _, ok := c.configs[room_name]
+func (c *CherryRooms) HasUser(roomName, user string) bool {
+    _, ok := c.configs[roomName]
     if !ok {
         return false
     }
-    _, ok = c.configs[room_name].users[user]
+    _, ok = c.configs[roomName].users[user]
     return ok
 }
 
-func (c *CherryRooms) IsValidUserRequest(room_name, user, id string) bool {
+func (c *CherryRooms) IsValidUserRequest(roomName, user, id string) bool {
     var valid bool = false
-    if (c.HasUser(room_name, user)) {
-        valid = (id == c.GetSessionId(user, room_name))
+    if (c.HasUser(roomName, user)) {
+        valid = (id == c.GetSessionId(user, roomName))
     }
     return valid
 }
 
-func (c *CherryRooms) SetIgnoreAction(room_name, action string) {
-    c.Lock(room_name)
-    c.configs[room_name].ignore_action = action
-    c.Unlock(room_name)
+func (c *CherryRooms) SetIgnoreAction(roomName, action string) {
+    c.Lock(roomName)
+    c.configs[roomName].ignore_action = action
+    c.Unlock(roomName)
 }
 
-func (c *CherryRooms) SetDeIgnoreAction(room_name, action string) {
-    c.Lock(room_name)
-    c.configs[room_name].deignore_action = action
-    c.Unlock(room_name)
+func (c *CherryRooms) SetDeIgnoreAction(roomName, action string) {
+    c.Lock(roomName)
+    c.configs[roomName].deignore_action = action
+    c.Unlock(roomName)
 }
 
-func (c *CherryRooms) GetIgnoreAction(room_name string) string {
-    c.Lock(room_name)
+func (c *CherryRooms) GetIgnoreAction(roomName string) string {
+    c.Lock(roomName)
     var retval string
-    retval = c.configs[room_name].ignore_action
-    c.Unlock(room_name)
+    retval = c.configs[roomName].ignore_action
+    c.Unlock(roomName)
     return retval
 }
 
-func (c *CherryRooms) GetDeIgnoreAction(room_name string) string {
-    c.Lock(room_name)
+func (c *CherryRooms) GetDeIgnoreAction(roomName string) string {
+    c.Lock(roomName)
     var retval string
-    retval = c.configs[room_name].deignore_action
-    c.Unlock(room_name)
+    retval = c.configs[roomName].deignore_action
+    c.Unlock(roomName)
     return retval
 }
 
-func (c *CherryRooms) SetUserConnection(room_name, user string, conn net.Conn) {
-    c.Lock(room_name)
-    c.configs[room_name].users[user].conn = conn
-    c.Unlock(room_name)
+func (c *CherryRooms) SetUserConnection(roomName, user string, conn net.Conn) {
+    c.Lock(roomName)
+    c.configs[roomName].users[user].conn = conn
+    c.Unlock(roomName)
 }
 
 func (c *CherryRooms) GetServerName() string {

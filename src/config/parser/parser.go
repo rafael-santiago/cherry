@@ -222,7 +222,6 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
 
             default:
                 return nil, NewCherryFileError(filepath, line, fmt.Sprintf("unknown config set \"%s\".", set[0]))
-                break
         }
         set, line, data = GetNextSetFromData(data, line, "=")
     }

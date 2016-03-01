@@ -16,12 +16,15 @@ import (
     "fmt"
 )
 
+// Preprocessor is returned by NewHTMLPreprocessor and it actually performs
+// the content expansion.
 type Preprocessor struct {
     rooms *config.CherryRooms
     dataExpander map[string]func(*Preprocessor, string, string, string) string
     dataValue map[string]string
 }
 
+// NewHTMLPreprocessor creates a new HTML preprocessor.
 func NewHTMLPreprocessor(rooms *config.CherryRooms) *Preprocessor {
     var preprocessor *Preprocessor
     preprocessor = new(Preprocessor)
@@ -29,20 +32,23 @@ func NewHTMLPreprocessor(rooms *config.CherryRooms) *Preprocessor {
     return preprocessor
 }
 
+// SetDataValue sets a statical content for a special marker.
 func (p *Preprocessor) SetDataValue(field, data string) {
     p.dataValue[field] = data
 }
 
+// UnsetDataValue removes a previous data set by SetDataValue.
 func (p *Preprocessor) UnsetDataValue(field string) {
     p.dataValue[field] = ""
 }
 
+// Init sets all default expanders.
 func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.rooms = rooms
     p.dataValue = make(map[string]string)
     p.dataExpander = make(map[string]func(*Preprocessor, string, string, string) string)
     p.dataExpander["{{.nickname}}"] = nicknameExpander
-    p.dataExpander["{{.session-id}}"] = sessionIdExpander
+    p.dataExpander["{{.session-id}}"] = sessionIDExpander
     p.dataExpander["{{.color}}"] = colorExpander
     p.dataExpander["{{.ignore-list}}"] = ignoreListExpander
     p.dataExpander["{{.hour}}"] = hourExpander
@@ -92,12 +98,13 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
     p.dataExpander["{{.find-result-users-total}}"] = nil
 }
 
+// ExpandData gives preference for statical data if it does not exist the data is processed by expanders.
 func (p *Preprocessor) ExpandData(roomName, data string) string {
     if p.rooms.HasRoom(roomName) {
         for varName, expander := range p.dataExpander {
-            local_value, exists := p.dataValue[varName]
-            if exists && len(local_value) > 0 {
-                data = strings.Replace(data, varName, local_value, -1)
+            localValue, exists := p.dataValue[varName]
+            if exists && len(localValue) > 0 {
+                data = strings.Replace(data, varName, localValue, -1)
             } else {
                 if expander == nil {
                     continue
@@ -107,6 +114,11 @@ func (p *Preprocessor) ExpandData(roomName, data string) string {
         }
     }
     return data
+}
+
+// GetBadAssErrorData spits the default 404 Cherry's document.
+func GetBadAssErrorData() string {
+    return "<html><h1>404 Bad ass error</h1><h3>No cherry for you!</h3></html>"
 }
 
 func briefUsersTotalExpander(p *Preprocessor, roomName, varName, data string) string {
@@ -164,7 +176,7 @@ func nicknameExpander(p *Preprocessor, roomName, varName, data string) string {
 }
 
 func getHexColor(clKey string) string {
-    var hexColors map[string]string = make(map[string]string)
+    var hexColors = make(map[string]string)
     hexColors["0"] = "#000000"
     hexColors["1"] = "#d10019"
     hexColors["2"] = "#0d7000"
@@ -178,11 +190,11 @@ func getHexColor(clKey string) string {
 
 func coloredNicknameExpander(p *Preprocessor, roomName, varName, data string) string {
     color := p.rooms.GetColor(p.rooms.GetNextMessage(roomName).From, roomName)
-    colored_nick_name := "<font color = \"" + getHexColor(color) + "\">" + p.rooms.GetNextMessage(roomName).From + "</font>"
-    return strings.Replace(data, varName, colored_nick_name, -1)
+    coloredNickname := "<font color = \"" + getHexColor(color) + "\">" + p.rooms.GetNextMessage(roomName).From + "</font>"
+    return strings.Replace(data, varName, coloredNickname, -1)
 }
 
-func sessionIdExpander(p *Preprocessor, roomName, varName, data string) string {
+func sessionIDExpander(p *Preprocessor, roomName, varName, data string) string {
     from := p.rooms.GetNextMessage(roomName).From
     return strings.Replace(data, varName, p.rooms.GetSessionId(from, roomName), -1)
 }
@@ -230,7 +242,7 @@ func onDeIgnoreMessageExpander(p *Preprocessor, roomName, varName, data string) 
 }
 
 func messagePrivateMarkerExpander(p *Preprocessor, roomName, varName, data string) string {
-    var privateMarker string = ""
+    var privateMarker string
     if p.rooms.GetNextMessage(roomName).Priv == "1" {
         privateMarker = p.rooms.GetPrivateMessageMarker(roomName)
     }
@@ -307,8 +319,4 @@ func roomNameExpander(p *Preprocessor, roomName, varName, data string) string {
 
 func usersTotalExpander(p *Preprocessor, roomName, varName, data string) string {
     return strings.Replace(data, varName, p.rooms.GetUsersTotal(roomName), -1)
-}
-
-func GetBadAssErrorData() string {
-    return "<html><h1>404 Bad ass error</h1><h3>No cherry for you!</h3></html>"
 }

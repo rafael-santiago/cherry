@@ -9,13 +9,13 @@ import (
 )
 
 type RequestTrapInterface interface {
-    Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
+    Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
 }
 
-type RequestTrapHandleFunc func(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
+type RequestTrapHandleFunc func(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
 
-func (h RequestTrapHandleFunc) Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    h(new_conn, room_name, http_payload, rooms, preprocessor)
+func (h RequestTrapHandleFunc) Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    h(newConn, roomName, httpPayload, rooms, preprocessor)
 }
 
 type RequestTrap func() RequestTrapInterface
@@ -26,263 +26,263 @@ func BuildRequestTrap(handle RequestTrapHandleFunc) RequestTrap {
     }
 }
 
-func GetRequestTrap(http_payload string) RequestTrap {
-    var http_method_part string
-    var space_nr int = 0
-    for _, h := range http_payload {
+func GetRequestTrap(httpPayload string) RequestTrap {
+    var httpMethodPart string
+    var spaceNr int = 0
+    for _, h := range httpPayload {
         if h == ' ' {
-            space_nr++
+            spaceNr++
         }
-        if h == '\n' || h == '\r' || space_nr == 2 {
+        if h == '\n' || h == '\r' || spaceNr == 2 {
             break
         }
-        http_method_part += string(h)
+        httpMethodPart += string(h)
     }
-    http_method_part += "$"
-    if strings.HasPrefix(http_method_part, "GET /join$") {
+    httpMethodPart += "$"
+    if strings.HasPrefix(httpMethodPart, "GET /join$") {
         return BuildRequestTrap(GetJoin_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /brief$") {
+    if strings.HasPrefix(httpMethodPart, "GET /brief$") {
         return BuildRequestTrap(GetBrief_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /top&") {
+    if strings.HasPrefix(httpMethodPart, "GET /top&") {
         return BuildRequestTrap(GetTop_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /banner&") {
+    if strings.HasPrefix(httpMethodPart, "GET /banner&") {
         return BuildRequestTrap(GetBanner_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /body&") {
+    if strings.HasPrefix(httpMethodPart, "GET /body&") {
         return BuildRequestTrap(GetBody_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /exit&") {
+    if strings.HasPrefix(httpMethodPart, "GET /exit&") {
         return BuildRequestTrap(GetExit_Handle)
     }
-    if strings.HasPrefix(http_method_part, "POST /join$") {
+    if strings.HasPrefix(httpMethodPart, "POST /join$") {
         return BuildRequestTrap(PostJoin_Handle)
     }
-    if strings.HasPrefix(http_method_part, "POST /banner&") {
+    if strings.HasPrefix(httpMethodPart, "POST /banner&") {
         return BuildRequestTrap(PostBanner_Handle)
     }
-    if strings.HasPrefix(http_method_part, "GET /find$") {
+    if strings.HasPrefix(httpMethodPart, "GET /find$") {
         return BuildRequestTrap(GetFind_Handle)
     }
-    if strings.HasPrefix(http_method_part, "POST /find$") {
+    if strings.HasPrefix(httpMethodPart, "POST /find$") {
         return BuildRequestTrap(PostFind_Handle)
     }
     return BuildRequestTrap(BadAssError_Handle)
 }
 
-func GetFind_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var reply_buffer []byte
-    reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetFindBotTemplate(room_name)), 200, true)
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+func GetFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var replyBuffer []byte
+    replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetFindBotTemplate(roomName)), 200, true)
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func PostFind_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    user_data = rawhttp.GetFieldsFromPost(http_payload)
-    var reply_buffer []byte
-    if _, posted := user_data["user"]; !posted {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+func PostFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    userData = rawhttp.GetFieldsFromPost(httpPayload)
+    var replyBuffer []byte
+    if _, posted := userData["user"]; !posted {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
         var result string
-        result = preprocessor.ExpandData(room_name, rooms.GetFindResultsHeadTemplate(room_name))
-        listing := rooms.GetFindResultsBodyTemplate(room_name)
-        avail_rooms := rooms.GetRooms()
-        user := strings.ToUpper(user_data["user"])
+        result = preprocessor.ExpandData(roomName, rooms.GetFindResultsHeadTemplate(roomName))
+        listing := rooms.GetFindResultsBodyTemplate(roomName)
+        availRooms := rooms.GetRooms()
+        user := strings.ToUpper(userData["user"])
         if len(user) > 0 {
-            for _, r := range avail_rooms {
+            for _, r := range availRooms {
                 users := rooms.GetRoomUsers(r)
                 preprocessor.SetDataValue("{{.find-result-users-total}}", rooms.GetUsersTotal(r))
                 preprocessor.SetDataValue("{{.find-result-room-name}}", r)
                 for _, u := range users {
                     if strings.HasPrefix(strings.ToUpper(u), user) {
                         preprocessor.SetDataValue("{{.find-result-user}}", u)
-                        result += preprocessor.ExpandData(room_name, listing)
+                        result += preprocessor.ExpandData(roomName, listing)
                     }
                 }
             }
         }
-        result += preprocessor.ExpandData(room_name, rooms.GetFindResultsTailTemplate(room_name))
-        reply_buffer = rawhttp.MakeReplyBuffer(result, 200, true)
+        result += preprocessor.ExpandData(roomName, rooms.GetFindResultsTailTemplate(roomName))
+        replyBuffer = rawhttp.MakeReplyBuffer(result, 200, true)
     }
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+func GetJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): The form for room joining was requested, so we will flush it to client.
-    var reply_buffer []byte
-    reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetEntranceTemplate(room_name)), 200, true)
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    var replyBuffer []byte
+    replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetEntranceTemplate(roomName)), 200, true)
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetTop_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    user_data = rawhttp.GetFieldsFromGet(http_payload)
-    var reply_buffer []byte
-    if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+func GetTop_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    userData = rawhttp.GetFieldsFromGet(httpPayload)
+    var replyBuffer []byte
+    if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetTopTemplate(room_name)), 200, true)
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetTopTemplate(roomName)), 200, true)
     }
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    var reply_buffer []byte
-    user_data = rawhttp.GetFieldsFromGet(http_payload)
-    preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
-    preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
-    if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+func GetBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    var replyBuffer []byte
+    userData = rawhttp.GetFieldsFromGet(httpPayload)
+    preprocessor.SetDataValue("{{.nickname}}", userData["user"])
+    preprocessor.SetDataValue("{{.session-id}}", userData["id"])
+    if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name)), 200, true)
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetBannerTemplate(roomName)), 200, true)
     }
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetExit_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    var reply_buffer []byte
-    user_data = rawhttp.GetFieldsFromGet(http_payload)
-    if !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+func GetExit_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    var replyBuffer []byte
+    userData = rawhttp.GetFieldsFromGet(httpPayload)
+    if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
-        preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
-        preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetExitTemplate(room_name)), 200, true)
+        preprocessor.SetDataValue("{{.nickname}}", userData["user"])
+        preprocessor.SetDataValue("{{.session-id}}", userData["id"])
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetExitTemplate(roomName)), 200, true)
     }
-    rooms.EnqueueMessage(room_name, user_data["user"], "", "", "",  rooms.GetExitMessage(room_name), "")
-    new_conn.Write(reply_buffer)
-    rooms.RemoveUser(room_name, user_data["user"])
-    new_conn.Close()
+    rooms.EnqueueMessage(roomName, userData["user"], "", "", "",  rooms.GetExitMessage(roomName), "")
+    newConn.Write(replyBuffer)
+    rooms.RemoveUser(roomName, userData["user"])
+    newConn.Close()
 }
 
-func PostJoin_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+func PostJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
     //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton
     //                  [TOP/BODY/BANNER]. Then we finally close the connection.
-    var user_data map[string]string
-    var reply_buffer []byte
-    user_data = rawhttp.GetFieldsFromPost(http_payload)
-    if _, posted := user_data["user"]; !posted {
-        new_conn.Close()
+    var userData map[string]string
+    var replyBuffer []byte
+    userData = rawhttp.GetFieldsFromPost(httpPayload)
+    if _, posted := userData["user"]; !posted {
+        newConn.Close()
         return
     }
-    if _, posted := user_data["color"]; !posted {
-        new_conn.Close()
+    if _, posted := userData["color"]; !posted {
+        newConn.Close()
         return
     }
-    preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
+    preprocessor.SetDataValue("{{.nickname}}", userData["user"])
     preprocessor.SetDataValue("{{.session-id}}", "0")
-    if rooms.HasUser(room_name, user_data["user"]) || user_data["user"] == rooms.GetAllUsersAlias(room_name) {
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetNickclashTemplate(room_name)), 200, true)
+    if rooms.HasUser(roomName, userData["user"]) || userData["user"] == rooms.GetAllUsersAlias(roomName) {
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetNickclashTemplate(roomName)), 200, true)
     } else {
-        rooms.AddUser(room_name, user_data["user"], user_data["color"], true)
-        preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(user_data["user"], room_name))
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetSkeletonTemplate(room_name)), 200, true)
-        rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetJoinMessage(room_name), "")
+        rooms.AddUser(roomName, userData["user"], userData["color"], true)
+        preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(userData["user"], roomName))
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetSkeletonTemplate(roomName)), 200, true)
+        rooms.EnqueueMessage(roomName, userData["user"], "", "", "", rooms.GetJoinMessage(roomName), "")
     }
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetBrief_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var reply_buffer []byte
-    if rooms.IsAllowingBriefs(room_name) {
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBriefTemplate(room_name)), 200, true)
+func GetBrief_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var replyBuffer []byte
+    if rooms.IsAllowingBriefs(roomName) {
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetBriefTemplate(roomName)), 200, true)
     } else {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     }
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }
 
-func GetBody_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    user_data = rawhttp.GetFieldsFromGet(http_payload)
-    var valid_user bool
-    valid_user = rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"])
-    var reply_buffer []byte
-    if !valid_user {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+func GetBody_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    userData = rawhttp.GetFieldsFromGet(httpPayload)
+    var validUser bool
+    validUser = rooms.IsValidUserRequest(roomName, userData["user"], userData["id"])
+    var replyBuffer []byte
+    if !validUser {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else {
-        reply_buffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(room_name, rooms.GetBodyTemplate(room_name)), 200, false)
+        replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetBodyTemplate(roomName)), 200, false)
     }
-    new_conn.Write(reply_buffer)
-    if valid_user {
-        rooms.SetUserConnection(room_name, user_data["user"], new_conn)
+    newConn.Write(replyBuffer)
+    if validUser {
+        rooms.SetUserConnection(roomName, userData["user"], newConn)
     } else {
-        new_conn.Close()
+        newConn.Close()
     }
 }
 
-func BadAssError_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    new_conn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
-    new_conn.Close()
+func BadAssError_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    newConn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
+    newConn.Close()
 }
 
-func PostBanner_Handle(new_conn net.Conn, room_name, http_payload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
-    var user_data map[string]string
-    var reply_buffer []byte
-    var invalid_request bool = false
-    user_data = rawhttp.GetFieldsFromPost(http_payload)
-    if _ , has := user_data["user"]; !has {
-        invalid_request = true
-    } else if _, has := user_data["id"]; !has {
-        invalid_request = true
-    } else if _, has := user_data["action"]; !has {
-        invalid_request = true
-    } else if _, has := user_data["whoto"]; !has {
-        invalid_request = true
-    } else if  _, has := user_data["image"]; !has {
-        invalid_request = true
-    } else if _, has := user_data["says"]; !has {
-        invalid_request = true
+func PostBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+    var userData map[string]string
+    var replyBuffer []byte
+    var invalidRequest bool = false
+    userData = rawhttp.GetFieldsFromPost(httpPayload)
+    if _ , has := userData["user"]; !has {
+        invalidRequest = true
+    } else if _, has := userData["id"]; !has {
+        invalidRequest = true
+    } else if _, has := userData["action"]; !has {
+        invalidRequest = true
+    } else if _, has := userData["whoto"]; !has {
+        invalidRequest = true
+    } else if  _, has := userData["image"]; !has {
+        invalidRequest = true
+    } else if _, has := userData["says"]; !has {
+        invalidRequest = true
     }
-    var restore_banner bool = true
-    if invalid_request || !rooms.IsValidUserRequest(room_name, user_data["user"], user_data["id"]) {
-        reply_buffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
-    } else if user_data["action"] == rooms.GetIgnoreAction(room_name) {
-        if user_data["user"] != user_data["whoto"] && ! rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
-            rooms.AddToIgnoreList(user_data["user"], user_data["whoto"], room_name)
-            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetOnIgnoreMessage(room_name) + user_data["whoto"], "1")
-            restore_banner = false
+    var restoreBanner bool = true
+    if invalidRequest || !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+        replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+    } else if userData["action"] == rooms.GetIgnoreAction(roomName) {
+        if userData["user"] != userData["whoto"] && ! rooms.IsIgnored(userData["user"], userData["whoto"], roomName) {
+            rooms.AddToIgnoreList(userData["user"], userData["whoto"], roomName)
+            rooms.EnqueueMessage(roomName, userData["user"], "", "", "", rooms.GetOnIgnoreMessage(roomName) + userData["whoto"], "1")
+            restoreBanner = false
         }
-    } else if user_data["action"] == rooms.GetDeIgnoreAction(room_name) {
-        if rooms.IsIgnored(user_data["user"], user_data["whoto"], room_name) {
-            rooms.DelFromIgnoreList(user_data["user"], user_data["whoto"], room_name)
-            rooms.EnqueueMessage(room_name, user_data["user"], "", "", "", rooms.GetOnDeIgnoreMessage(room_name) + user_data["whoto"], "1")
-            restore_banner = false
+    } else if userData["action"] == rooms.GetDeIgnoreAction(roomName) {
+        if rooms.IsIgnored(userData["user"], userData["whoto"], roomName) {
+            rooms.DelFromIgnoreList(userData["user"], userData["whoto"], roomName)
+            rooms.EnqueueMessage(roomName, userData["user"], "", "", "", rooms.GetOnDeIgnoreMessage(roomName) + userData["whoto"], "1")
+            restoreBanner = false
         }
     } else {
-        var something_to_say bool =  (len(user_data["says"]) > 0 || len(user_data["image"]) > 0 || len(user_data["sound"]) > 0)
+        var something_to_say bool =  (len(userData["says"]) > 0 || len(userData["image"]) > 0 || len(userData["sound"]) > 0)
         if something_to_say {
             //  INFO(Santiago): Any further antiflood control would go from here.
-            rooms.EnqueueMessage(room_name, user_data["user"], user_data["whoto"], user_data["action"], user_data["image"], user_data["says"], user_data["priv"])
+            rooms.EnqueueMessage(roomName, userData["user"], userData["whoto"], userData["action"], userData["image"], userData["says"], userData["priv"])
         }
     }
-    preprocessor.SetDataValue("{{.nickname}}", user_data["user"])
-    preprocessor.SetDataValue("{{.session-id}}", user_data["id"])
-    if user_data["priv"] == "1" {
+    preprocessor.SetDataValue("{{.nickname}}", userData["user"])
+    preprocessor.SetDataValue("{{.session-id}}", userData["id"])
+    if userData["priv"] == "1" {
         preprocessor.SetDataValue("{{.priv}}", "checked")
     }
-    temp_banner := preprocessor.ExpandData(room_name, rooms.GetBannerTemplate(room_name))
-    if restore_banner {
-        temp_banner = strings.Replace(temp_banner,
-                                      "<option value = \"" + user_data["whoto"] + "\">",
-                                      "<option value = \"" + user_data["whoto"] + "\" selected>", -1)
-        temp_banner = strings.Replace(temp_banner,
-                                      "<option value = \"" + user_data["action"] + "\">",
-                                      "<option value = \"" + user_data["action"] + "\" selected>", -1)
+    tempBanner := preprocessor.ExpandData(roomName, rooms.GetBannerTemplate(roomName))
+    if restoreBanner {
+        tempBanner = strings.Replace(tempBanner,
+                                      "<option value = \"" + userData["whoto"] + "\">",
+                                      "<option value = \"" + userData["whoto"] + "\" selected>", -1)
+        tempBanner = strings.Replace(tempBanner,
+                                      "<option value = \"" + userData["action"] + "\">",
+                                      "<option value = \"" + userData["action"] + "\" selected>", -1)
     }
-    reply_buffer = rawhttp.MakeReplyBuffer(temp_banner, 200, true)
-    new_conn.Write(reply_buffer)
-    new_conn.Close()
+    replyBuffer = rawhttp.MakeReplyBuffer(tempBanner, 200, true)
+    newConn.Write(replyBuffer)
+    newConn.Close()
 }

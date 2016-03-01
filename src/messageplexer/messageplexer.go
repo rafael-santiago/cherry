@@ -6,57 +6,57 @@ import (
     "net"
 )
 
-func RoomMessagePlexer(room_name string, rooms *config.CherryRooms) {
+func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
     preprocessor := html.NewHtmlPreprocessor(rooms)
-    var all_users string = rooms.GetAllUsersAlias(room_name)
+    var allUsers string = rooms.GetAllUsersAlias(roomName)
     for {
-        curr_message := rooms.GetNextMessage(room_name)
-        if len(curr_message.Say) == 0 && len(curr_message.Image) == 0 /*&& len(curr_message.Sound) == 0*/ {
+        currMessage := rooms.GetNextMessage(roomName)
+        if len(currMessage.Say) == 0 && len(currMessage.Image) == 0 /*&& len(currMessage.Sound) == 0*/ {
             continue
         }
-        var action_template string
-        if rooms.HasAction(room_name, curr_message.Action) {
-            action_template = rooms.GetRoomActionTemplate(room_name, curr_message.Action)
+        var actionTemplate string
+        if rooms.HasAction(roomName, currMessage.Action) {
+            actionTemplate = rooms.GetRoomActionTemplate(roomName, currMessage.Action)
         }
-        if len(action_template) == 0 {
-            action_template = "<p>({{.hour}}:{{.minute}}:{{.second}}) <b>{{.message-colored-user}}</b>: {{.message-says}}" //  INFO(Santiago): A very basic action template.
+        if len(actionTemplate) == 0 {
+            actionTemplate = "<p>({{.hour}}:{{.minute}}:{{.second}}) <b>{{.message-colored-user}}</b>: {{.message-says}}" //  INFO(Santiago): A very basic action template.
         }
-        message := preprocessor.ExpandData(room_name, action_template)
-        if curr_message.Priv != "1" {
-            rooms.AddPublicMessage(room_name, message)
+        message := preprocessor.ExpandData(roomName, actionTemplate)
+        if currMessage.Priv != "1" {
+            rooms.AddPublicMessage(roomName, message)
         }
         preprocessor.SetDataValue("{{.current-formatted-message}}", message)
-        message_highlighted := preprocessor.ExpandData(room_name, rooms.GetHighlightTemplate(room_name))
+        message_highlighted := preprocessor.ExpandData(roomName, rooms.GetHighlightTemplate(roomName))
         preprocessor.UnsetDataValue("{{.current-formatted-message}}")
-        users := rooms.GetRoomUsers(room_name)
+        users := rooms.GetRoomUsers(roomName)
         for _, user := range users {
-            if curr_message.Priv == "1" &&
-               user != curr_message.From &&
-               user != curr_message.To &&
-               curr_message.To != all_users {
+            if currMessage.Priv == "1" &&
+               user != currMessage.From &&
+               user != currMessage.To &&
+               currMessage.To != allUsers {
                 continue
             }
-            if rooms.IsIgnored(user, curr_message.From, room_name) {
+            if rooms.IsIgnored(user, currMessage.From, roomName) {
                 continue
             }
-            var message_buffer []byte
-            if user == curr_message.From ||
-               user == curr_message.To {
-                message_buffer = []byte(message_highlighted)
+            var messageBuffer []byte
+            if user == currMessage.From ||
+               user == currMessage.To {
+                messageBuffer = []byte(message_highlighted)
             } else {
-                message_buffer = []byte(message)
+                messageBuffer = []byte(message)
             }
             var conn net.Conn
-            conn = rooms.GetUserConnection(room_name, user)
+            conn = rooms.GetUserConnection(roomName, user)
             if conn == nil {
                 continue
             }
-            _, e := conn.Write(message_buffer)
+            _, e := conn.Write(messageBuffer)
             if e != nil {
-                rooms.EnqueueMessage(room_name, user, "", "", "", rooms.GetExitMessage(room_name), "")
-                rooms.RemoveUser(room_name, user)
+                rooms.EnqueueMessage(roomName, user, "", "", "", rooms.GetExitMessage(roomName), "")
+                rooms.RemoveUser(roomName, user)
             }
         }
-        rooms.DequeueMessage(room_name)
+        rooms.DequeueMessage(roomName)
     }
 }

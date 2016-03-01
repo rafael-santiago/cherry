@@ -13,9 +13,9 @@ import (
     "net/url"
 )
 
-func cherry_default_http_reply_header(status_code int, close_connection bool) string {
+func cherryDefaultHttpReplyHeader(statusCode int, closeConnection bool) string {
     var header string = "HTTP/1.1 "
-    switch (status_code) {
+    switch (statusCode) {
         case 200:
             header += "200 OK"
             break
@@ -32,7 +32,7 @@ func cherry_default_http_reply_header(status_code int, close_connection bool) st
             header += "501 NOT IMPLEMENTED"
             break
     }
-    if close_connection {
+    if closeConnection {
         header += "\n\rConnection: close\n" +
                   "Server: Cherry/0.1\n" +
                   "Accept-ranges: bytes\n" +
@@ -44,8 +44,8 @@ func cherry_default_http_reply_header(status_code int, close_connection bool) st
     return header
 }
 
-func MakeReplyBuffer(buffer string, status_code int, close_connection bool) []byte {
-    return []byte(strings.Replace(cherry_default_http_reply_header(status_code, close_connection) + buffer,
+func MakeReplyBuffer(buffer string, statusCode int, closeConnection bool) []byte {
+    return []byte(strings.Replace(cherryDefaultHttpReplyHeader(statusCode, closeConnection) + buffer,
                                   "{{.content-length}}",
                                   fmt.Sprintf("%d", len(buffer)),
                                   -1))
@@ -71,7 +71,7 @@ func GetHttpFieldFromBuffer(field, buffer string) string {
     return retval
 }
 
-func split_fields(buffer string) map[string]string {
+func splitFields(buffer string) map[string]string {
     data_value := strings.Split(buffer, "&")
     retval := make(map[string]string)
     for _, dv := range data_value {
@@ -92,20 +92,20 @@ func GetFieldsFromPost(buffer string) map[string]string {
     if index == -1 || len(buffer) <= index + 4 {
         return make(map[string]string)
     }
-    return split_fields(buffer[index+4:])
+    return splitFields(buffer[index+4:])
 }
 
 func GetFieldsFromGet(buffer string) map[string]string {
     if !strings.HasPrefix(buffer, "GET /") {
         return make(map[string]string)
     }
-    var start_index int = 0
-    var end_index int = 0
-    for buffer[start_index] != '&' {
-        start_index++
+    var startIndex int = 0
+    var endIndex int = 0
+    for buffer[startIndex] != '&' {
+        startIndex++
     }
-    for buffer[end_index] != '\n' && buffer[end_index] != '\r' && end_index < len(buffer) {
-        end_index++
+    for buffer[endIndex] != '\n' && buffer[endIndex] != '\r' && endIndex < len(buffer) {
+        endIndex++
     }
-    return split_fields(buffer[start_index+1:end_index])
+    return splitFields(buffer[startIndex+1:endIndex])
 }

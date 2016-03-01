@@ -53,9 +53,9 @@ type Message struct {
 }
 
 type RoomUser struct {
-    session_id string
+    sessionId string
     color string
-    ignorelist []string
+    ignoreList []string
     kickout bool
     conn net.Conn
 }
@@ -63,16 +63,16 @@ type RoomUser struct {
 type RoomConfig struct {
     mutex *sync.Mutex
     MainPeer net.Listener
-    message_queue []Message
-    public_messages []string
+    messageQueue []Message
+    publicMessages []string
     users map[string]*RoomUser
     templates map[string]string
     misc *RoomMisc
     actions map[string]*RoomAction
     images map[string]*RoomMediaResource
     //sounds map[string]*RoomMediaResource
-    ignore_action string
-    deignore_action string
+    ignoreAction string
+    deignoreAction string
 }
 
 type CherryRooms struct {
@@ -145,14 +145,14 @@ func (c *CherryRooms) RemoveUser(roomName, nickname string) {
 
 func (c *CherryRooms) EnqueueMessage(roomName, from, to, action, image, say, priv string) {
     c.configs[roomName].mutex.Lock()
-    c.configs[roomName].message_queue = append(c.configs[roomName].message_queue, Message{from, to, action, image, say, priv})
+    c.configs[roomName].messageQueue = append(c.configs[roomName].messageQueue, Message{from, to, action, image, say, priv})
     c.configs[roomName].mutex.Unlock()
 }
 
 func (c *CherryRooms) DequeueMessage(roomName string) {
     c.configs[roomName].mutex.Lock()
-    if len(c.configs[roomName].message_queue) >= 1 {
-        c.configs[roomName].message_queue = c.configs[roomName].message_queue[1:]
+    if len(c.configs[roomName].messageQueue) >= 1 {
+        c.configs[roomName].messageQueue = c.configs[roomName].messageQueue[1:]
     }
     c.configs[roomName].mutex.Unlock()
 }
@@ -160,8 +160,8 @@ func (c *CherryRooms) DequeueMessage(roomName string) {
 func (c *CherryRooms) GetNextMessage(roomName string) Message {
     c.configs[roomName].mutex.Lock()
     var message Message
-    if len(c.configs[roomName].message_queue) > 0 {
-        message = c.configs[roomName].message_queue[0]
+    if len(c.configs[roomName].messageQueue) > 0 {
+        message = c.configs[roomName].messageQueue[0]
     } else {
         message = Message{}
     }
@@ -175,7 +175,7 @@ func (c *CherryRooms) GetSessionId(from, roomName string) string {
     }
     c.configs[roomName].mutex.Lock()
     var sessionId string
-    sessionId = c.configs[roomName].users[from].session_id
+    sessionId = c.configs[roomName].users[from].sessionId
     c.configs[roomName].mutex.Unlock()
     return sessionId
 }
@@ -197,7 +197,7 @@ func (c *CherryRooms) GetIgnoreList(from, roomName string) string {
     }
     c.configs[roomName].mutex.Lock()
     var ignoreList string
-    ignoring := c.configs[roomName].users[from].ignorelist
+    ignoring := c.configs[roomName].users[from].ignoreList
     lastIndex := len(ignoring) - 1
     for c, who := range ignoring {
         ignoreList += "\"" + who + "\""
@@ -214,13 +214,13 @@ func (c *CherryRooms) AddToIgnoreList(from, to, roomName string) {
         return
     }
     c.configs[roomName].mutex.Lock()
-    for _, t := range c.configs[roomName].users[from].ignorelist {
+    for _, t := range c.configs[roomName].users[from].ignoreList {
         if t == to {
             c.configs[roomName].mutex.Unlock()
             return
         }
     }
-    c.configs[roomName].users[from].ignorelist = append(c.configs[roomName].users[from].ignorelist, to)
+    c.configs[roomName].users[from].ignoreList = append(c.configs[roomName].users[from].ignoreList, to)
     c.configs[roomName].mutex.Unlock()
 }
 
@@ -230,14 +230,14 @@ func (c *CherryRooms) DelFromIgnoreList(from, to, roomName string) {
     }
     var index int = -1
     c.configs[roomName].mutex.Lock()
-    for it, t := range c.configs[roomName].users[from].ignorelist {
+    for it, t := range c.configs[roomName].users[from].ignoreList {
         if t == to {
             index = it
             break
         }
     }
     if index != -1 {
-        c.configs[roomName].users[from].ignorelist = append(c.configs[roomName].users[from].ignorelist[:index], c.configs[roomName].users[from].ignorelist[index+1:]...)
+        c.configs[roomName].users[from].ignoreList = append(c.configs[roomName].users[from].ignoreList[:index], c.configs[roomName].users[from].ignoreList[index+1:]...)
     }
     c.configs[roomName].mutex.Unlock()
 }
@@ -248,7 +248,7 @@ func (c *CherryRooms) IsIgnored(from, to, roomName string) bool {
     }
     var retval bool = false
     c.configs[roomName].mutex.Lock()
-    for _, t := range c.configs[roomName].users[from].ignorelist {
+    for _, t := range c.configs[roomName].users[from].ignoreList {
         if t == to {
             retval = true
             break
@@ -338,7 +338,7 @@ func (c *CherryRooms) GetActionList(roomName string) string {
     return actionList
 }
 
-func(c *CherryRooms) get_media_resource_list(roomName string, mediaResource map[string]*RoomMediaResource) string {
+func(c *CherryRooms) getMediaResourceList(roomName string, mediaResource map[string]*RoomMediaResource) string {
     c.Lock(roomName)
     var mediaRsrcList string = ""
     var resources []string
@@ -355,11 +355,11 @@ func(c *CherryRooms) get_media_resource_list(roomName string, mediaResource map[
 }
 
 func (c *CherryRooms) GetImageList(roomName string) string {
-    return c.get_media_resource_list(roomName, c.configs[roomName].images)
+    return c.getMediaResourceList(roomName, c.configs[roomName].images)
 }
 
 //func (c *CherryRooms) GetSoundList(room_name string) string {
-//    return c.get_media_resource_list(room_name, c.configs[room_name].sounds)
+//    return c.getMediaResourceList(room_name, c.configs[room_name].sounds)
 //}
 
 func (c *CherryRooms) GetUsersList(roomName string) string {
@@ -380,7 +380,7 @@ func (c *CherryRooms) GetUsersList(roomName string) string {
     return usersList
 }
 
-func (c *CherryRooms) get_room_template(roomName, template string) string {
+func (c *CherryRooms) getRoomTemplate(roomName, template string) string {
     c.configs[roomName].mutex.Lock()
     var data string
     data = c.configs[roomName].templates[template]
@@ -389,55 +389,55 @@ func (c *CherryRooms) get_room_template(roomName, template string) string {
 }
 
 func (c *CherryRooms) GetTopTemplate(roomName string) string {
-    return c.get_room_template(roomName, "top")
+    return c.getRoomTemplate(roomName, "top")
 }
 
 func (c *CherryRooms) GetBodyTemplate(roomName string) string {
-    return c.get_room_template(roomName, "body")
+    return c.getRoomTemplate(roomName, "body")
 }
 
 func (c *CherryRooms) GetBannerTemplate(roomName string) string {
-    return c.get_room_template(roomName, "banner")
+    return c.getRoomTemplate(roomName, "banner")
 }
 
 func (c *CherryRooms) GetHighlightTemplate(roomName string) string {
-    return c.get_room_template(roomName, "highlight")
+    return c.getRoomTemplate(roomName, "highlight")
 }
 
 func (c *CherryRooms) GetEntranceTemplate(roomName string) string {
-    return c.get_room_template(roomName, "entrance")
+    return c.getRoomTemplate(roomName, "entrance")
 }
 
 func (c *CherryRooms) GetExitTemplate(roomName string) string {
-    return c.get_room_template(roomName, "exit")
+    return c.getRoomTemplate(roomName, "exit")
 }
 
 func (c *CherryRooms) GetNickclashTemplate(roomName string) string {
-    return c.get_room_template(roomName, "nickclash")
+    return c.getRoomTemplate(roomName, "nickclash")
 }
 
 func (c *CherryRooms) GetSkeletonTemplate(roomName string) string {
-    return c.get_room_template(roomName, "skeleton")
+    return c.getRoomTemplate(roomName, "skeleton")
 }
 
 func (c *CherryRooms) GetBriefTemplate(roomName string) string {
-    return c.get_room_template(roomName, "brief")
+    return c.getRoomTemplate(roomName, "brief")
 }
 
 func (c *CherryRooms) GetFindResultsHeadTemplate(roomName string) string {
-    return c.get_room_template(roomName, "find-results-head")
+    return c.getRoomTemplate(roomName, "find-results-head")
 }
 
 func (c *CherryRooms) GetFindResultsBodyTemplate(roomName string) string {
-    return c.get_room_template(roomName, "find-results-body")
+    return c.getRoomTemplate(roomName, "find-results-body")
 }
 
 func (c *CherryRooms) GetFindResultsTailTemplate(roomName string) string {
-    return c.get_room_template(roomName, "find-results-tail")
+    return c.getRoomTemplate(roomName, "find-results-tail")
 }
 
 func (c *CherryRooms) GetFindBotTemplate(roomName string) string {
-    return c.get_room_template(roomName, "find-bot")
+    return c.getRoomTemplate(roomName, "find-bot")
 }
 
 func (c *CherryRooms) GetLastPublicMessages(roomName string) string {
@@ -446,7 +446,7 @@ func (c *CherryRooms) GetLastPublicMessages(roomName string) string {
     }
     var retval string
     c.Lock(roomName)
-    msgs := c.configs[roomName].public_messages
+    msgs := c.configs[roomName].publicMessages
     c.Unlock(roomName)
     for _, m := range msgs {
         retval += m
@@ -459,10 +459,10 @@ func (c *CherryRooms) AddPublicMessage(roomName, message string) {
         return
     }
     c.Lock(roomName)
-    if (len(c.configs[roomName].public_messages) == 10) {
-        c.configs[roomName].public_messages = c.configs[roomName].public_messages[1:len(c.configs[roomName].public_messages)-1]
+    if (len(c.configs[roomName].publicMessages) == 10) {
+        c.configs[roomName].publicMessages = c.configs[roomName].publicMessages[1:len(c.configs[roomName].publicMessages)-1]
     }
-    c.configs[roomName].public_messages = append(c.configs[roomName].public_messages, message)
+    c.configs[roomName].publicMessages = append(c.configs[roomName].publicMessages, message)
     c.Unlock(roomName)
 }
 
@@ -486,7 +486,7 @@ func (c *CherryRooms) AddRoom(roomName string, listenPort int16) bool {
     if c.HasRoom(roomName) || c.PortBusyByAnotherRoom(listenPort) {
         return false
     }
-    c.configs[roomName] = c.init_config()
+    c.configs[roomName] = c.initConfig()
     c.configs[roomName].misc.listenPort = listenPort
     return true
 }
@@ -496,14 +496,14 @@ func (c *CherryRooms) AddAction(roomName, id, label, template string) {
 }
 
 func (c *CherryRooms) AddImage(roomName, id, label, template, url string) {
-    c.configs[roomName].images[id] = c.new_media_resource(label, template, url)
+    c.configs[roomName].images[id] = c.newMediaResource(label, template, url)
 }
 
 //func (c *CherryRooms) AddSound(room_name, id, label, template, url string) {
-//    c.configs[room_name].sounds[id] = c.new_media_resource(label, template, url)
+//    c.configs[room_name].sounds[id] = c.newMediaResource(label, template, url)
 //}
 
-func (c *CherryRooms) new_media_resource(label, template, url string) *RoomMediaResource {
+func (c *CherryRooms) newMediaResource(label, template, url string) *RoomMediaResource {
     return &RoomMediaResource{label, template, url}
 }
 
@@ -545,12 +545,12 @@ func (c *CherryRooms) GetRoomByPort(port int16) *RoomConfig {
     return nil
 }
 
-func (c *CherryRooms) init_config() *RoomConfig {
+func (c *CherryRooms) initConfig() *RoomConfig {
     var room_config *RoomConfig
     room_config = new(RoomConfig)
     room_config.misc = &RoomMisc{}
-    room_config.message_queue = make([]Message, 0)
-    room_config.public_messages = make([]string, 0)
+    room_config.messageQueue = make([]Message, 0)
+    room_config.publicMessages = make([]string, 0)
     room_config.users = make(map[string]*RoomUser)
     room_config.templates = make(map[string]string)
     room_config.actions = make(map[string]*RoomAction)
@@ -652,20 +652,21 @@ func (c *CherryRooms) IsValidUserRequest(roomName, user, id string) bool {
 
 func (c *CherryRooms) SetIgnoreAction(roomName, action string) {
     c.Lock(roomName)
-    c.configs[roomName].ignore_action = action
+    c.configs[roomName].ignoreAction = action
     c.Unlock(roomName)
 }
 
 func (c *CherryRooms) SetDeIgnoreAction(roomName, action string) {
     c.Lock(roomName)
-    c.configs[roomName].deignore_action = action
+    c.configs[roomName].deignoreAction = action
     c.Unlock(roomName)
 }
 
 func (c *CherryRooms) GetIgnoreAction(roomName string) string {
     c.Lock(roomName)
     var retval string
-    retval = c.configs[roomName].ignore_action
+    retval = c.configs[roomName].ignoreAction
+
     c.Unlock(roomName)
     return retval
 }
@@ -673,7 +674,7 @@ func (c *CherryRooms) GetIgnoreAction(roomName string) string {
 func (c *CherryRooms) GetDeIgnoreAction(roomName string) string {
     c.Lock(roomName)
     var retval string
-    retval = c.configs[roomName].deignore_action
+    retval = c.configs[roomName].deignoreAction
     c.Unlock(roomName)
     return retval
 }

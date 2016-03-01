@@ -22,6 +22,7 @@ import (
     "strings"
 )
 
+// ProcessNewConnection handles the possible request with the specifc trap returned based on what is being requested.
 func ProcessNewConnection(newConn net.Conn, roomName string, rooms *config.CherryRooms) {
     buf := make([]byte, 4096)
     bufLen, err := newConn.Read(buf)
@@ -36,13 +37,14 @@ func ProcessNewConnection(newConn net.Conn, roomName string, rooms *config.Cherr
     }
 }
 
-func MainPeer(roomName string, c *config.CherryRooms) {
+// Peer is the room listener.
+func Peer(roomName string, c *config.CherryRooms) {
     port := c.GetListenPort(roomName)
-    var port_num int64
-    port_num, _ = strconv.ParseInt(port, 10, 16)
+    var portNum int64
+    portNum, _ = strconv.ParseInt(port, 10, 16)
     var err error
     var room *config.RoomConfig
-    room = c.GetRoomByPort(int16(port_num))
+    room = c.GetRoomByPort(int16(portNum))
     room.MainPeer, err = net.Listen("tcp", c.GetServerName() + ":" + port)
     if err != nil {
         fmt.Println("ERROR: " + err.Error())
@@ -59,13 +61,14 @@ func MainPeer(roomName string, c *config.CherryRooms) {
     }
 }
 
-func GetOption(option, default_value string) string {
+// GetOption handles the command line options.
+func GetOption(option, defaultValue string) string {
     for _, arg := range os.Args {
         if strings.HasPrefix(arg, "--" + option + "=") {
             return arg[len(option) + 3:]
         }
     }
-    return default_value
+    return defaultValue
 }
 
 func main() {
@@ -85,9 +88,9 @@ func main() {
         for ri, r := range rooms {
             go messageplexer.RoomMessagePlexer(r, cherryRooms)
             if ri < len(rooms) - 1 {
-                go MainPeer(r, cherryRooms)
+                go Peer(r, cherryRooms)
             } else {
-                MainPeer(r, cherryRooms)
+                Peer(r, cherryRooms)
             }
         }
     }

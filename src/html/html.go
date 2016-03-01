@@ -126,7 +126,7 @@ func briefUsersTotalExpander(p *Preprocessor, roomName, varName, data string) st
 }
 
 func briefWhoAreTalkingExpander(p *Preprocessor, roomName, varName, data string) string {
-    var users []string = p.rooms.GetRoomUsers(roomName)
+    var users = p.rooms.GetRoomUsers(roomName)
     var tableData string
     tableData = "<table border = 0>"
     for _, u := range users {

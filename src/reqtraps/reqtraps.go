@@ -17,27 +17,33 @@ import (
     "strings"
 )
 
+// RequestTrapInterface is used for what it suggests [Hi lint! you are so stupid!].
 type RequestTrapInterface interface {
     Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
 }
 
+// RequestTrapHandleFunc idem.
 type RequestTrapHandleFunc func(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor)
 
+// Handle idem.
 func (h RequestTrapHandleFunc) Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     h(newConn, roomName, httpPayload, rooms, preprocessor)
 }
 
+// RequestTrap idem.
 type RequestTrap func() RequestTrapInterface
 
+// BuildRequestTrap creates a trap based on a user request.
 func BuildRequestTrap(handle RequestTrapHandleFunc) RequestTrap {
     return func () RequestTrapInterface {
         return RequestTrapHandleFunc(handle)
     }
 }
 
+// GetRequestTrap returns the correct trap that should be used to handle the user request.
 func GetRequestTrap(httpPayload string) RequestTrap {
     var httpMethodPart string
-    var spaceNr int = 0
+    var spaceNr int
     for _, h := range httpPayload {
         if h == ' ' {
             spaceNr++
@@ -81,6 +87,7 @@ func GetRequestTrap(httpPayload string) RequestTrap {
     return BuildRequestTrap(BadAssError_Handle)
 }
 
+// GetFind_Handle implements the handle for the find document (GET).
 func GetFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var replyBuffer []byte
     replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetFindBotTemplate(roomName)), 200, true)
@@ -88,6 +95,7 @@ func GetFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     newConn.Close()
 }
 
+// PostFind_Handle implements the handle for the find document (POST).
 func PostFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromPost(httpPayload)
@@ -120,6 +128,7 @@ func PostFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
+// GetJoin_Handle implements the handle for the join document (GET).
 func GetJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): The form for room joining was requested, so we will flush it to client.
     var replyBuffer []byte
@@ -128,6 +137,7 @@ func GetJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     newConn.Close()
 }
 
+// GetTop_Handle implements the handle for the top document (GET).
 func GetTop_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromGet(httpPayload)
@@ -141,6 +151,7 @@ func GetTop_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config
     newConn.Close()
 }
 
+// GetBanner_Handle implements the handle for the banner document (GET).
 func GetBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
@@ -156,6 +167,7 @@ func GetBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *con
     newConn.Close()
 }
 
+// GetExit_Handle implements the handle for the exit document (GET).
 func GetExit_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
@@ -173,6 +185,7 @@ func GetExit_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     newConn.Close()
 }
 
+// PostJoin_Handle implements the handle for the join document (POST).
 func PostJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
     //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton
@@ -202,6 +215,7 @@ func PostJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
+// GetBrief_Handle implements the handle for the brief document (GET).
 func GetBrief_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var replyBuffer []byte
     if rooms.IsAllowingBriefs(roomName) {
@@ -213,6 +227,7 @@ func GetBrief_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
+// GetBody_Handle implements the handle for the body document (GET).
 func GetBody_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromGet(httpPayload)
@@ -232,15 +247,17 @@ func GetBody_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     }
 }
 
+// BadAssError_Handle implements the handle for the any unexpected HTTP request (GET/POST/Whatever).
 func BadAssError_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     newConn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
     newConn.Close()
 }
 
+// PostBanner_Handle implements the handle for the banner document (POST).
 func PostBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
-    var invalidRequest bool = false
+    var invalidRequest = false
     userData = rawhttp.GetFieldsFromPost(httpPayload)
     if _ , has := userData["user"]; !has {
         invalidRequest = true
@@ -255,7 +272,7 @@ func PostBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *co
     } else if _, has := userData["says"]; !has {
         invalidRequest = true
     }
-    var restoreBanner bool = true
+    var restoreBanner = true
     if invalidRequest || !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
         replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
     } else if userData["action"] == rooms.GetIgnoreAction(roomName) {
@@ -271,8 +288,8 @@ func PostBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *co
             restoreBanner = false
         }
     } else {
-        var something_to_say bool =  (len(userData["says"]) > 0 || len(userData["image"]) > 0 || len(userData["sound"]) > 0)
-        if something_to_say {
+        var somethingToSay = (len(userData["says"]) > 0 || len(userData["image"]) > 0 || len(userData["sound"]) > 0)
+        if somethingToSay {
             //  INFO(Santiago): Any further antiflood control would go from here.
             rooms.EnqueueMessage(roomName, userData["user"], userData["whoto"], userData["action"], userData["image"], userData["says"], userData["priv"])
         }

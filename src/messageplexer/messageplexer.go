@@ -15,9 +15,10 @@ import (
     "net"
 )
 
+//  INFO(Santiago): It does the all message delivering stuff.
 func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
     preprocessor := html.NewHTMLPreprocessor(rooms)
-    var allUsers string = rooms.GetAllUsersAlias(roomName)
+    var allUsers = rooms.GetAllUsersAlias(roomName)
     for {
         currMessage := rooms.GetNextMessage(roomName)
         if len(currMessage.Say) == 0 && len(currMessage.Image) == 0 /*&& len(currMessage.Sound) == 0*/ {
@@ -35,7 +36,7 @@ func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
             rooms.AddPublicMessage(roomName, message)
         }
         preprocessor.SetDataValue("{{.current-formatted-message}}", message)
-        message_highlighted := preprocessor.ExpandData(roomName, rooms.GetHighlightTemplate(roomName))
+        messageHighlighted := preprocessor.ExpandData(roomName, rooms.GetHighlightTemplate(roomName))
         preprocessor.UnsetDataValue("{{.current-formatted-message}}")
         users := rooms.GetRoomUsers(roomName)
         for _, user := range users {
@@ -51,7 +52,7 @@ func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
             var messageBuffer []byte
             if user == currMessage.From ||
                user == currMessage.To {
-                messageBuffer = []byte(message_highlighted)
+                messageBuffer = []byte(messageHighlighted)
             } else {
                 messageBuffer = []byte(message)
             }

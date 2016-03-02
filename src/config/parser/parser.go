@@ -601,7 +601,7 @@ func roomActionSubVerifier(mSet, sSet []string, mLine, sLine int, roomName, file
     if sSet[1][0] != '"' || sSet[1][len(sSet[1])-1] != '"' {
         return NewCherryFileError(filepath, sLine, "room action template must be set with a valid string.")
     }
-    var templatePath string = sSet[1][1:len(sSet[1])-1]
+    var templatePath = sSet[1][1:len(sSet[1])-1]
     _, err := ioutil.ReadFile(templatePath)
     if err != nil {
         return NewCherryFileError(filepath, sLine, fmt.Sprintf("unable to access file, details: [ %s ]", err.Error()))

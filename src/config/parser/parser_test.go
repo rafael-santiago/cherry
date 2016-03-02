@@ -15,7 +15,7 @@ import (
 )
 
 func TestGetDataFromSection(t *testing.T) {
-    var configData string = "# The commentary\n\n\n # More commentaries\ncherry.rooms ( aliens-on-earth:1024\nbackyard-science:911\n )\n"
+    var configData = "# The commentary\n\n\n # More commentaries\ncherry.rooms ( aliens-on-earth:1024\nbackyard-science:911\n )\n"
     secData, _, _, err := GetDataFromSection("cherry.room", configData, 1, "foobar.cherry")
     if err == nil || len(secData) > 0 {
         t.Fail();

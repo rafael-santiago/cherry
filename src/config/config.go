@@ -189,7 +189,7 @@ func (c *CherryRooms) GetNextMessage(roomName string) Message {
     return message
 }
 
-// GetsessionID returns the user's session ID.
+// GetSessionID returns the user's session ID.
 func (c *CherryRooms) GetSessionID(from, roomName string) string {
     if len(from) == 0 || !c.HasUser(roomName, from) {
         return ""

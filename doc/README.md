@@ -254,7 +254,7 @@ The directory structure that will be used for this sample is:
                 templates/
 ```
 
-Firstly, we need to compose our config file. The file where we actually open your rooms. 
+Firstly, we need to compose our config file. The file where we actually open our rooms.
 
 The config files will be within ``conf`` subdirectory and we will open just one chat room called ``aliens-on-earth``.
 The configuration is splitted in two files:
@@ -623,7 +623,7 @@ Maybe this is the most complicated room structure template. Anyway, this templat
 
 The posted fields are:
 
-- ``user (``{{.nickname}}``)
+- ``user`` (``{{.nickname}}``)
 - ``id`` (``{{.id}}``)
 - ``image`` (not included here but will be explained after)
 - ``priv`` (``{{.priv}}``)

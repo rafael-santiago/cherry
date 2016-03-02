@@ -17,12 +17,14 @@ import (
     "strconv"
 )
 
+// CherryFileError is returned by any parse function implemented in "parser.go".
 type CherryFileError struct {
     src string
     line int
     msg string
 }
 
+// Error spits the error string.
 func (c *CherryFileError) Error() string {
     if c.line > -1 {
         return fmt.Sprintf("ERROR: %s: at line %d: %s\n", c.src, c.line, c.msg);
@@ -30,87 +32,89 @@ func (c *CherryFileError) Error() string {
     return fmt.Sprintf("ERROR: %s: %s\n", c.src, c.msg);
 }
 
+// NewCherryFileError creates a *CherryFileError.
 func NewCherryFileError(src string, line int, msg string) *CherryFileError {
     return &CherryFileError{src, line, msg}
 }
 
-func GetDataFromSection(section, config_data string, curr_line int, curr_file string) (string, int, int, *CherryFileError) {
+// GetDataFromSection returns the raw section data from a cherry file section data.
+func GetDataFromSection(section, configData string, currLine int, currFile string) (string, int, int, *CherryFileError) {
     var s int
     var temp string
-    for s = 0; s < len(config_data); s++ {
-        switch config_data[s] {
+    for s = 0; s < len(configData); s++ {
+        switch configData[s] {
             case '#':
-                for config_data[s] != '\n' && s < len(config_data) {
+                for configData[s] != '\n' && s < len(configData) {
                     s++
                 }
-                if s < len(config_data) {
-                    curr_line++;
+                if s < len(configData) {
+                    currLine++;
                 }
                 continue
             case '(', '\n', ' ', '\t':
-                if config_data[s] == '\n' {
-                    curr_line++;
+                if configData[s] == '\n' {
+                    currLine++;
                 }
                 if temp == section {
-                    if config_data[s] == '\n' || config_data[s] == ' ' || config_data[s] == '\t' {
-                        for s < len(config_data) && config_data[s] != '(' {
+                    if configData[s] == '\n' || configData[s] == ' ' || configData[s] == '\t' {
+                        for s < len(configData) && configData[s] != '(' {
                             s++
-                            if s < len(config_data) && config_data[s] == '\n' {
-                                curr_line++
+                            if s < len(configData) && configData[s] == '\n' {
+                                currLine++
                             }
                         }
                     }
-                    if s < len(config_data) && config_data[s] == '(' {
+                    if s < len(configData) && configData[s] == '(' {
                         s++
                     }
                     var data string
-                    for s < len(config_data) {
-                        if config_data[s] == '"' {
-                            data += string(config_data[s])
+                    for s < len(configData) {
+                        if configData[s] == '"' {
+                            data += string(configData[s])
                             s++
-                            for s < len(config_data) && config_data[s] != '"' {
-                                if config_data[s] != '\\' {
-                                    data += string(config_data[s])
+                            for s < len(configData) && configData[s] != '"' {
+                                if configData[s] != '\\' {
+                                    data += string(configData[s])
                                 } else {
-                                    data += string(config_data[s + 1]);
+                                    data += string(configData[s + 1]);
                                     s++
                                 }
                                 s++
                             }
-                            if s < len(config_data) {
-                                data += string(config_data[s])
+                            if s < len(configData) {
+                                data += string(configData[s])
                             }
-                        } else if config_data[s] != ')' {
-                            data += string(config_data[s])
+                        } else if configData[s] != ')' {
+                            data += string(configData[s])
                         } else {
                             break
                         }
                         s++
                     }
-                    return data, s, curr_line, nil
+                    return data, s, currLine, nil
                 } else if temp == "cherry.branch" {
-                    for s < len(config_data) && (config_data[s] == ' ' || config_data[s] == '\t') {
+                    for s < len(configData) && (configData[s] == ' ' || configData[s] == '\t') {
                         s++
                     }
-                    if s < len(config_data) {
-                        var branch_filepath string
-                        for s < len(config_data) && config_data[s] != '\n' {
-                            branch_filepath += string(config_data[s])
+                    if s < len(configData) {
+                        var branchFilepath string
+                        for s < len(configData) && configData[s] != '\n' {
+                            branchFilepath += string(configData[s])
                             s++
                         }
-                        if s < len(config_data) {
-                            curr_line++
+                        if s < len(configData) {
+                            currLine++
                         }
-                        branch_buffer, err := ioutil.ReadFile(branch_filepath)
+                        branchBuffer, err := ioutil.ReadFile(branchFilepath)
                         if err != nil {
-                            fmt.Println(fmt.Sprintf("WARNING: %s: at line %d: %s. Be tidy... removing or commenting this dry branch from your cherry.", curr_file, curr_line - 1, err.Error()))
-                            //return "", s, curr_line, NewCherryFileError(curr_file,
-                            //                                            curr_line - 1,
-                            //                                            "unable to read cherry.branch from \"" + branch_filepath + "\" [ details: " + err.Error() + " ]")
+                            fmt.Println(fmt.Sprintf("WARNING: %s: at line %d: %s. Be tidy... removing or commenting this dry branch from your cherry.", currFile, currLine - 1, err.Error()))
+                            //return "", s, currLine, NewCherryFileError(currFile,
+                            //                                            currLine - 1,
+                            //                                            "unable to read cherry.branch from \"" + branchFilepath + "\" [ details: " + err.Error() + " ]")
                         } else {
-                            branch_data, branch_offset, branch_line, _ := GetDataFromSection(section, string(branch_buffer), 1, branch_filepath)
-                            if len(branch_data) > 0 {
-                                return branch_data, branch_offset, branch_line, nil
+                            branchData, branchOffset, branchLine, _ := GetDataFromSection(section, string(branchBuffer), 1, branchFilepath)
+                            if len(branchData) > 0 {
+                                return branchData, branchOffset, branchLine, nil
                             }
                         }
                     }
@@ -118,21 +122,22 @@ func GetDataFromSection(section, config_data string, curr_line int, curr_file st
                 temp = ""
                 break
             default:
-                temp += string(config_data[s])
+                temp += string(configData[s])
                 break
         }
     }
-    return "", s, curr_line, NewCherryFileError(curr_file, -1, "section \"" + section + "\" not found.")
+    return "", s, currLine, NewCherryFileError(currFile, -1, "section \"" + section + "\" not found.")
 }
 
-func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, string) {
+// GetNextSetFromData returns the next "field = value".
+func GetNextSetFromData(data string, currLine int, tok string) ([]string, int, string) {
     if len(data) == 0 {
-        return make([]string, 0), curr_line, ""
+        return make([]string, 0), currLine, ""
     }
     var s int
     for s = 0; s < len(data) && (data[s] == ' ' || data[s] == '\t' || data[s] == '\n'); s++ {
         if data[s] == '\n' {
-            curr_line++
+            currLine++
         }
     }
     var line string
@@ -146,7 +151,7 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
                 }
                 line += string(data[s])
                 if data[s] == '\n' {
-                    curr_line++
+                    currLine++
                 }
                 s++
             }
@@ -158,7 +163,7 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
                 s++
             }
             if s < len(data) {
-                curr_line++
+                currLine++
             }
         } else {
             line += string(data[s])
@@ -167,7 +172,7 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
     }
     if len(line) == 0 {
         if len(data) == 0 {
-            return make([]string, 0), curr_line, ""
+            return make([]string, 0), currLine, ""
         }
     }
     set := strings.Split(line, tok)
@@ -175,43 +180,45 @@ func GetNextSetFromData(data string, curr_line int, tok string) ([]string, int, 
         set[0] = StripBlanks(set[0])
         set[1] = StripBlanks(set[1])
     }
-    var next_data string
+    var nextData string
     if s < len(data) {
-        next_data = data[s:]
+        nextData = data[s:]
     }
-    return set, curr_line, next_data
+    return set, currLine, nextData
 }
 
+// StripBlanks...
 func StripBlanks(data string) string {
     var retval string
-    var d_start int = 0
-    for d_start < len(data) && (data[d_start] == ' ' || data[d_start] == '\t') {
-        d_start++
+    var dStart int = 0
+    for dStart < len(data) && (data[dStart] == ' ' || data[dStart] == '\t') {
+        dStart++
     }
-    var d_end int = len(data) - 1
-    for d_end > 0 && (data[d_end] == ' ' || data[d_end] == '\t') {
-        d_end--
+    var dEnd int = len(data) - 1
+    for dEnd > 0 && (data[dEnd] == ' ' || data[dEnd] == '\t') {
+        dEnd--
     }
-    retval = data[d_start:d_end+1]
+    retval = data[dStart:dEnd+1]
     return retval
 }
 
+// ParseCherryFile parses a file at @filepath and returns a *config.CherryRooms or a *CherryFileError.
 func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
-    var cherry_rooms *config.CherryRooms = nil
-    var cherry_file_data []byte
+    var cherryRooms *config.CherryRooms = nil
+    var cherryFileData []byte
     var data string
     var err *CherryFileError
     var line int
-    cherry_file_data, io_err := ioutil.ReadFile(filepath)
-    if io_err != nil {
-        return nil, NewCherryFileError("(no file)", -1, fmt.Sprintf("unable to read from \"%s\" [more details: %s].", filepath, io_err.Error()))
+    cherryFileData, ioErr := ioutil.ReadFile(filepath)
+    if ioErr != nil {
+        return nil, NewCherryFileError("(no file)", -1, fmt.Sprintf("unable to read from \"%s\" [more details: %s].", filepath, ioErr.Error()))
     }
-    data, _, line, err = GetDataFromSection("cherry.root", string(cherry_file_data), 1, filepath)
+    data, _, line, err = GetDataFromSection("cherry.root", string(cherryFileData), 1, filepath)
     if err != nil {
         return nil, err
     }
     var set []string
-    cherry_rooms = config.NewCherryRooms()
+    cherryRooms = config.NewCherryRooms()
     set, line, data = GetNextSetFromData(data, line, "=")
     for len(set) == 2 {
         switch set[0] {
@@ -219,7 +226,7 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
                 if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
                     return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid string."))
                 }
-                cherry_rooms.SetServername(set[1][1:len(set[1])-1])
+                cherryRooms.SetServername(set[1][1:len(set[1])-1])
                 break
 
             default:
@@ -227,10 +234,10 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
         }
         set, line, data = GetNextSetFromData(data, line, "=")
     }
-    if cherry_rooms.GetServername() == "localhost" {
+    if cherryRooms.GetServername() == "localhost" {
         fmt.Println("WARN: cherry.root.servername is equals to \"localhost\". Things will not work outside this node.")
     }
-    data, _, line,  err = GetDataFromSection("cherry.rooms", string(cherry_file_data), 1, filepath)
+    data, _, line,  err = GetDataFromSection("cherry.rooms", string(cherryFileData), 1, filepath)
     if err != nil {
         return nil, err
     }
@@ -238,63 +245,64 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
     //                  [cherry branches were scanned too at this point].
     set, line, data = GetNextSetFromData(data, line, ":")
     for len(set) == 2 {
-        if cherry_rooms.HasRoom(set[0]) {
+        if cherryRooms.HasRoom(set[0]) {
             return nil, NewCherryFileError(filepath, line, fmt.Sprintf("room \"%s\" redeclared.", set[0]))
         }
         var value int64
-        var conv_err error
-        value, conv_err = strconv.ParseInt(set[1], 10, 16)
-        if conv_err != nil {
-            return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid port value \"%s\" [more details: %s].", set[1], conv_err))
+        var convErr error
+        value, convErr = strconv.ParseInt(set[1], 10, 16)
+        if convErr != nil {
+            return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid port value \"%s\" [more details: %s].", set[1], convErr))
         }
         var port int16
         port = int16(value)
-        if cherry_rooms.PortBusyByAnotherRoom(port) {
+        if cherryRooms.PortBusyByAnotherRoom(port) {
             return nil, NewCherryFileError(filepath, line, fmt.Sprintf("the port \"%s\" is already busy by another room.", set[1]))
         }
 
-        cherry_rooms.AddRoom(set[0], port)
+        cherryRooms.AddRoom(set[0], port)
 
-        err_room_config := GetRoomTemplates(set[0], cherry_rooms, string(cherry_file_data), filepath)
-        if err_room_config != nil {
-            return nil, err_room_config
+        errRoomConfig := GetRoomTemplates(set[0], cherryRooms, string(cherryFileData), filepath)
+        if errRoomConfig != nil {
+            return nil, errRoomConfig
         }
 
-        err_room_config = GetRoomActions(set[0], cherry_rooms, string(cherry_file_data), filepath)
-        if err_room_config != nil {
-            return nil, err_room_config
+        errRoomConfig = GetRoomActions(set[0], cherryRooms, string(cherryFileData), filepath)
+        if errRoomConfig != nil {
+            return nil, errRoomConfig
         }
 
         //  INFO(Santiago): until now these two following sections are non-mandatory.
 
-        _ = GetRoomImages(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        _ = GetRoomImages(set[0], cherryRooms, string(cherryFileData), filepath)
 
-        //_ = GetRoomSounds(set[0], cherry_rooms, string(cherry_file_data), filepath)
+        //_ = GetRoomSounds(set[0], cherryRooms, string(cherryFileData), filepath)
 
-        err_room_config = GetRoomMisc(set[0], cherry_rooms, string(cherry_file_data), filepath)
-        if err_room_config != nil {
-            return nil, err_room_config
+        errRoomConfig = GetRoomMisc(set[0], cherryRooms, string(cherryFileData), filepath)
+        if errRoomConfig != nil {
+            return nil, errRoomConfig
         }
 
         //  INFO(Santiago): Let's transfer the next room from file to the memory.
         set, line, data = GetNextSetFromData(data, line, ":")
     }
-    return cherry_rooms, nil
+    return cherryRooms, nil
 }
 
-func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
+// GetRoomTemplates parses "cherry.[roomName].templates" section.
+func GetRoomTemplates(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
     var data string
     var line int
     var err *CherryFileError
-    data, _, line, err = GetDataFromSection("cherry." + room_name + ".templates",
-                                             config_data, 1, filepath)
+    data, _, line, err = GetDataFromSection("cherry." + roomName + ".templates",
+                                             configData, 1, filepath)
     if err != nil {
         return err
     }
     var set []string
     set, line, data = GetNextSetFromData(data, line, "=")
     for len(set) == 2 {
-        if cherry_rooms.HasTemplate(room_name, set[0]) {
+        if cherryRooms.HasTemplate(roomName, set[0]) {
             return NewCherryFileError(filepath, line, "room template \"" + set[0] + "\" redeclared.")
         }
         if len(set[1]) == 0 {
@@ -303,177 +311,180 @@ func GetRoomTemplates(room_name string, cherry_rooms *config.CherryRooms, config
         if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
             return NewCherryFileError(filepath, line, "room template must be set with a valid string.")
         }
-        var template_data []byte
-        var template_data_err error
-        template_data, template_data_err = ioutil.ReadFile(set[1][1:len(set[1])-1])
-        if template_data_err != nil {
-            return NewCherryFileError(filepath, line, "unable to access room template file [more details: " + template_data_err.Error() + "].")
+        var templateData []byte
+        var templateDataErr error
+        templateData, templateDataErr = ioutil.ReadFile(set[1][1:len(set[1])-1])
+        if templateDataErr != nil {
+            return NewCherryFileError(filepath, line, "unable to access room template file [more details: " + templateDataErr.Error() + "].")
         }
-        cherry_rooms.AddTemplate(room_name, set[0], string(template_data))
+        cherryRooms.AddTemplate(roomName, set[0], string(templateData))
         set, line, data = GetNextSetFromData(data, line, "=")
     }
     return nil
 }
 
-func GetRoomActions(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-    return get_indirect_config("cherry." + room_name + ".actions",
-                               "cherry." + room_name + ".actions.templates",
-                                room_action_main_verifier, room_action_sub_verifier, room_action_setter,
-                                room_name, cherry_rooms, config_data, filepath)
+// GetRoomActions parses "cherry.[roomName].actions" section.
+func GetRoomActions(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
+    return getIndirectConfig("cherry." + roomName + ".actions",
+                               "cherry." + roomName + ".actions.templates",
+                                roomActionMainVerifier, room_action_sub_verifier, roomActionSetter,
+                                roomName, cherryRooms, configData, filepath)
 }
 
-func GetRoomImages(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-    return get_indirect_config("cherry." + room_name + ".images",
-                               "cherry." + room_name + ".images.url",
-                               room_image_main_verifier, room_image_sub_verifier, room_image_setter,
-                               room_name, cherry_rooms, config_data, filepath)
+// GetRoomImages parses "cherry.[roomName].images" and "cherry.[roomName].images.url".
+func GetRoomImages(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
+    return getIndirectConfig("cherry." + roomName + ".images",
+                               "cherry." + roomName + ".images.url",
+                               roomImageMainVerifier, roomImageSubVerifier, roomImageSetter,
+                               roomName, cherryRooms, configData, filepath)
 }
 
-//func GetRoomSounds(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-//    return get_indirect_config("cherry." + room_name + ".sounds",
-//                               "cherry." + room_name + ".sounds.url",
+//func GetRoomSounds(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
+//    return getIndirectConfig("cherry." + roomName + ".sounds",
+//                               "cherry." + roomName + ".sounds.url",
 //                               room_sound_main_verifier, room_sound_sub_verifier, room_sound_setter,
-//                               room_name, cherry_rooms, config_data, filepath)
+//                               roomName, cherryRooms, configData, filepath)
 //}
 
-func GetRoomMisc(room_name string, cherry_rooms *config.CherryRooms, config_data, filepath string) *CherryFileError {
-    var m_data string
-    var m_line int
-    var m_err *CherryFileError
-    m_data, _, m_line, m_err = GetDataFromSection("cherry." + room_name + ".misc", config_data, 1, filepath)
-    if m_err != nil {
-        return m_err
+// GetRoomMisc parses "cherry.[roomName].misc" section.
+func GetRoomMisc(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
+    var mData string
+    var mLine int
+    var mErr *CherryFileError
+    mData, _, mLine, mErr = GetDataFromSection("cherry." + roomName + ".misc", configData, 1, filepath)
+    if mErr != nil {
+        return mErr
     }
 
     var verifier map[string]func(string) bool
     verifier = make(map[string]func(string) bool)
-    verifier["join-message"]                  = verify_string
-    verifier["exit-message"]                  = verify_string
-    verifier["on-ignore-message"]             = verify_string
-    verifier["on-deignore-message"]           = verify_string
-    verifier["greeting-message"]              = verify_string
-    verifier["private-message-marker"]        = verify_string
-    verifier["max-users"]                     = verify_number
-    verifier["allow-brief"]                   = verify_bool
-    //verifier["flooding-police"]               = verify_bool
-    //verifier["max-flood-allowed-before-kick"] = verify_number
-    verifier["all-users-alias"]               = verify_string
-    verifier["ignore-action"]                 = verify_string
-    verifier["deignore-action"]               = verify_string
+    verifier["join-message"]                  = verifyString
+    verifier["exit-message"]                  = verifyString
+    verifier["on-ignore-message"]             = verifyString
+    verifier["on-deignore-message"]           = verifyString
+    verifier["greeting-message"]              = verifyString
+    verifier["private-message-marker"]        = verifyString
+    verifier["max-users"]                     = verifyNumber
+    verifier["allow-brief"]                   = verifyBool
+    //verifier["flooding-police"]               = verifyBool
+    //verifier["max-flood-allowed-before-kick"] = verifyNumber
+    verifier["all-users-alias"]               = verifyString
+    verifier["ignore-action"]                 = verifyString
+    verifier["deignore-action"]               = verifyString
 
     var setter map[string]func(*config.CherryRooms, string, string)
     setter = make(map[string]func(*config.CherryRooms, string, string))
-    setter["join-message"]                  = set_join_message
-    setter["exit-message"]                  = set_exit_message
-    setter["on-ignore-message"]             = set_on_ignore_message
-    setter["on-deignore-message"]           = set_on_deignore_message
-    setter["greeting-message"]              = set_greeting_message
-    setter["private-message-marker"]        = set_private_message_marker
-    setter["max-users"]                     = set_max_users
-    setter["allow-brief"]                   = set_allow_brief
+    setter["join-message"]                  = setJoinMessage
+    setter["exit-message"]                  = setExitMessage
+    setter["on-ignore-message"]             = setOnIgnoreMessage
+    setter["on-deignore-message"]           = setOnDeIgnoreMessage
+    setter["greeting-message"]              = setGreetingMessage
+    setter["private-message-marker"]        = setPrivateMessageMarker
+    setter["max-users"]                     = setMaxUsers
+    setter["allow-brief"]                   = setAllowBrief
     //setter["flooding-police"]               = set_flooding_police
     //setter["max-flood-allowed-before-kick"] = set_max_flood_allowed_before_kick
-    setter["all-users-alias"]               = set_all_users_alias
-    setter["ignore-action"]                 = set_ignore_action
-    setter["deignore-action"]               = set_deignore_action
+    setter["all-users-alias"]               = setAllUsersAlias
+    setter["ignore-action"]                 = setIgnoreAction
+    setter["deignore-action"]               = setDeIgnoreAction
 
-    var already_set map[string]bool
-    already_set = make(map[string]bool)
-    already_set["join-message"]                  = false
-    already_set["exit-message"]                  = false
-    already_set["on-ignore-message"]             = false
-    already_set["on-deignore-message"]           = false
-    already_set["greeting-message"]              = false
-    already_set["private-message-marker"]        = false
-    already_set["max-users"]                     = false
-    //already_set["flooding-police"]               = false
-    //already_set["max-flood-allowed-before-kick"] = false
-    already_set["all-users-alias"]               = false
-    already_set["ignore-action"]                 = false
-    already_set["deignore-action"]               = false
+    var alreadySet map[string]bool
+    alreadySet = make(map[string]bool)
+    alreadySet["join-message"]                  = false
+    alreadySet["exit-message"]                  = false
+    alreadySet["on-ignore-message"]             = false
+    alreadySet["on-deignore-message"]           = false
+    alreadySet["greeting-message"]              = false
+    alreadySet["private-message-marker"]        = false
+    alreadySet["max-users"]                     = false
+    //alreadySet["flooding-police"]               = false
+    //alreadySet["max-flood-allowed-before-kick"] = false
+    alreadySet["all-users-alias"]               = false
+    alreadySet["ignore-action"]                 = false
+    alreadySet["deignore-action"]               = false
 
-    var m_set []string
-    m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
-    for len(m_set) == 2 {
-        _, exists := verifier[m_set[0]]
+    var mSet []string
+    mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
+    for len(mSet) == 2 {
+        _, exists := verifier[mSet[0]]
         if !exists {
-            return NewCherryFileError(filepath, m_line, "misc configuration named as \"" + m_set[0] + "\" is unrecognized.")
+            return NewCherryFileError(filepath, mLine, "misc configuration named as \"" + mSet[0] + "\" is unrecognized.")
         }
-        if already_set[m_set[0]] {
-            return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" re-configured.")
+        if alreadySet[mSet[0]] {
+            return NewCherryFileError(filepath, mLine, "misc configuration \"" + mSet[0] + "\" re-configured.")
         }
-        if !verifier[m_set[0]](m_set[1]) {
-            return NewCherryFileError(filepath, m_line, "misc configuration \"" + m_set[0] + "\" has invalid value : " + m_set[1])
+        if !verifier[mSet[0]](mSet[1]) {
+            return NewCherryFileError(filepath, mLine, "misc configuration \"" + mSet[0] + "\" has invalid value : " + mSet[1])
         }
-        setter[m_set[0]](cherry_rooms, room_name, m_set[1])
-        already_set[m_set[0]] = true
-        m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
+        setter[mSet[0]](cherryRooms, roomName, mSet[1])
+        alreadySet[mSet[0]] = true
+        mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
     }
 
     return nil
 }
 
-func set_ignore_action(cherry_rooms *config.CherryRooms, room_name, action string) {
-    cherry_rooms.SetIgnoreAction(room_name, action[1:len(action)-1])
+func setIgnoreAction(cherryRooms *config.CherryRooms, roomName, action string) {
+    cherryRooms.SetIgnoreAction(roomName, action[1:len(action)-1])
 }
 
-func set_deignore_action(cherry_rooms *config.CherryRooms, room_name, action string) {
-    cherry_rooms.SetDeIgnoreAction(room_name, action[1:len(action)-1])
+func setDeIgnoreAction(cherryRooms *config.CherryRooms, roomName, action string) {
+    cherryRooms.SetDeIgnoreAction(roomName, action[1:len(action)-1])
 }
 
-func set_join_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetJoinMessage(room_name, message[1:len(message)-1])
+func setJoinMessage(cherryRooms *config.CherryRooms, roomName, message string) {
+    cherryRooms.SetJoinMessage(roomName, message[1:len(message)-1])
 }
 
-func set_exit_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetExitMessage(room_name, message[1:len(message)-1])
+func setExitMessage(cherryRooms *config.CherryRooms, roomName, message string) {
+    cherryRooms.SetExitMessage(roomName, message[1:len(message)-1])
 }
 
-func set_on_ignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetOnIgnoreMessage(room_name, message[1:len(message)-1])
+func setOnIgnoreMessage(cherryRooms *config.CherryRooms, roomName, message string) {
+    cherryRooms.SetOnIgnoreMessage(roomName, message[1:len(message)-1])
 }
 
-func set_on_deignore_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetOnDeIgnoreMessage(room_name, message[1:len(message)-1])
+func setOnDeIgnoreMessage(cherryRooms *config.CherryRooms, roomName, message string) {
+    cherryRooms.SetOnDeIgnoreMessage(roomName, message[1:len(message)-1])
 }
 
-func set_greeting_message(cherry_rooms *config.CherryRooms, room_name, message string) {
-    cherry_rooms.SetGreetingMessage(room_name, message[1:len(message)-1])
+func setGreetingMessage(cherryRooms *config.CherryRooms, roomName, message string) {
+    cherryRooms.SetGreetingMessage(roomName, message[1:len(message)-1])
 }
 
-func set_private_message_marker(cherry_rooms *config.CherryRooms, room_name, marker string) {
-    cherry_rooms.SetPrivateMessageMarker(room_name, marker[1:len(marker)-1])
+func setPrivateMessageMarker(cherryRooms *config.CherryRooms, roomName, marker string) {
+    cherryRooms.SetPrivateMessageMarker(roomName, marker[1:len(marker)-1])
 }
 
-func set_max_users(cherry_rooms *config.CherryRooms, room_name, value string) {
-    var int_value int64
-    int_value, _ = strconv.ParseInt(value, 10, 64)
-    cherry_rooms.SetMaxUsers(room_name, int(int_value))
+func setMaxUsers(cherryRooms *config.CherryRooms, roomName, value string) {
+    var intValue int64
+    intValue, _ = strconv.ParseInt(value, 10, 64)
+    cherryRooms.SetMaxUsers(roomName, int(intValue))
 }
 
-func set_allow_brief(cherry_rooms *config.CherryRooms, room_name, value string) {
+func setAllowBrief(cherryRooms *config.CherryRooms, roomName, value string) {
     var allow bool
     allow = (value == "yes")
-    cherry_rooms.SetAllowBrief(room_name, allow)
+    cherryRooms.SetAllowBrief(roomName, allow)
 }
 
-//func set_flooding_police(cherry_rooms *config.CherryRooms, room_name, value string) {
+//func set_flooding_police(cherryRooms *config.CherryRooms, roomName, value string) {
 //    var impose bool
 //    impose = (value == "yes")
-//    cherry_rooms.SetFloodingPolice(room_name, impose)
+//    cherryRooms.SetFloodingPolice(roomName, impose)
 //}
 
-func set_all_users_alias(cherry_rooms *config.CherryRooms, room_name, value string) {
-    cherry_rooms.SetAllUsersAlias(room_name, value[1:len(value)-1])
+func setAllUsersAlias(cherryRooms *config.CherryRooms, roomName, value string) {
+    cherryRooms.SetAllUsersAlias(roomName, value[1:len(value)-1])
 }
 
-//func set_max_flood_allowed_before_kick(cherry_rooms *config.CherryRooms, room_name, value string) {
-//    var int_value int64
-//    int_value, _ = strconv.ParseInt(value, 10, 64)
-//    cherry_rooms.SetMaxFloodAllowedBeforeKick(room_name, int(int_value))
+//func set_max_flood_allowed_before_kick(cherryRooms *config.CherryRooms, roomName, value string) {
+//    var intValue int64
+//    intValue, _ = strconv.ParseInt(value, 10, 64)
+//    cherryRooms.SetMaxFloodAllowedBeforeKick(roomName, int(intValue))
 //}
 
-func verify_number(buffer string) bool {
+func verifyNumber(buffer string) bool {
     if len(buffer) == 0 {
         return false
     }
@@ -494,14 +505,14 @@ func verify_number(buffer string) bool {
     return true
 }
 
-func verify_string(buffer string) bool {
+func verifyString(buffer string) bool {
     if len(buffer) <= 1 {
         return false
     }
     return (buffer[0] == '"' && buffer[len(buffer)-1] == '"')
 }
 
-func verify_bool(buffer string) bool {
+func verifyBool(buffer string) bool {
     if len(buffer) == 0 {
         return false
     }
@@ -510,78 +521,78 @@ func verify_bool(buffer string) bool {
 
 //  WARN(Santiago): The following codes are a brain damage. I am sorry.
 
-func get_indirect_config(main_section,
-                         sub_section string,
-                         main_verifier,
-                         sub_verifier func([]string, []string, int, int, string, string, *config.CherryRooms) *CherryFileError,
+func getIndirectConfig(mainSection,
+                         subSection string,
+                         mainVerifier,
+                         subVerifier func([]string, []string, int, int, string, string, *config.CherryRooms) *CherryFileError,
                          setter func(*config.CherryRooms, string, []string, []string),
-                         room_name string,
-                         cherry_rooms *config.CherryRooms,
-                         config_data,
+                         roomName string,
+                         cherryRooms *config.CherryRooms,
+                         configData,
                          filepath string) *CherryFileError {
-    var m_data string
-    var m_line int
-    var m_err *CherryFileError
-    m_data, _, m_line, m_err = GetDataFromSection(main_section, config_data, 1, filepath)
-    if m_err != nil {
-        return m_err
+    var mData string
+    var mLine int
+    var mErr *CherryFileError
+    mData, _, mLine, mErr = GetDataFromSection(mainSection, configData, 1, filepath)
+    if mErr != nil {
+        return mErr
     }
 
     var s_data string
     var s_line int
     var s_err *CherryFileError
-    s_data, _, s_line, s_err = GetDataFromSection(sub_section, config_data, 1, filepath)
+    s_data, _, s_line, s_err = GetDataFromSection(subSection, configData, 1, filepath)
 
     if s_err != nil {
         return s_err
     }
 
-    var m_set []string
-    m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
-    for len(m_set) == 2 {
+    var mSet []string
+    mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
+    for len(mSet) == 2 {
         var s_set []string
-        m_err = main_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
-        if m_err != nil {
-            return m_err
+        mErr = mainVerifier(mSet, s_set, mLine, s_line, roomName, filepath, cherryRooms)
+        if mErr != nil {
+            return mErr
         }
 
         //  INFO(Santiago): Getting the template for the current action label from a section to another.
-        var temp string = s_data
-        var temp_line int = s_line
+        var temp = s_data
+        var temp_line = s_line
         s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
-        for len(s_set) == 2 && s_set[0] != m_set[0] {
+        for len(s_set) == 2 && s_set[0] != mSet[0] {
             s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
         }
 
-        s_err = sub_verifier(m_set, s_set, m_line, s_line, room_name, filepath, cherry_rooms)
+        s_err = subVerifier(mSet, s_set, mLine, s_line, roomName, filepath, cherryRooms)
 
         if s_err != nil {
             return s_err
         }
 
-        setter(cherry_rooms, room_name, m_set, s_set)
+        setter(cherryRooms, roomName, mSet, s_set)
 
-        m_set, m_line, m_data = GetNextSetFromData(m_data, m_line, "=")
+        mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
     }
     return nil
 }
 
-func room_action_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if cherry_rooms.HasAction(room_name, m_set[0]) {
-        return NewCherryFileError(filepath, m_line, "room action \"" + m_set[0] + "\" redeclared.")
+func roomActionMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if cherryRooms.HasAction(roomName, mSet[0]) {
+        return NewCherryFileError(filepath, mLine, "room action \"" + mSet[0] + "\" redeclared.")
     }
-    if len(m_set[1]) == 0 {
-        return NewCherryFileError(filepath, m_line, "unlabeled room action.")
+    if len(mSet[1]) == 0 {
+        return NewCherryFileError(filepath, mLine, "unlabeled room action.")
     }
-    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, m_line, "room action must be set with a valid string.")
+    if mSet[1][0] != '"' || mSet[1][len(mSet[1])-1] != '"' {
+        return NewCherryFileError(filepath, mLine, "room action must be set with a valid string.")
     }
     return nil
 }
 
-func room_action_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if s_set[0] != m_set[0] {
-        return NewCherryFileError(filepath, s_line, "there is no template for action \"" + m_set[0] + "\".")
+func room_action_sub_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if s_set[0] != mSet[0] {
+        return NewCherryFileError(filepath, s_line, "there is no template for action \"" + mSet[0] + "\".")
     }
     if len(s_set[1]) == 0 {
         return NewCherryFileError(filepath, s_line, "empty room action template.")
@@ -597,27 +608,27 @@ func room_action_sub_verifier(m_set, s_set []string, m_line, s_line int, room_na
     return nil
 }
 
-func room_action_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+func roomActionSetter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
     data, _ := ioutil.ReadFile(s_set[1][1:len(s_set[1])-1])
-    cherry_rooms.AddAction(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], string(data))
+    cherryRooms.AddAction(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], string(data))
 }
 
-func room_image_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if cherry_rooms.HasImage(room_name, m_set[0]) {
-        return NewCherryFileError(filepath, m_line, "room image \"" + m_set[0] + "\" redeclared.")
+func roomImageMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if cherryRooms.HasImage(roomName, mSet[0]) {
+        return NewCherryFileError(filepath, mLine, "room image \"" + mSet[0] + "\" redeclared.")
     }
-    if len(m_set[1]) == 0 {
-        return NewCherryFileError(filepath, m_line, "unlabeled room image.")
+    if len(mSet[1]) == 0 {
+        return NewCherryFileError(filepath, mLine, "unlabeled room image.")
     }
-    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, m_line, "room image must be set with a valid string.")
+    if mSet[1][0] != '"' || mSet[1][len(mSet[1])-1] != '"' {
+        return NewCherryFileError(filepath, mLine, "room image must be set with a valid string.")
     }
     return nil
 }
 
-func room_image_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-    if s_set[0] != m_set[0] {
-        return NewCherryFileError(filepath, s_line, "there is no url for image \"" + m_set[0] + "\".")
+func roomImageSubVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if s_set[0] != mSet[0] {
+        return NewCherryFileError(filepath, s_line, "there is no url for image \"" + mSet[0] + "\".")
     }
     if len(s_set[1]) == 0 {
         return NewCherryFileError(filepath, s_line, "empty room image url.")
@@ -628,27 +639,27 @@ func room_image_sub_verifier(m_set, s_set []string, m_line, s_line int, room_nam
     return nil
 }
 
-func room_image_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+func roomImageSetter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
     //  WARN(Santiago): by now we will pass the image template as empty.
-    cherry_rooms.AddImage(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
+    cherryRooms.AddImage(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", s_set[1][1:len(s_set[1])-1])
 }
 
-//func room_sound_main_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-//    if cherry_rooms.HasImage(room_name, m_set[0]) {
-//        return NewCherryFileError(filepath, m_line, "room sound \"" + m_set[0] + "\" redeclared.")
+//func room_sound_main_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+//    if cherryRooms.HasImage(roomName, mSet[0]) {
+//        return NewCherryFileError(filepath, mLine, "room sound \"" + mSet[0] + "\" redeclared.")
 //    }
-//    if len(m_set[1]) == 0 {
-//        return NewCherryFileError(filepath, m_line, "unlabeled room sound.")
+//    if len(mSet[1]) == 0 {
+//        return NewCherryFileError(filepath, mLine, "unlabeled room sound.")
 //    }
-//    if m_set[1][0] != '"' || m_set[1][len(m_set[1])-1] != '"' {
-//        return NewCherryFileError(filepath, m_line, "room sound must be set with a valid string.")
+//    if mSet[1][0] != '"' || mSet[1][len(mSet[1])-1] != '"' {
+//        return NewCherryFileError(filepath, mLine, "room sound must be set with a valid string.")
 //    }
 //    return nil
 //}
 
-//func room_sound_sub_verifier(m_set, s_set []string, m_line, s_line int, room_name, filepath string, cherry_rooms *config.CherryRooms) *CherryFileError {
-//    if s_set[0] != m_set[0] {
-//        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + m_set[0] + "\".")
+//func room_sound_sub_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+//    if s_set[0] != mSet[0] {
+//        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + mSet[0] + "\".")
 //    }
 //    if len(s_set[1]) == 0 {
 //        return NewCherryFileError(filepath, s_line, "empty room sound url.")
@@ -659,7 +670,7 @@ func room_image_setter(cherry_rooms *config.CherryRooms, room_name string, m_set
 //    return nil
 //}
 
-//func room_sound_setter(cherry_rooms *config.CherryRooms, room_name string, m_set, s_set []string) {
+//func room_sound_setter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
 //    //  WARN(Santiago): by now we will pass the sound template as empty.
-//    cherry_rooms.AddSound(room_name, m_set[0], m_set[1][1:len(m_set[1])-1], "", s_set[1][1:len(s_set[1])-1])
+//    cherryRooms.AddSound(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", s_set[1][1:len(s_set[1])-1])
 //}

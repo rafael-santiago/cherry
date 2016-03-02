@@ -8,34 +8,34 @@
 package cherry_test
 
 import (
-    "testing"
-    "../html"
-    "os"
-    "../config"
-    "../config/parser"
+	"../config"
+	"../config/parser"
+	"../html"
+	"os"
+	"testing"
 )
 
 func PreprocessorBasicTest(t *testing.T) {
-    preprocessor := html.NewHTMLPreprocessor(nil)
-    if preprocessor.ExpandData("land-of-competition", "{{.FoD}} Zzz...") != "{{.FoD}} Zzz..." {
-        t.Fail()
-    }
-    var cherry_rooms *config.CherryRooms
-    cwd, _ := os.Getwd()
-    os.Chdir("../../sample")
-    var error *parser.CherryFileError
-    cherry_rooms, error = parser.ParseCherryFile("conf/sample.cherry")
-    os.Chdir(cwd)
-    if error != nil {
-       t.Fail()
-    }
-    preprocessor.Init(cherry_rooms)
-    preprocessor.SetDataValue("{{.foo}}", "bar")
-    preprocessor.SetDataValue("{{.bar}}", "foo")
-    if preprocessor.ExpandData("aliens-on-earth", "{{.foo}}{{.bar}}") != "barfoo" {
-        t.Fail()
-    }
-    if preprocessor.ExpandData("aliens-on-earth", "{{.greeting-message}}") != "Take meeeeee to your leader!!!" {
-        t.Fail()
-    }
+	preprocessor := html.NewHTMLPreprocessor(nil)
+	if preprocessor.ExpandData("land-of-competition", "{{.FoD}} Zzz...") != "{{.FoD}} Zzz..." {
+		t.Fail()
+	}
+	var cherry_rooms *config.CherryRooms
+	cwd, _ := os.Getwd()
+	os.Chdir("../../sample")
+	var error *parser.CherryFileError
+	cherry_rooms, error = parser.ParseCherryFile("conf/sample.cherry")
+	os.Chdir(cwd)
+	if error != nil {
+		t.Fail()
+	}
+	preprocessor.Init(cherry_rooms)
+	preprocessor.SetDataValue("{{.foo}}", "bar")
+	preprocessor.SetDataValue("{{.bar}}", "foo")
+	if preprocessor.ExpandData("aliens-on-earth", "{{.foo}}{{.bar}}") != "barfoo" {
+		t.Fail()
+	}
+	if preprocessor.ExpandData("aliens-on-earth", "{{.greeting-message}}") != "Take meeeeee to your leader!!!" {
+		t.Fail()
+	}
 }

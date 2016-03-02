@@ -55,48 +55,48 @@ func GetRequestTrap(httpPayload string) RequestTrap {
     }
     httpMethodPart += "$"
     if strings.HasPrefix(httpMethodPart, "GET /join$") {
-        return BuildRequestTrap(GetJoin_Handle)
+        return BuildRequestTrap(GetJoinHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /brief$") {
-        return BuildRequestTrap(GetBrief_Handle)
+        return BuildRequestTrap(GetBriefHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /top&") {
-        return BuildRequestTrap(GetTop_Handle)
+        return BuildRequestTrap(GetTopHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /banner&") {
-        return BuildRequestTrap(GetBanner_Handle)
+        return BuildRequestTrap(GetBannerHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /body&") {
-        return BuildRequestTrap(GetBody_Handle)
+        return BuildRequestTrap(GetBodyHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /exit&") {
-        return BuildRequestTrap(GetExit_Handle)
+        return BuildRequestTrap(GetExitHandle)
     }
     if strings.HasPrefix(httpMethodPart, "POST /join$") {
-        return BuildRequestTrap(PostJoin_Handle)
+        return BuildRequestTrap(PostJoinHandle)
     }
     if strings.HasPrefix(httpMethodPart, "POST /banner&") {
-        return BuildRequestTrap(PostBanner_Handle)
+        return BuildRequestTrap(PostBannerHandle)
     }
     if strings.HasPrefix(httpMethodPart, "GET /find$") {
-        return BuildRequestTrap(GetFind_Handle)
+        return BuildRequestTrap(GetFindHandle)
     }
     if strings.HasPrefix(httpMethodPart, "POST /find$") {
-        return BuildRequestTrap(PostFind_Handle)
+        return BuildRequestTrap(PostFindHandle)
     }
-    return BuildRequestTrap(BadAssError_Handle)
+    return BuildRequestTrap(BadAssErrorHandle)
 }
 
-// GetFind_Handle implements the handle for the find document (GET).
-func GetFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetFindHandle implements the handle for the find document (GET).
+func GetFindHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var replyBuffer []byte
     replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetFindBotTemplate(roomName)), 200, true)
     newConn.Write(replyBuffer)
     newConn.Close()
 }
 
-// PostFind_Handle implements the handle for the find document (POST).
-func PostFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// PostFindHandle implements the handle for the find document (POST).
+func PostFindHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromPost(httpPayload)
     var replyBuffer []byte
@@ -128,8 +128,8 @@ func PostFind_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
-// GetJoin_Handle implements the handle for the join document (GET).
-func GetJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetJoinHandle implements the handle for the join document (GET).
+func GetJoinHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): The form for room joining was requested, so we will flush it to client.
     var replyBuffer []byte
     replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetEntranceTemplate(roomName)), 200, true)
@@ -137,8 +137,8 @@ func GetJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     newConn.Close()
 }
 
-// GetTop_Handle implements the handle for the top document (GET).
-func GetTop_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetTopHandle implements the handle for the top document (GET).
+func GetTopHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromGet(httpPayload)
     var replyBuffer []byte
@@ -151,8 +151,8 @@ func GetTop_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config
     newConn.Close()
 }
 
-// GetBanner_Handle implements the handle for the banner document (GET).
-func GetBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetBannerHandle implements the handle for the banner document (GET).
+func GetBannerHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
     userData = rawhttp.GetFieldsFromGet(httpPayload)
@@ -167,8 +167,8 @@ func GetBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *con
     newConn.Close()
 }
 
-// GetExit_Handle implements the handle for the exit document (GET).
-func GetExit_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetExitHandle implements the handle for the exit document (GET).
+func GetExitHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
     userData = rawhttp.GetFieldsFromGet(httpPayload)
@@ -185,8 +185,8 @@ func GetExit_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     newConn.Close()
 }
 
-// PostJoin_Handle implements the handle for the join document (POST).
-func PostJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// PostJoinHandle implements the handle for the join document (POST).
+func PostJoinHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     //  INFO(Santiago): Here, we need firstly parse the posted fields, check for "nickclash", if this is the case
     //                  flush the page informing it. Otherwise we add the user basic info and flush the room skeleton
     //                  [TOP/BODY/BANNER]. Then we finally close the connection.
@@ -215,8 +215,8 @@ func PostJoin_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
-// GetBrief_Handle implements the handle for the brief document (GET).
-func GetBrief_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetBriefHandle implements the handle for the brief document (GET).
+func GetBriefHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var replyBuffer []byte
     if rooms.IsAllowingBriefs(roomName) {
         replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetBriefTemplate(roomName)), 200, true)
@@ -227,8 +227,8 @@ func GetBrief_Handle(newConn net.Conn, roomName, httpPayload string, rooms *conf
     newConn.Close()
 }
 
-// GetBody_Handle implements the handle for the body document (GET).
-func GetBody_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// GetBodyHandle implements the handle for the body document (GET).
+func GetBodyHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     userData = rawhttp.GetFieldsFromGet(httpPayload)
     var validUser bool
@@ -247,14 +247,14 @@ func GetBody_Handle(newConn net.Conn, roomName, httpPayload string, rooms *confi
     }
 }
 
-// BadAssError_Handle implements the handle for the any unexpected HTTP request (GET/POST/Whatever).
-func BadAssError_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// BadAssErrorHandle implements the handle for the any unexpected HTTP request (GET/POST/Whatever).
+func BadAssErrorHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     newConn.Write(rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true))
     newConn.Close()
 }
 
-// PostBanner_Handle implements the handle for the banner document (POST).
-func PostBanner_Handle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+// PostBannerHandle implements the handle for the banner document (POST).
+func PostBannerHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
     var userData map[string]string
     var replyBuffer []byte
     var invalidRequest = false

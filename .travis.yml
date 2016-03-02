@@ -4,3 +4,5 @@ go:
   - 1.4
 
 sudo: false
+
+script: go test ./...

@@ -196,7 +196,7 @@ func coloredNicknameExpander(p *Preprocessor, roomName, varName, data string) st
 
 func sessionIDExpander(p *Preprocessor, roomName, varName, data string) string {
     from := p.rooms.GetNextMessage(roomName).From
-    return strings.Replace(data, varName, p.rooms.GetSessionId(from, roomName), -1)
+    return strings.Replace(data, varName, p.rooms.GetSessionID(from, roomName), -1)
 }
 
 func colorExpander(p *Preprocessor, roomName, varName, data string) string {

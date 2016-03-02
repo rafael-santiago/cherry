@@ -60,7 +60,7 @@ type Message struct {
 
 // RoomUser is the user context.
 type RoomUser struct {
-    sessionId string
+    sessionID string
     color string
     ignoreList []string
     kickout bool
@@ -108,7 +108,7 @@ func (c *CherryRooms) GetRoomUsers(roomName string) []string {
     var users []string
     users = make([]string, 0)
     c.Lock(roomName)
-    for user, _ := range c.configs[roomName].users {
+    for user := range c.configs[roomName].users {
         users = append(users, user)
     }
     c.Unlock(roomName)
@@ -119,7 +119,7 @@ func (c *CherryRooms) GetRoomUsers(roomName string) []string {
 func (c *CherryRooms) GetRooms() []string {
     var rooms []string
     rooms = make([]string, 0)
-    for room, _ := range c.configs {
+    for room := range c.configs {
         rooms = append(rooms, room)
     }
     return rooms
@@ -153,7 +153,7 @@ func (c *CherryRooms) AddUser(roomName, nickname, color string, kickout bool) {
     c.configs[roomName].mutex.Unlock()
 }
 
-// RemoveUser... oh, God! this lint is so dumb.
+// RemoveUser removes a user...
 func (c *CherryRooms) RemoveUser(roomName, nickname string) {
     c.configs[roomName].mutex.Lock()
     delete(c.configs[roomName].users, nickname)
@@ -189,16 +189,16 @@ func (c *CherryRooms) GetNextMessage(roomName string) Message {
     return message
 }
 
-// GetSessionId returns the user's session ID.
-func (c *CherryRooms) GetSessionId(from, roomName string) string {
+// GetsessionID returns the user's session ID.
+func (c *CherryRooms) GetSessionID(from, roomName string) string {
     if len(from) == 0 || !c.HasUser(roomName, from) {
         return ""
     }
     c.configs[roomName].mutex.Lock()
-    var sessionId string
-    sessionId = c.configs[roomName].users[from].sessionId
+    var sessionID string
+    sessionID = c.configs[roomName].users[from].sessionID
     c.configs[roomName].mutex.Unlock()
-    return sessionId
+    return sessionID
 }
 
 // GetColor returns the user's nickname color.
@@ -253,7 +253,7 @@ func (c *CherryRooms) DelFromIgnoreList(from, to, roomName string) {
     if len(from) == 0 || len(to) == 0 || !c.HasUser(roomName, from) || !c.HasUser(roomName, to) {
         return
     }
-    var index int = -1
+    var index = -1
     c.configs[roomName].mutex.Lock()
     for it, t := range c.configs[roomName].users[from].ignoreList {
         if t == to {
@@ -272,7 +272,7 @@ func (c *CherryRooms) IsIgnored(from, to, roomName string) bool {
     if len(from) == 0 || len(to) == 0 || !c.HasUser(roomName, from) || !c.HasUser(roomName, to) {
         return false
     }
-    var retval bool = false
+    var retval = false
     c.configs[roomName].mutex.Lock()
     for _, t := range c.configs[roomName].users[from].ignoreList {
         if t == to {
@@ -359,10 +359,10 @@ func (c *CherryRooms) GetAllUsersAlias(roomName string) string {
 // GetActionList returns a well-formatted "HTML combo" containing all actions.
 func (c *CherryRooms) GetActionList(roomName string) string {
     c.Lock(roomName)
-    var actionList string = ""
+    var actionList = ""
     var actions []string
     actions = make([]string, 0)
-    for action, _ := range c.configs[roomName].actions {
+    for action := range c.configs[roomName].actions {
         actions = append(actions, action)
     }
     sort.Strings(actions)
@@ -375,10 +375,10 @@ func (c *CherryRooms) GetActionList(roomName string) string {
 
 func(c *CherryRooms) getMediaResourceList(roomName string, mediaResource map[string]*RoomMediaResource) string {
     c.Lock(roomName)
-    var mediaRsrcList string = ""
+    var mediaRsrcList = ""
     var resources []string
     resources = make([]string, 0)
-    for resource, _ := range mediaResource {
+    for resource := range mediaResource {
         resources = append(resources, resource)
     }
     sort.Strings(resources)
@@ -403,12 +403,12 @@ func (c *CherryRooms) GetUsersList(roomName string) string {
     c.Lock(roomName)
     var users []string
     users = make([]string, 0)
-    for user, _ := range c.configs[roomName].users {
+    for user := range c.configs[roomName].users {
         users = append(users, user)
     }
     //  WARN(Santiago): Already locked, we can acquire this piece of information directly... otherwise we got a deadlock.
     allUsersAlias := c.configs[roomName].misc.allUsersAlias
-    var usersList string = "<option value = \"" + allUsersAlias + "\">" + allUsersAlias + "\n"
+    var usersList = "<option value = \"" + allUsersAlias + "\">" + allUsersAlias + "\n"
     sort.Strings(users)
     for _, user := range users {
         usersList += "<option value = \"" + user + "\">" + user + "\n"
@@ -608,18 +608,18 @@ func (c *CherryRooms) GetRoomByPort(port int16) *RoomConfig {
 }
 
 func (c *CherryRooms) initConfig() *RoomConfig {
-    var room_config *RoomConfig
-    room_config = new(RoomConfig)
-    room_config.misc = &RoomMisc{}
-    room_config.messageQueue = make([]Message, 0)
-    room_config.publicMessages = make([]string, 0)
-    room_config.users = make(map[string]*RoomUser)
-    room_config.templates = make(map[string]string)
-    room_config.actions = make(map[string]*RoomAction)
-    room_config.images = make(map[string]*RoomMediaResource)
+    var roomConfig *RoomConfig
+    roomConfig = new(RoomConfig)
+    roomConfig.misc = &RoomMisc{}
+    roomConfig.messageQueue = make([]Message, 0)
+    roomConfig.publicMessages = make([]string, 0)
+    roomConfig.users = make(map[string]*RoomUser)
+    roomConfig.templates = make(map[string]string)
+    roomConfig.actions = make(map[string]*RoomAction)
+    roomConfig.images = make(map[string]*RoomMediaResource)
     //room_config.sounds = make(map[string]*RoomMediaResource)
-    room_config.mutex = new(sync.Mutex)
-    return room_config
+    roomConfig.mutex = new(sync.Mutex)
+    return roomConfig
 }
 
 // AddTemplate adds a template based on room name, ID.
@@ -723,9 +723,9 @@ func (c *CherryRooms) HasUser(roomName, user string) bool {
 
 // IsValidUserRequest verifies if the session ID really matches with the previously defined.
 func (c *CherryRooms) IsValidUserRequest(roomName, user, id string) bool {
-    var valid bool = false
+    var valid = false
     if (c.HasUser(roomName, user)) {
-        valid = (id == c.GetSessionId(user, roomName))
+        valid = (id == c.GetSessionID(user, roomName))
     }
     return valid
 }

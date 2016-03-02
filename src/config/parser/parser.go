@@ -187,14 +187,14 @@ func GetNextSetFromData(data string, currLine int, tok string) ([]string, int, s
     return set, currLine, nextData
 }
 
-// StripBlanks...
+// StripBlanks strips all blanks.
 func StripBlanks(data string) string {
     var retval string
-    var dStart int = 0
+    var dStart int
     for dStart < len(data) && (data[dStart] == ' ' || data[dStart] == '\t') {
         dStart++
     }
-    var dEnd int = len(data) - 1
+    var dEnd = len(data) - 1
     for dEnd > 0 && (data[dEnd] == ' ' || data[dEnd] == '\t') {
         dEnd--
     }
@@ -204,7 +204,7 @@ func StripBlanks(data string) string {
 
 // ParseCherryFile parses a file at @filepath and returns a *config.CherryRooms or a *CherryFileError.
 func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
-    var cherryRooms *config.CherryRooms = nil
+    var cherryRooms *config.CherryRooms
     var cherryFileData []byte
     var data string
     var err *CherryFileError
@@ -327,7 +327,7 @@ func GetRoomTemplates(roomName string, cherryRooms *config.CherryRooms, configDa
 func GetRoomActions(roomName string, cherryRooms *config.CherryRooms, configData, filepath string) *CherryFileError {
     return getIndirectConfig("cherry." + roomName + ".actions",
                                "cherry." + roomName + ".actions.templates",
-                                roomActionMainVerifier, room_action_sub_verifier, roomActionSetter,
+                                roomActionMainVerifier, roomActionSubVerifier, roomActionSetter,
                                 roomName, cherryRooms, configData, filepath)
 }
 
@@ -538,46 +538,47 @@ func getIndirectConfig(mainSection,
         return mErr
     }
 
-    var s_data string
-    var s_line int
-    var s_err *CherryFileError
-    s_data, _, s_line, s_err = GetDataFromSection(subSection, configData, 1, filepath)
+    var sData string
+    var sLine int
+    var sErr *CherryFileError
+    sData, _, sLine, sErr = GetDataFromSection(subSection, configData, 1, filepath)
 
-    if s_err != nil {
-        return s_err
+    if sErr != nil {
+        return sErr
     }
 
     var mSet []string
     mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
     for len(mSet) == 2 {
-        var s_set []string
-        mErr = mainVerifier(mSet, s_set, mLine, s_line, roomName, filepath, cherryRooms)
+        var sSet []string
+        mErr = mainVerifier(mSet, sSet, mLine, sLine, roomName, filepath, cherryRooms)
         if mErr != nil {
             return mErr
         }
 
         //  INFO(Santiago): Getting the template for the current action label from a section to another.
-        var temp = s_data
-        var temp_line = s_line
-        s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
-        for len(s_set) == 2 && s_set[0] != mSet[0] {
-            s_set, temp_line, temp = GetNextSetFromData(temp, temp_line, "=")
+        var temp = sData
+
+        var tempLine = sLine
+        sSet, tempLine, temp = GetNextSetFromData(temp, tempLine, "=")
+        for len(sSet) == 2 && sSet[0] != mSet[0] {
+            sSet, tempLine, temp = GetNextSetFromData(temp, tempLine, "=")
         }
 
-        s_err = subVerifier(mSet, s_set, mLine, s_line, roomName, filepath, cherryRooms)
+        sErr = subVerifier(mSet, sSet, mLine, sLine, roomName, filepath, cherryRooms)
 
-        if s_err != nil {
-            return s_err
+        if sErr != nil {
+            return sErr
         }
 
-        setter(cherryRooms, roomName, mSet, s_set)
+        setter(cherryRooms, roomName, mSet, sSet)
 
         mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
     }
     return nil
 }
 
-func roomActionMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+func roomActionMainVerifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
     if cherryRooms.HasAction(roomName, mSet[0]) {
         return NewCherryFileError(filepath, mLine, "room action \"" + mSet[0] + "\" redeclared.")
     }
@@ -590,30 +591,30 @@ func roomActionMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, f
     return nil
 }
 
-func room_action_sub_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
-    if s_set[0] != mSet[0] {
-        return NewCherryFileError(filepath, s_line, "there is no template for action \"" + mSet[0] + "\".")
+func roomActionSubVerifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if sSet[0] != mSet[0] {
+        return NewCherryFileError(filepath, sLine, "there is no template for action \"" + mSet[0] + "\".")
     }
-    if len(s_set[1]) == 0 {
-        return NewCherryFileError(filepath, s_line, "empty room action template.")
+    if len(sSet[1]) == 0 {
+        return NewCherryFileError(filepath, sLine, "empty room action template.")
     }
-    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, s_line, "room action template must be set with a valid string.")
+    if sSet[1][0] != '"' || sSet[1][len(sSet[1])-1] != '"' {
+        return NewCherryFileError(filepath, sLine, "room action template must be set with a valid string.")
     }
-    var template_path string = s_set[1][1:len(s_set[1])-1]
-    _, err := ioutil.ReadFile(template_path)
+    var templatePath string = sSet[1][1:len(sSet[1])-1]
+    _, err := ioutil.ReadFile(templatePath)
     if err != nil {
-        return NewCherryFileError(filepath, s_line, fmt.Sprintf("unable to access file, details: [ %s ]", err.Error()))
+        return NewCherryFileError(filepath, sLine, fmt.Sprintf("unable to access file, details: [ %s ]", err.Error()))
     }
     return nil
 }
 
-func roomActionSetter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
-    data, _ := ioutil.ReadFile(s_set[1][1:len(s_set[1])-1])
+func roomActionSetter(cherryRooms *config.CherryRooms, roomName string, mSet, sSet []string) {
+    data, _ := ioutil.ReadFile(sSet[1][1:len(sSet[1])-1])
     cherryRooms.AddAction(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], string(data))
 }
 
-func roomImageMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+func roomImageMainVerifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
     if cherryRooms.HasImage(roomName, mSet[0]) {
         return NewCherryFileError(filepath, mLine, "room image \"" + mSet[0] + "\" redeclared.")
     }
@@ -626,25 +627,25 @@ func roomImageMainVerifier(mSet, s_set []string, mLine, s_line int, roomName, fi
     return nil
 }
 
-func roomImageSubVerifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
-    if s_set[0] != mSet[0] {
-        return NewCherryFileError(filepath, s_line, "there is no url for image \"" + mSet[0] + "\".")
+func roomImageSubVerifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+    if sSet[0] != mSet[0] {
+        return NewCherryFileError(filepath, sLine, "there is no url for image \"" + mSet[0] + "\".")
     }
-    if len(s_set[1]) == 0 {
-        return NewCherryFileError(filepath, s_line, "empty room image url.")
+    if len(sSet[1]) == 0 {
+        return NewCherryFileError(filepath, sLine, "empty room image url.")
     }
-    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
-        return NewCherryFileError(filepath, s_line, "room image url must be set with a valid string.")
+    if sSet[1][0] != '"' || sSet[1][len(sSet[1])-1] != '"' {
+        return NewCherryFileError(filepath, sLine, "room image url must be set with a valid string.")
     }
     return nil
 }
 
-func roomImageSetter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
+func roomImageSetter(cherryRooms *config.CherryRooms, roomName string, mSet, sSet []string) {
     //  WARN(Santiago): by now we will pass the image template as empty.
-    cherryRooms.AddImage(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", s_set[1][1:len(s_set[1])-1])
+    cherryRooms.AddImage(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", sSet[1][1:len(sSet[1])-1])
 }
 
-//func room_sound_main_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+//func room_sound_main_verifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
 //    if cherryRooms.HasImage(roomName, mSet[0]) {
 //        return NewCherryFileError(filepath, mLine, "room sound \"" + mSet[0] + "\" redeclared.")
 //    }
@@ -657,20 +658,20 @@ func roomImageSetter(cherryRooms *config.CherryRooms, roomName string, mSet, s_s
 //    return nil
 //}
 
-//func room_sound_sub_verifier(mSet, s_set []string, mLine, s_line int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
-//    if s_set[0] != mSet[0] {
-//        return NewCherryFileError(filepath, s_line, "there is no url for sound \"" + mSet[0] + "\".")
+//func room_sound_sub_verifier(mSet, sSet []string, mLine, sLine int, roomName, filepath string, cherryRooms *config.CherryRooms) *CherryFileError {
+//    if sSet[0] != mSet[0] {
+//        return NewCherryFileError(filepath, sLine, "there is no url for sound \"" + mSet[0] + "\".")
 //    }
-//    if len(s_set[1]) == 0 {
-//        return NewCherryFileError(filepath, s_line, "empty room sound url.")
+//    if len(sSet[1]) == 0 {
+//        return NewCherryFileError(filepath, sLine, "empty room sound url.")
 //    }
-//    if s_set[1][0] != '"' || s_set[1][len(s_set[1])-1] != '"' {
-//        return NewCherryFileError(filepath, s_line, "room sound url must be set with a valid string.")
+//    if sSet[1][0] != '"' || sSet[1][len(sSet[1])-1] != '"' {
+//        return NewCherryFileError(filepath, sLine, "room sound url must be set with a valid string.")
 //    }
 //    return nil
 //}
 
-//func room_sound_setter(cherryRooms *config.CherryRooms, roomName string, mSet, s_set []string) {
+//func room_sound_setter(cherryRooms *config.CherryRooms, roomName string, mSet, sSet []string) {
 //    //  WARN(Santiago): by now we will pass the sound template as empty.
-//    cherryRooms.AddSound(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", s_set[1][1:len(s_set[1])-1])
+//    cherryRooms.AddSound(roomName, mSet[0], mSet[1][1:len(mSet[1])-1], "", sSet[1][1:len(sSet[1])-1])
 //}

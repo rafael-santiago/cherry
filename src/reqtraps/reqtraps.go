@@ -207,7 +207,7 @@ func PostJoinHandle(newConn net.Conn, roomName, httpPayload string, rooms *confi
         replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetNickclashTemplate(roomName)), 200, true)
     } else {
         rooms.AddUser(roomName, userData["user"], userData["color"], true)
-        preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionId(userData["user"], roomName))
+        preprocessor.SetDataValue("{{.session-id}}", rooms.GetSessionID(userData["user"], roomName))
         replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetSkeletonTemplate(roomName)), 200, true)
         rooms.EnqueueMessage(roomName, userData["user"], "", "", "", rooms.GetJoinMessage(roomName), "")
     }

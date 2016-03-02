@@ -15,19 +15,19 @@ import (
 )
 
 func TestGetDataFromSection(t *testing.T) {
-    var config_data string = "# The commentary\n\n\n # More commentaries\ncherry.rooms ( aliens-on-earth:1024\nbackyard-science:911\n )\n"
-    sec_data, _, _, err := GetDataFromSection("cherry.room", config_data, 1, "foobar.cherry")
-    if err == nil || len(sec_data) > 0 {
+    var configData string = "# The commentary\n\n\n # More commentaries\ncherry.rooms ( aliens-on-earth:1024\nbackyard-science:911\n )\n"
+    secData, _, _, err := GetDataFromSection("cherry.room", configData, 1, "foobar.cherry")
+    if err == nil || len(secData) > 0 {
         t.Fail();
     }
-    sec_data, _, _, err = GetDataFromSection("cherry.rooms", config_data, 1, "foobar.cherry")
-    if err != nil || sec_data != " aliens-on-earth:1024\nbackyard-science:911\n " {
+    secData, _, _, err = GetDataFromSection("cherry.rooms", configData, 1, "foobar.cherry")
+    if err != nil || secData != " aliens-on-earth:1024\nbackyard-science:911\n " {
         t.Fail();
     }
 }
 
 func TestStripBlanks(t *testing.T) {
-    var data string = " \t\t\t   \t\t\t   o u t e r  s p a c e   \t\t\t \t \t  \t"
+    var data = " \t\t\t   \t\t\t   o u t e r  s p a c e   \t\t\t \t \t  \t"
     fmt.Println(StripBlanks(data))
     if StripBlanks(data) != "o u t e r  s p a c e" {
         t.Fail()
@@ -35,7 +35,7 @@ func TestStripBlanks(t *testing.T) {
 }
 
 func TestGetNextSetFromData(t *testing.T) {
-    var data string = "aliens-on-earth:1024\nbackyard-science : 911\n"
+    var data = "aliens-on-earth:1024\nbackyard-science : 911\n"
     set, _, data := GetNextSetFromData(data, 1, ":")
     if len(set) != 2 || len(data) == 0 || set[0] != "aliens-on-earth" || set[1] != "1024" {
         t.Fail()
@@ -65,110 +65,110 @@ func TestGetNextSetFromData(t *testing.T) {
 
 func TestRealCherryFileParsing(t *testing.T) {
     //  INFO(Santiago): This Homeric test should be splitted in the future.
-    var cherry_rooms *config.CherryRooms
+    var cherryRooms *config.CherryRooms
     cwd, _ := os.Getwd()
     os.Chdir("../../../sample")
     var error *CherryFileError
-    cherry_rooms, error = ParseCherryFile("conf/sample.cherry")
+    cherryRooms, error = ParseCherryFile("conf/sample.cherry")
     os.Chdir(cwd)
     if error != nil {
         fmt.Println(error)
        t.Fail()
     }
-    if cherry_rooms == nil {
+    if cherryRooms == nil {
         t.Fail()
     }
     var rooms []string
-    rooms = cherry_rooms.GetRooms()
+    rooms = cherryRooms.GetRooms()
     if len(rooms) != 1 {
         t.Fail()
     }
     if rooms[0] != "aliens-on-earth" {
         t.Fail()
     }
-    if cherry_rooms.GetListenPort(rooms[0]) != "1024" {
+    if cherryRooms.GetListenPort(rooms[0]) != "1024" {
         t.Fail()
     }
-    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+    if cherryRooms.GetUsersTotal(rooms[0]) != "0" {
         t.Fail()
     }
-    if cherry_rooms.GetGreetingMessage(rooms[0]) != "Take meeeeee to your leader!!!" {
+    if cherryRooms.GetGreetingMessage(rooms[0]) != "Take meeeeee to your leader!!!" {
         t.Fail()
     }
-    if cherry_rooms.GetJoinMessage(rooms[0]) != "joined...<script>scrollIt();</script>" {
+    if cherryRooms.GetJoinMessage(rooms[0]) != "joined...<script>scrollIt();</script>" {
         t.Fail()
     }
-    if cherry_rooms.GetExitMessage(rooms[0]) != "has left...<script>scrollIt();</script>" {
+    if cherryRooms.GetExitMessage(rooms[0]) != "has left...<script>scrollIt();</script>" {
         t.Fail()
     }
-    if cherry_rooms.GetOnIgnoreMessage(rooms[0]) != "(only you can see it) IGNORING " {
+    if cherryRooms.GetOnIgnoreMessage(rooms[0]) != "(only you can see it) IGNORING " {
         t.Fail()
     }
-    if cherry_rooms.GetOnDeIgnoreMessage(rooms[0]) != "(only you can see it) is NOT IGNORING " {
+    if cherryRooms.GetOnDeIgnoreMessage(rooms[0]) != "(only you can see it) is NOT IGNORING " {
         t.Fail()
     }
-    if cherry_rooms.GetPrivateMessageMarker(rooms[0]) != "(private)" {
+    if cherryRooms.GetPrivateMessageMarker(rooms[0]) != "(private)" {
         t.Fail()
     }
-    if cherry_rooms.GetAllUsersAlias(rooms[0]) != "EVERYBODY" {
+    if cherryRooms.GetAllUsersAlias(rooms[0]) != "EVERYBODY" {
         t.Fail()
     }
-    if cherry_rooms.GetMaxUsers(rooms[0]) != "10" {
+    if cherryRooms.GetMaxUsers(rooms[0]) != "10" {
         t.Fail()
     }
-    if ! cherry_rooms.IsAllowingBriefs(rooms[0]) {
+    if ! cherryRooms.IsAllowingBriefs(rooms[0]) {
         t.Fail()
     }
-    var exp_action_labels map[string]string
-    exp_action_labels = make(map[string]string)
-    exp_action_labels["a01"] = "talks to"
-    exp_action_labels["a02"] = "screams with"
-    exp_action_labels["a03"] = "IGNORE"
-    exp_action_labels["a04"] = "NOT IGNORE"
-    for a, l := range exp_action_labels {
-        if cherry_rooms.GetRoomActionLabel(rooms[0], a) != l {
+    var expActionLabels map[string]string
+    expActionLabels = make(map[string]string)
+    expActionLabels["a01"] = "talks to"
+    expActionLabels["a02"] = "screams with"
+    expActionLabels["a03"] = "IGNORE"
+    expActionLabels["a04"] = "NOT IGNORE"
+    for a, l := range expActionLabels {
+        if cherryRooms.GetRoomActionLabel(rooms[0], a) != l {
             t.Fail()
         }
-        if len(cherry_rooms.GetRoomActionTemplate(rooms[0], a)) == 0 {
+        if len(cherryRooms.GetRoomActionTemplate(rooms[0], a)) == 0 {
             t.Fail()
         }
     }
-    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+    if cherryRooms.GetUsersTotal(rooms[0]) != "0" {
         t.Fail()
     }
-    cherry_rooms.AddUser(rooms[0], "dunha", "0", false)
-    if cherry_rooms.GetUsersTotal(rooms[0]) != "1" {
+    cherryRooms.AddUser(rooms[0], "dunha", "0", false)
+    if cherryRooms.GetUsersTotal(rooms[0]) != "1" {
         t.Fail()
     }
-    if len(cherry_rooms.GetSessionId("dunha", rooms[0])) == 0 {
+    if len(cherryRooms.GetSessionID("dunha", rooms[0])) == 0 {
         t.Fail()
     }
-    if cherry_rooms.GetColor("dunha", rooms[0]) != "0" {
+    if cherryRooms.GetColor("dunha", rooms[0]) != "0" {
         t.Fail()
     }
-    if len(cherry_rooms.GetIgnoreList("dunha", rooms[0])) != 0 {
+    if len(cherryRooms.GetIgnoreList("dunha", rooms[0])) != 0 {
         t.Fail()
     }
-    cherry_rooms.AddToIgnoreList("dunha", "quiet", rooms[0])
-    if cherry_rooms.GetIgnoreList("dunha", rooms[0]) == "\"quiet\"" {
+    cherryRooms.AddToIgnoreList("dunha", "quiet", rooms[0])
+    if cherryRooms.GetIgnoreList("dunha", rooms[0]) == "\"quiet\"" {
         t.Fail()
     }
-    cherry_rooms.DelFromIgnoreList("dunha", "quiet", rooms[0])
-    if len(cherry_rooms.GetIgnoreList("dunha", rooms[0])) != 0 {
+    cherryRooms.DelFromIgnoreList("dunha", "quiet", rooms[0])
+    if len(cherryRooms.GetIgnoreList("dunha", rooms[0])) != 0 {
         t.Fail()
     }
-    cherry_rooms.RemoveUser(rooms[0], "donha")
-    if cherry_rooms.GetUsersTotal(rooms[0]) != "1" {
+    cherryRooms.RemoveUser(rooms[0], "donha")
+    if cherryRooms.GetUsersTotal(rooms[0]) != "1" {
         t.Fail()
     }
-    cherry_rooms.RemoveUser(rooms[0], "dunha")
-    if cherry_rooms.GetUsersTotal(rooms[0]) != "0" {
+    cherryRooms.RemoveUser(rooms[0], "dunha")
+    if cherryRooms.GetUsersTotal(rooms[0]) != "0" {
         t.Fail()
     }
-    if len(cherry_rooms.GetSessionId(rooms[0], "dunha")) != 0 {
+    if len(cherryRooms.GetSessionID(rooms[0], "dunha")) != 0 {
         t.Fail()
     }
-    message := cherry_rooms.GetNextMessage(rooms[0])
+    message := cherryRooms.GetNextMessage(rooms[0])
     if len(message.From)   != 0 ||
        len(message.To)     != 0 ||
        len(message.Action) != 0 ||
@@ -177,8 +177,8 @@ func TestRealCherryFileParsing(t *testing.T) {
        len(message.Priv)   != 0 {
         t.Fail()
     }
-    cherry_rooms.EnqueueMessage(rooms[0], "(null)", "(anyone)", "a01", "i01", "boo!", "1")
-    message = cherry_rooms.GetNextMessage(rooms[0])
+    cherryRooms.EnqueueMessage(rooms[0], "(null)", "(anyone)", "a01", "i01", "boo!", "1")
+    message = cherryRooms.GetNextMessage(rooms[0])
     if message.From   != "(null)"   ||
        message.To     != "(anyone)" ||
        message.Action != "a01"      ||
@@ -188,8 +188,8 @@ func TestRealCherryFileParsing(t *testing.T) {
         t.Fail()
     }
     for i := 0; i < 2; i++ {
-        cherry_rooms.DequeueMessage(rooms[0])
-        message = cherry_rooms.GetNextMessage(rooms[0])
+        cherryRooms.DequeueMessage(rooms[0])
+        message = cherryRooms.GetNextMessage(rooms[0])
         if len(message.From)   != 0 ||
            len(message.To)     != 0 ||
            len(message.Action) != 0 ||

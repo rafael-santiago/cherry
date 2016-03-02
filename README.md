@@ -1,6 +1,4 @@
-# Cherry
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/rafael-santiago/cherry)](https://goreportcard.com/report/github.com/rafael-santiago/cherry)
+# Cherry [![Go Report Card](https://goreportcard.com/badge/github.com/rafael-santiago/cherry)](https://goreportcard.com/report/github.com/rafael-santiago/cherry)
 
 ``Cherry`` is a ``webchat engine`` wrote in [``Golang``](https://github.com/golang/go). It brings the main functionalities that you need in a webchat server.
 

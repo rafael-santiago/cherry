@@ -8,9 +8,9 @@
 package parser
 
 import (
-	"pkg/config"
 	"fmt"
 	"os"
+	"pkg/config"
 	"testing"
 )
 

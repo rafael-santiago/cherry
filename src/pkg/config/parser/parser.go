@@ -10,9 +10,9 @@ Package parser parse and loads a cherry file to the memory.
 package parser
 
 import (
-	"pkg/config"
 	"fmt"
 	"io/ioutil"
+	"pkg/config"
 	"strconv"
 	"strings"
 )

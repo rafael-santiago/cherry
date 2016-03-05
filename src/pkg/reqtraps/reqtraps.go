@@ -10,10 +10,10 @@ Package reqtraps implements the traps that handle each relevant HTTP method.
 package reqtraps
 
 import (
+	"net"
 	"pkg/config"
 	"pkg/html"
 	"pkg/rawhttp"
-	"net"
 	"strings"
 )
 

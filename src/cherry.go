@@ -10,14 +10,14 @@ Package... errr... hum... guess what?!
 package main
 
 import (
+	"fmt"
+	"net"
+	"os"
 	"pkg/config"
 	"pkg/config/parser"
 	"pkg/html"
 	"pkg/messageplexer"
 	"pkg/reqtraps"
-	"fmt"
-	"net"
-	"os"
 	"strconv"
 	"strings"
 )

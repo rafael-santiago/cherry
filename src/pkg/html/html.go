@@ -10,7 +10,7 @@ Package html implements expanders based on the special makers recognized by Cher
 package html
 
 import (
-	"../config"
+	"pkg/config"
 	"fmt"
 	"strings"
 	"time"

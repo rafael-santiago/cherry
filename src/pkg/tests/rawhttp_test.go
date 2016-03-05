@@ -8,7 +8,7 @@
 package cherry_test
 
 import (
-	"../rawhttp"
+	"pkg/rawhttp"
 	"testing"
 )
 

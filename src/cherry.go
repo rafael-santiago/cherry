@@ -10,11 +10,11 @@ Package... errr... hum... guess what?!
 package main
 
 import (
-	"./config"
-	"./config/parser"
-	"./html"
-	"./messageplexer"
-	"./reqtraps"
+	"pkg/config"
+	"pkg/config/parser"
+	"pkg/html"
+	"pkg/messageplexer"
+	"pkg/reqtraps"
 	"fmt"
 	"net"
 	"os"

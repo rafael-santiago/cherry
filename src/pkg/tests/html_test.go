@@ -8,9 +8,9 @@
 package cherry_test
 
 import (
-	"../config"
-	"../config/parser"
-	"../html"
+	"pkg/config"
+	"pkg/config/parser"
+	"pkg/html"
 	"os"
 	"testing"
 )

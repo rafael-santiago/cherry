@@ -8,7 +8,7 @@
 package parser
 
 import (
-	".."
+	"pkg/config"
 	"fmt"
 	"os"
 	"testing"
@@ -67,7 +67,7 @@ func TestRealCherryFileParsing(t *testing.T) {
 	//  INFO(Santiago): This Homeric test should be splitted in the future.
 	var cherryRooms *config.CherryRooms
 	cwd, _ := os.Getwd()
-	os.Chdir("../../../sample")
+	os.Chdir("../../../../sample")
 	var error *CherryFileError
 	cherryRooms, error = ParseCherryFile("conf/sample.cherry")
 	os.Chdir(cwd)

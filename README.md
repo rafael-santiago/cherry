@@ -11,6 +11,13 @@ Until now ``SSL connections`` are unsupported.
 
 You can use the standard ``go build`` or you can use [Hefesto](https://github.com/rafael-santiago/hefesto).
 
+### Using go build
+
+You need to setup your ``GOPATH`` to the project root. Supposing that cherry repo was cloned under ``/home/doctor/web/git-hub/rafael-santiago/cherry``
+just add this path to your ``GOPATH``.
+
+Run ``go build`` from inside the ``src`` subdirectory.
+
 ### Using hefesto
 
 After following all steps to put Hefesto to work on your system just move to ``src`` subdirectory and invoke ``Hefesto`` from
@@ -23,6 +30,8 @@ doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/src# hefesto
 If all worked a cherry binary was created under ``../bin/`` and
 
 All done.
+
+Here you do not need to worry about ``GOPATH`` issues because Hefesto's script handles it for you on each build task that you invoke.
 
 ## How to run it?
 

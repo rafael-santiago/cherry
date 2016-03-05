@@ -31,7 +31,7 @@ If all worked a cherry binary was created under ``../bin/`` and
 
 All done.
 
-Here you do not need to worry about ``GOPATH`` issues because Hefesto's script handles it for you on each build task that you invoke.
+Here you do not need to worry about ``GOPATH`` issues because Hefesto's script handles it for you on each build task that you invoke (if needed).
 
 ## How to run it?
 

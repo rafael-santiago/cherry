@@ -61,9 +61,12 @@ function setup_gopath() : result type none {
                          "However, note that currently you are not able to run \"go build\" or \"go run\" commands " +
                          "by yourself for this project. In order to do this, please add \"" + $cherry_gopath_entry + "\" to your GOPATH.\n");
         if (hefesto.sys.os_name() != "windows") {
-            $gopath = $gopath + ":" + $cherry_gopath_entry;
-            hefesto.sys.setenv("GOPATH", $cherry_gopath_entry);
+            $gopath = $gopath + ":";
+        } else {
+            $gopath = $gopath + ";";
         }
+        $gopath = $gopath + $cherry_gopath_entry;
+        hefesto.sys.setenv("GOPATH", $cherry_gopath_entry);
     }
 }
 

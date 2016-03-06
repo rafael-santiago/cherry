@@ -137,7 +137,7 @@ Depending on action it is possible to format the message in a specific way. For 
 called ``cherry.[room-name].actions.templates`` where this must be defined.
 
 ```
-        cherry.aliens-on-earth.actions (
+        cherry.aliens-on-earth.actions.templates (
             a01 = "aliens-on-earth/templates/actions/a01.html"
             a02 = "aliens-on-earth/templates/actions/a02.html"
             a03 = "aliens-on-earth/templates/actions/a03.html"

@@ -142,7 +142,7 @@ func GetTopHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.
 	var userData map[string]string
 	userData = rawhttp.GetFieldsFromGet(httpPayload)
 	var replyBuffer []byte
-	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"], newConn) {
 		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
 	} else {
 		replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetTopTemplate(roomName)), 200, true)
@@ -158,7 +158,7 @@ func GetBannerHandle(newConn net.Conn, roomName, httpPayload string, rooms *conf
 	userData = rawhttp.GetFieldsFromGet(httpPayload)
 	preprocessor.SetDataValue("{{.nickname}}", userData["user"])
 	preprocessor.SetDataValue("{{.session-id}}", userData["id"])
-	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"], newConn) {
 		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
 	} else {
 		replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetBannerTemplate(roomName)), 200, true)
@@ -172,7 +172,7 @@ func GetExitHandle(newConn net.Conn, roomName, httpPayload string, rooms *config
 	var userData map[string]string
 	var replyBuffer []byte
 	userData = rawhttp.GetFieldsFromGet(httpPayload)
-	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+	if !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"], newConn) {
 		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
 	} else {
 		preprocessor.SetDataValue("{{.nickname}}", userData["user"])
@@ -232,7 +232,7 @@ func GetBodyHandle(newConn net.Conn, roomName, httpPayload string, rooms *config
 	var userData map[string]string
 	userData = rawhttp.GetFieldsFromGet(httpPayload)
 	var validUser bool
-	validUser = rooms.IsValidUserRequest(roomName, userData["user"], userData["id"])
+	validUser = rooms.IsValidUserRequest(roomName, userData["user"], userData["id"], newConn)
 	var replyBuffer []byte
 	if !validUser {
 		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
@@ -273,7 +273,7 @@ func PostBannerHandle(newConn net.Conn, roomName, httpPayload string, rooms *con
 		invalidRequest = true
 	}
 	var restoreBanner = true
-	if invalidRequest || !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"]) {
+	if invalidRequest || !rooms.IsValidUserRequest(roomName, userData["user"], userData["id"], newConn) {
 		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
 	} else if userData["action"] == rooms.GetIgnoreAction(roomName) {
 		if userData["user"] != userData["whoto"] && !rooms.IsIgnored(userData["user"], userData["whoto"], roomName) {

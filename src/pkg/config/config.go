@@ -15,6 +15,7 @@ import (
 	"io"
 	"net"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -65,6 +66,7 @@ type RoomUser struct {
 	ignoreList []string
 	kickout    bool
 	conn       net.Conn
+	addr       string
 }
 
 // RoomConfig represents in memory a defined room loaded from a cherry file.
@@ -149,7 +151,7 @@ func (c *CherryRooms) AddUser(roomName, nickname, color string, kickout bool) {
 	md := md5.New()
 	io.WriteString(md, roomName+nickname+color)
 	id := fmt.Sprintf("%x", md.Sum(nil))
-	c.configs[roomName].users[nickname] = &RoomUser{id, color, make([]string, 0), kickout, nil}
+	c.configs[roomName].users[nickname] = &RoomUser{id, color, make([]string, 0), kickout, nil, ""}
 	c.configs[roomName].mutex.Unlock()
 }
 
@@ -722,10 +724,19 @@ func (c *CherryRooms) HasUser(roomName, user string) bool {
 }
 
 // IsValidUserRequest verifies if the session ID really matches with the previously defined.
-func (c *CherryRooms) IsValidUserRequest(roomName, user, id string) bool {
+func (c *CherryRooms) IsValidUserRequest(roomName, user, id string, userConn net.Conn) bool {
 	var valid = false
 	if c.HasUser(roomName, user) {
 		valid = (id == c.GetSessionID(user, roomName))
+		if valid {
+			c.Lock(roomName)
+			userAddr := strings.Split(userConn.RemoteAddr().String(), ":")
+			realAddr := c.configs[roomName].users[user].addr
+			c.Unlock(roomName)
+			if len(userAddr) > 0 && len(realAddr) > 0 {
+				valid = (realAddr == userAddr[0])
+			}
+		}
 	}
 	return valid
 }
@@ -766,6 +777,10 @@ func (c *CherryRooms) GetDeIgnoreAction(roomName string) string {
 func (c *CherryRooms) SetUserConnection(roomName, user string, conn net.Conn) {
 	c.Lock(roomName)
 	c.configs[roomName].users[user].conn = conn
+	remoteAddr := strings.Split(conn.RemoteAddr().String(), ":")
+	if len(remoteAddr) > 0 {
+		c.configs[roomName].users[user].addr = remoteAddr[0]
+	}
 	c.Unlock(roomName)
 }
 

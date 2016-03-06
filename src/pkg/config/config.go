@@ -733,7 +733,7 @@ func (c *CherryRooms) IsValidUserRequest(roomName, user, id string, userConn net
 			userAddr := strings.Split(userConn.RemoteAddr().String(), ":")
 			realAddr := c.configs[roomName].users[user].addr
 			c.Unlock(roomName)
-			if len(userAddr) > 0 && len(realAddr) > 0 {
+			if len(realAddr) > 0 && len(userAddr) > 0 {
 				valid = (realAddr == userAddr[0])
 			}
 		}

@@ -229,6 +229,17 @@ support for code "importation". The way to do it is:
 Congrats, now your ``Cherry`` tree has branches! :) Cut off one branch from it is pretty simple, just comment it.
 In the sample case above as effect a room will stop being created.
 
+### Adding images to your messages
+
+It is possible adding the ``image reference`` to your message. Here an ``image reference`` can be understood as an ``URI``
+enclosed with square backets.
+
+Take a look:
+
+``Hey Beavis! Look a cool message Huh! [https://image.com/somewhere/over/the/rainbow/yourimage.gif]``
+
+When it is sent the server can automatically include the image content inside the message content.
+
 ## Opening your first chat room
 
 I know is rather confuse read this kind of descriptions without any concrete example. From now on we will compose each

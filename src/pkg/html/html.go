@@ -128,7 +128,6 @@ func expandImageRefs(data string) string {
 				d++
 			}
 			if strings.HasSuffix(uri, ".gif") ||
-				strings.HasSuffix(uri, ".gifv") ||
 				strings.HasSuffix(uri, ".jpg") ||
 				strings.HasSuffix(uri, ".jpeg") ||
 				strings.HasSuffix(uri, ".png") ||

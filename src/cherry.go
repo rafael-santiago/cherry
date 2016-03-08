@@ -1,5 +1,5 @@
 /*
-Package... errr... hum... guess what?!
+Package main.
 --
  *                               Copyright (C) 2015 by Rafael Santiago
  *
@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
 	"pkg/config"
 	"pkg/config/parser"
 	"pkg/html"
@@ -20,7 +21,10 @@ import (
 	"pkg/reqtraps"
 	"strconv"
 	"strings"
+	"syscall"
 )
+
+const cherryVersion = "1.1"
 
 // ProcessNewConnection handles the possible request with the specifc trap returned based on what is being requested.
 func ProcessNewConnection(newConn net.Conn, roomName string, rooms *config.CherryRooms) {
@@ -55,43 +59,78 @@ func Peer(roomName string, c *config.CherryRooms) {
 		conn, err := room.MainPeer.Accept()
 		if err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			continue
 		}
 		go ProcessNewConnection(conn, roomName, c)
 	}
 }
 
 // GetOption handles the command line options.
-func GetOption(option, defaultValue string) string {
+func GetOption(option, defaultValue string, flagOption ...bool) string {
+	isFlagOption := false
+	if len(flagOption) > 0 {
+		isFlagOption = flagOption[0]
+	}
 	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "--"+option+"=") {
-			return arg[len(option)+3:]
+		if !isFlagOption {
+			if strings.HasPrefix(arg, "--"+option+"=") {
+				return arg[len(option)+3:]
+			}
+		} else if strings.HasPrefix(arg, "--"+option) {
+			return "1"
 		}
 	}
 	return defaultValue
 }
 
-func main() {
+func cleanup() {
+	fmt.Println("INFO: Aborting signal received. Now your Cherry tree is being uprooted...  ;) Goodbye!!")
+}
+
+func announceVersion() {
+	fmt.Println("cherry-" + cherryVersion)
+}
+
+func offerHelp() {
+	fmt.Println("usage: cherry [--config=<cherry config filepath> | --help | --version]")
+}
+
+func openRooms(configPath string) {
 	var cherryRooms *config.CherryRooms
 	var err *parser.CherryFileError
-	var configPath string
-	configPath = GetOption("config", "")
-	if len(configPath) == 0 {
-		fmt.Println("ERROR: --config option is missing.")
-		os.Exit(1)
-	}
 	cherryRooms, err = parser.ParseCherryFile(configPath)
 	if err != nil {
 		fmt.Println(err.Error())
+		os.Exit(1)
 	} else {
 		rooms := cherryRooms.GetRooms()
-		for ri, r := range rooms {
+		for _, r := range rooms {
 			go messageplexer.RoomMessagePlexer(r, cherryRooms)
-			if ri < len(rooms)-1 {
-				go Peer(r, cherryRooms)
-			} else {
-				Peer(r, cherryRooms)
-			}
+			go Peer(r, cherryRooms)
 		}
 	}
+	sigintWatchdog := make(chan os.Signal, 1)
+	signal.Notify(sigintWatchdog, os.Interrupt)
+	signal.Notify(sigintWatchdog, syscall.SIGINT|syscall.SIGTERM)
+	<-sigintWatchdog
+	cleanup()
+}
+
+func main() {
+	versionInfo := GetOption("version", "", true)
+	if len(versionInfo) > 0 {
+		announceVersion()
+		os.Exit(0)
+	}
+	help := GetOption("help", "", true)
+	if len(help) > 0 {
+		offerHelp()
+		os.Exit(0)
+	}
+	configPath := GetOption("config", "")
+	if len(configPath) == 0 {
+		offerHelp()
+		os.Exit(1)
+	}
+	openRooms(configPath)
 }

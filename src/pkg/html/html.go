@@ -116,6 +116,33 @@ func (p *Preprocessor) ExpandData(roomName, data string) string {
 	return data
 }
 
+func expandImageRefs(data string) string {
+	var retData string
+	dataLen := len(data)
+	for d := 0; d < dataLen; {
+		if data[d] == '[' {
+			var uri string
+			d++
+			for d < dataLen && data[d] != ']' {
+				uri += string(data[d])
+				d++
+			}
+			if strings.HasSuffix(uri, ".gif") ||
+				strings.HasSuffix(uri, ".gifv") ||
+				strings.HasSuffix(uri, ".jpg") ||
+				strings.HasSuffix(uri, ".jpeg") ||
+				strings.HasSuffix(uri, ".png") ||
+				strings.HasSuffix(uri, ".bmp") {
+				retData += "<img src = \"" + uri + "\">"
+			}
+		} else {
+			retData += string(data[d])
+		}
+		d++
+	}
+	return retData
+}
+
 // GetBadAssErrorData spits the default 404 Cherry's document.
 func GetBadAssErrorData() string {
 	return "<html><h1>404 Bad ass error</h1><h3>No cherry for you!</h3></html>"
@@ -153,7 +180,7 @@ func messageWhotoExpander(p *Preprocessor, roomName, varName, data string) strin
 }
 
 func messageSaysExpander(p *Preprocessor, roomName, varName, data string) string {
-	return strings.Replace(data, varName, p.rooms.GetNextMessage(roomName).Say, -1)
+	return strings.Replace(data, varName, expandImageRefs(p.rooms.GetNextMessage(roomName).Say), -1)
 }
 
 //func message_sound_expander(p *Preprocessor, roomName, varName, data string) string {

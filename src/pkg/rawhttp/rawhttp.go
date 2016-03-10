@@ -244,7 +244,7 @@ func utf8Unescape(data string) string {
 	if !charLTInitialized {
 		initCharLT()
 	}
-	var buffer string = data
+	var buffer = data
 	for k, v := range charLT {
 		buffer = strings.Replace(buffer, k, v, -1)
 	}

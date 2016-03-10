@@ -178,19 +178,20 @@ Now with the identifiers and labels properly defined it is necessary indicate th
 Misc configurations are generic configurations for a specific room. It can be accessed from section called: ``cherry.[room-name].misc``.
 Take a look at the ``Table 4`` in order to see what can be configurated in this section.
 
-|      **Configuration**                   |               **What it does**                           |  **Data type**     |
-|:----------------------------------------:|:--------------------------------------------------------:|:------------------:|
-|       ``join-message``                   | Defines a message that is displayed when a new user joins|      ``string``    |
-|       ``exit-message``                   | Defines a message that is displayed when a user exits    |      ``string``    |
-|       ``on-ignore-message``              | Message that confirms an ignore action                   |      ``string``    |
-|       ``on-deignore-message``            | Message that confirms a (de)ignore action                |      ``string``    |
-|       ``greeting-message``               | Defines a greeting message                               |      ``string``    |
-|       ``private-message-maker``          | Defines a string that indicates a private message        |      ``string``    |
-|       ``max-users``                      | Defines the maximum of users allowed for this room       |      ``number``    |
-|       ``allow-brief``                    | Defines if briefs are allowed or not                     |      ``boolean``   |
-|       ``all-users-alias``                | Defines the alias which represents everybody in the room |      ``string``    |
-|       ``ignore-action``                  | Defines the action-id used as ignore command             |      ``string``    |
-|       ``deignore-action``                | Defines the action-id used as (de)ignore commnad         |      ``string``    |
+|      **Configuration**                   |               **What it does**                             |  **Data type**     |
+|:----------------------------------------:|:----------------------------------------------------------:|:------------------:|
+|       ``join-message``                   | Defines a message that is displayed when a new user joins  |      ``string``    |
+|       ``exit-message``                   | Defines a message that is displayed when a user exits      |      ``string``    |
+|       ``on-ignore-message``              | Message that confirms an ignore action                     |      ``string``    |
+|       ``on-deignore-message``            | Message that confirms a (de)ignore action                  |      ``string``    |
+|       ``greeting-message``               | Defines a greeting message                                 |      ``string``    |
+|       ``private-message-maker``          | Defines a string that indicates a private message          |      ``string``    |
+|       ``max-users``                      | Defines the maximum of users allowed for this room         |      ``number``    |
+|       ``allow-brief``                    | Defines if briefs are allowed or not                       |      ``boolean``   |
+|       ``all-users-alias``                | Defines the alias which represents everybody in the room   |      ``string``    |
+|       ``ignore-action``                  | Defines the action-id used as ignore command               |      ``string``    |
+|       ``deignore-action``                | Defines the action-id used as (de)ignore commnad           |      ``string``    |
+|       ``public-directory``               | Defines a relative directory path that gathers public data |      ``string``    |
 
 Follows a definition sample:
 
@@ -209,6 +210,42 @@ Follows a definition sample:
             deignore-action = "a05"
         )
 ```
+
+When you do not specify any value for ``public-directory`` your room will not have a public folder with files that can be accessed by anyone.
+
+However, if you want to define a public directory for your room, this directory needs to be relative to your execution path. Supposing that ``cherry`` will be executed from
+``~/web/git-hub/rafael-santiago/cherry/sample``, then the public directory needs to be under this path. For instance:
+
+```
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# mkdir pubdata
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# ls
+conf/   templates/   pubdata/
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample#_
+```
+
+Now, inside the ``misc`` section we will indicate the ``pubdata`` directory as our (relative) ``public-directory``, so:
+
+```
+        cherry.aliens-on-earth.misc (
+            join-message = "joined..."
+            exit-message = "has left..."
+            on-ignore-message = "(only you can see this) is ignoring "
+            on-deignore-message = "(only you can see this) is not ignoring "
+            greeting-message = "welcome"
+            private-message-marker = "(private)"
+            max-users = 10
+            allow-brief = yes
+            all-users-alias = "EVERYBODY"
+            ignore-action = "a04"
+            deignore-action = "a05"
+            public-directory = "pubdata"
+        )
+```
+
+Beware about two things:
+
+1. All data put under this public path will be public to anyone.
+2. Until now only few things could be served from this directory: images (``gif``, ``jpeg``, ``bmp``, ``png``) and ``plain/text`` data.
 
 ## Some tricks
 

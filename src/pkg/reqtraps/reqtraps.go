@@ -11,6 +11,7 @@ package reqtraps
 
 import (
 	"net"
+	"os"
 	"pkg/config"
 	"pkg/html"
 	"pkg/rawhttp"
@@ -84,6 +85,9 @@ func GetRequestTrap(httpPayload string) RequestTrap {
 	if strings.HasPrefix(httpMethodPart, "POST /find$") {
 		return BuildRequestTrap(PostFindHandle)
 	}
+	if strings.HasPrefix(httpMethodPart, "GET /pub/") {
+		return BuildRequestTrap(PubHandle)
+	}
 	return BuildRequestTrap(BadAssErrorHandle)
 }
 
@@ -91,6 +95,36 @@ func GetRequestTrap(httpPayload string) RequestTrap {
 func GetFindHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
 	var replyBuffer []byte
 	replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetFindBotTemplate(roomName)), 200, true)
+	newConn.Write(replyBuffer)
+	newConn.Close()
+}
+
+// PubHandle implements the handle for the room's public directory (GET).
+func PubHandle(newConn net.Conn, roomName, httpPayload string, rooms *config.CherryRooms, preprocessor *html.Preprocessor) {
+	pubdir := rooms.GetPublicDirectory(roomName)
+	var httpReq string
+	var spaceNr int
+	for _, h := range httpPayload {
+		if h == ' ' {
+			spaceNr++
+		}
+		if h == '\n' || h == '\r' || spaceNr > 1 {
+			break
+		}
+		httpReq += string(h)
+	}
+	var replyBuffer []byte
+	if len(pubdir) == 0 || !strings.HasPrefix(httpReq, "GET /pub/"+pubdir) {
+		replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+	} else {
+		relativeLocalPath := httpReq[9:]
+		_, err := os.Stat(relativeLocalPath)
+		if os.IsNotExist(err) {
+			replyBuffer = rawhttp.MakeReplyBuffer(html.GetBadAssErrorData(), 404, true)
+		} else {
+			replyBuffer = rawhttp.MakeReplyBufferByFilePath(relativeLocalPath, 200, true)
+		}
+	}
 	newConn.Write(replyBuffer)
 	newConn.Close()
 }

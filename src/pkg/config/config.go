@@ -33,6 +33,7 @@ type RoomMisc struct {
 	floodingPolice            bool
 	maxFloodAllowedBeforeKick int
 	allUsersAlias             string
+	publicDirectory           string
 }
 
 // RoomAction gathers the label and the template (data) from an action.
@@ -425,6 +426,21 @@ func (c *CherryRooms) getRoomTemplate(roomName, template string) string {
 	data = c.configs[roomName].templates[template]
 	c.configs[roomName].mutex.Unlock()
 	return data
+}
+
+// SetPublicDirectory sets the public directory for a room.
+func (c *CherryRooms) SetPublicDirectory(roomName, value string) {
+	c.Lock(roomName)
+	c.configs[roomName].misc.publicDirectory = value
+	c.Unlock(roomName)
+}
+
+// GetPublicDirectory spits the room's public directory.
+func (c *CherryRooms) GetPublicDirectory(roomName string) string {
+	c.Lock(roomName)
+	dirPath := c.configs[roomName].misc.publicDirectory
+	c.Unlock(roomName)
+	return dirPath
 }
 
 // GetTopTemplate spits the top template data.

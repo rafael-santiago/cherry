@@ -12,6 +12,7 @@ package rawhttp
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"strings"
 )
@@ -53,6 +54,36 @@ func MakeReplyBuffer(buffer string, statusCode int, closeConnection bool) []byte
 		"{{.content-length}}",
 		fmt.Sprintf("%d", len(buffer)),
 		-1))
+}
+
+// MakeReplyBufferByFilePath assembles the reply buffer base on the file data and the statusCode.
+func MakeReplyBufferByFilePath(filePath string, statusCode int, closeConnection bool) []byte {
+	buffer, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return []byte("")
+	}
+	tempReply := strings.Replace(cherryDefaultHTTPReplyHeader(statusCode, closeConnection)+string(buffer),
+		"{{.content-length}}",
+		fmt.Sprintf("%d", len(buffer)),
+		-1)
+	tempReply = strings.Replace(tempReply, "Content-type: text/html", getContentTypeFromFilePath(filePath), -1)
+	return []byte(tempReply)
+}
+
+func getContentTypeFromFilePath(filePath string) string {
+	if strings.HasSuffix(filePath, ".gif") {
+		return "Content-type: image/gif"
+	}
+	if strings.HasSuffix(filePath, ".jpeg") || strings.HasSuffix(filePath, ".jpg") {
+		return "Content-type: image/jpeg"
+	}
+	if strings.HasSuffix(filePath, ".png") {
+		return "Content-type: image/png"
+	}
+	if strings.HasSuffix(filePath, ".bmp") {
+		return "Content-type: image/bmp"
+	}
+	return "Content-type: text/plain"
 }
 
 // GetHTTPFieldFromBuffer returns data carried by some HTTP field inside a HTTP request.

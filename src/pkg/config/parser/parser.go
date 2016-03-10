@@ -371,6 +371,7 @@ func GetRoomMisc(roomName string, cherryRooms *config.CherryRooms, configData, f
 	verifier["all-users-alias"] = verifyString
 	verifier["ignore-action"] = verifyString
 	verifier["deignore-action"] = verifyString
+	verifier["public-directory"] = verifyString
 
 	var setter map[string]func(*config.CherryRooms, string, string)
 	setter = make(map[string]func(*config.CherryRooms, string, string))
@@ -387,6 +388,7 @@ func GetRoomMisc(roomName string, cherryRooms *config.CherryRooms, configData, f
 	setter["all-users-alias"] = setAllUsersAlias
 	setter["ignore-action"] = setIgnoreAction
 	setter["deignore-action"] = setDeIgnoreAction
+	setter["public-directory"] = setPublicDirectory
 
 	var alreadySet map[string]bool
 	alreadySet = make(map[string]bool)
@@ -402,6 +404,7 @@ func GetRoomMisc(roomName string, cherryRooms *config.CherryRooms, configData, f
 	alreadySet["all-users-alias"] = false
 	alreadySet["ignore-action"] = false
 	alreadySet["deignore-action"] = false
+	alreadySet["public-directory"] = false
 
 	var mSet []string
 	mSet, mLine, mData = GetNextSetFromData(mData, mLine, "=")
@@ -464,8 +467,12 @@ func setMaxUsers(cherryRooms *config.CherryRooms, roomName, value string) {
 
 func setAllowBrief(cherryRooms *config.CherryRooms, roomName, value string) {
 	var allow bool
-	allow = (value == "yes")
+	allow = (value == "yes" || value == "true")
 	cherryRooms.SetAllowBrief(roomName, allow)
+}
+
+func setPublicDirectory(cherryRooms *config.CherryRooms, roomName, value string) {
+	cherryRooms.SetPublicDirectory(roomName, value[1:len(value)-1])
 }
 
 //func set_flooding_police(cherryRooms *config.CherryRooms, roomName, value string) {
@@ -516,7 +523,7 @@ func verifyBool(buffer string) bool {
 	if len(buffer) == 0 {
 		return false
 	}
-	return (buffer == "yes" || buffer == "no")
+	return (buffer == "yes" || buffer == "no" || buffer == "true" || buffer == "false")
 }
 
 //  WARN(Santiago): The following codes are a brain damage. I am sorry.

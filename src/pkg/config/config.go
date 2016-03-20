@@ -228,7 +228,7 @@ func (c *CherryRooms) GetIgnoreList(from, roomName string) string {
 	for c, who := range ignoring {
 		ignoreList += "\"" + who + "\""
 		if c != lastIndex {
-			who += ", "
+			ignoreList += ", "
 		}
 	}
 	c.configs[roomName].mutex.Unlock()

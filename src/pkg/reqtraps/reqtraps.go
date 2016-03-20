@@ -237,7 +237,9 @@ func PostJoinHandle(newConn net.Conn, roomName, httpPayload string, rooms *confi
 	}
 	preprocessor.SetDataValue("{{.nickname}}", userData["user"])
 	preprocessor.SetDataValue("{{.session-id}}", "0")
-	if rooms.HasUser(roomName, userData["user"]) || userData["user"] == rooms.GetAllUsersAlias(roomName) {
+	if rooms.HasUser(roomName, userData["user"]) || userData["user"] == rooms.GetAllUsersAlias(roomName) ||
+		strings.Contains(userData["user"], "<") || strings.Contains(userData["user"], ">") ||
+		strings.Contains(userData["user"], "&lt") || strings.Contains(userData["user"], "&gt") {
 		replyBuffer = rawhttp.MakeReplyBuffer(preprocessor.ExpandData(roomName, rooms.GetNickclashTemplate(roomName)), 200, true)
 	} else {
 		rooms.AddUser(roomName, userData["user"], userData["color"], true)

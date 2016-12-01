@@ -64,7 +64,7 @@ function setup_gopath() : result type none {
     if (str_contains($gopath, $cherry_gopath_entry)) {
         hefesto.sys.echo("INFO: Nice! GOPATH is configurated :)\n");
     } else {
-        hefesto.sys.echo("WARN: GOPATH is not configurated so I will do this for you on this build task. " +
+        hefesto.sys.echo("WARN: GOPATH is not configured so I will do it for you on this build task. " +
                          "However, note that currently you are not able to run \"go build\" or \"go run\" commands " +
                          "by yourself for this project. In order to do this, please add \"" + $cherry_gopath_entry + "\" to your GOPATH.\n");
         if (hefesto.sys.os_name() != "windows") {

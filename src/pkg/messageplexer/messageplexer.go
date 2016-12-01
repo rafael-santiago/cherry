@@ -13,6 +13,7 @@ import (
 	"net"
 	"pkg/config"
 	"pkg/html"
+	"runtime"
 )
 
 // RoomMessagePlexer performs all message delivering stuff.
@@ -20,6 +21,7 @@ func RoomMessagePlexer(roomName string, rooms *config.CherryRooms) {
 	preprocessor := html.NewHTMLPreprocessor(rooms)
 	var allUsers = rooms.GetAllUsersAlias(roomName)
 	for {
+		runtime.Gosched()
 		currMessage := rooms.GetNextMessage(roomName)
 		if len(currMessage.Say) == 0 && len(currMessage.Image) == 0 /*&& len(currMessage.Sound) == 0*/ {
 			continue

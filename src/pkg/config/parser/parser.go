@@ -44,19 +44,19 @@ func GetDataFromSection(section, configData string, currLine int, currFile strin
 	for s = 0; s < len(configData); s++ {
 		switch configData[s] {
 		case '#':
-			for configData[s] != '\n' && s < len(configData) {
+			for configData[s] != '\n' && configData[s] != '\r' && s < len(configData) {
 				s++
 			}
 			if s < len(configData) {
 				currLine++
 			}
 			continue
-		case '(', '\n', ' ', '\t':
+		case '(', '\n', ' ', '\t', '\r':
 			if configData[s] == '\n' {
 				currLine++
 			}
 			if temp == section {
-				if configData[s] == '\n' || configData[s] == ' ' || configData[s] == '\t' {
+				if configData[s] == '\n' || configData[s] == '\r' || configData[s] == ' ' || configData[s] == '\t' {
 					for s < len(configData) && configData[s] != '(' {
 						s++
 						if s < len(configData) && configData[s] == '\n' {
@@ -98,7 +98,7 @@ func GetDataFromSection(section, configData string, currLine int, currFile strin
 				}
 				if s < len(configData) {
 					var branchFilepath string
-					for s < len(configData) && configData[s] != '\n' {
+					for s < len(configData) && configData[s] != '\n' && configData[s] != '\r' {
 						branchFilepath += string(configData[s])
 						s++
 					}
@@ -135,13 +135,13 @@ func GetNextSetFromData(data string, currLine int, tok string) ([]string, int, s
 		return make([]string, 0), currLine, ""
 	}
 	var s int
-	for s = 0; s < len(data) && (data[s] == ' ' || data[s] == '\t' || data[s] == '\n'); s++ {
+	for s = 0; s < len(data) && (data[s] == ' ' || data[s] == '\t' || data[s] == '\n' || data[s] == '\r'); s++ {
 		if data[s] == '\n' {
 			currLine++
 		}
 	}
 	var line string
-	for s < len(data) && data[s] != '\n' {
+	for s < len(data) && data[s] != '\n' && data[s] != '\r' {
 		if data[s] == '"' {
 			line += string(data[s])
 			s++

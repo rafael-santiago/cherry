@@ -25,8 +25,15 @@ function bincp() : result type int {
         }
     }
     var cp_res type int;
-    $cp_res = hefesto.sys.cp("../src/cherry", "cherry");
-    hefesto.sys.rm("../src/cherry");
+    var appname type string;
+    var src_path type string;
+    $appname = "cherry";
+    if (hefesto.sys.os_name() == "windows") {
+        $appname = $appname + ".exe";
+    }
+    $src_path = hefesto.sys.make_path("../src", $appname);
+    $cp_res = hefesto.sys.cp($src_path, $appname);
+    hefesto.sys.rm($src_path);
     hefesto.sys.cd($oldcwd);
     result ($cp_res == 1);
 }

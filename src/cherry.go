@@ -10,6 +10,7 @@ Package main.
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"os"
@@ -24,7 +25,7 @@ import (
 	"syscall"
 )
 
-const cherryVersion = "1.1"
+const cherryVersion = "1.2"
 
 func processNewConnection(newConn net.Conn, roomName string, rooms *config.CherryRooms) {
 	buf := make([]byte, 4096)
@@ -40,6 +41,22 @@ func processNewConnection(newConn net.Conn, roomName string, rooms *config.Cherr
 	}
 }
 
+func getListenPeer(c *config.CherryRooms, port string) (net.Listener, error) {
+	var listenConn net.Listener
+	var listenError error
+	if c.GetCertificatePath() != "" && c.GetPrivateKeyPath() != "" {
+		cert, err := tls.LoadX509KeyPair(c.GetCertificatePath(), c.GetPrivateKeyPath())
+		if err != nil {
+			return nil, err
+		}
+		secParams := &tls.Config{Certificates: []tls.Certificate{cert}}
+		listenConn, listenError = tls.Listen("tcp", c.GetServerName()+":"+port, secParams)
+	} else {
+		listenConn, listenError = net.Listen("tcp", c.GetServerName()+":"+port)
+	}
+	return listenConn, listenError
+}
+
 func peer(roomName string, c *config.CherryRooms) {
 	port := c.GetListenPort(roomName)
 	var portNum int64
@@ -47,7 +64,8 @@ func peer(roomName string, c *config.CherryRooms) {
 	var err error
 	var room *config.RoomConfig
 	room = c.GetRoomByPort(int16(portNum))
-	room.MainPeer, err = net.Listen("tcp", c.GetServerName()+":"+port)
+	//room.MainPeer, err = net.Listen("tcp", c.GetServerName()+":"+port)
+	room.MainPeer, err = getListenPeer(c, port)
 	if err != nil {
 		fmt.Println("ERROR: " + err.Error())
 		os.Exit(1)

@@ -119,6 +119,20 @@ func TestRealCherryFileParsing(t *testing.T) {
 	if !cherryRooms.IsAllowingBriefs(rooms[0]) {
 		t.Fail()
 	}
+	if len(cherryRooms.GetCertificatePath()) != 0 {
+		t.Fail()
+	}
+	cherryRooms.SetCertificatePath("foo.crt")
+	if cherryRooms.GetCertificatePath() != "foo.crt" {
+		t.Fail()
+	}
+	if len(cherryRooms.GetPrivateKeyPath()) != 0 {
+		t.Fail()
+	}
+	cherryRooms.SetPrivateKeyPath("foo.key")
+	if cherryRooms.GetPrivateKeyPath() != "foo.key" {
+		t.Fail()
+	}
 	var expActionLabels map[string]string
 	expActionLabels = make(map[string]string)
 	expActionLabels["a01"] = "talks to"

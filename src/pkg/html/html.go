@@ -96,6 +96,7 @@ func (p *Preprocessor) Init(rooms *config.CherryRooms) {
 	p.dataExpander["{{.find-result-user}}"] = nil
 	p.dataExpander["{{.find-result-room-name}}"] = nil
 	p.dataExpander["{{.find-result-users-total}}"] = nil
+	p.dataExpander["{{.proto}}"] = protoExpander
 }
 
 // ExpandData gives preference for statical data if it does not exist the data is processed by expanders.
@@ -345,4 +346,14 @@ func roomNameExpander(p *Preprocessor, roomName, varName, data string) string {
 
 func usersTotalExpander(p *Preprocessor, roomName, varName, data string) string {
 	return strings.Replace(data, varName, p.rooms.GetUsersTotal(roomName), -1)
+}
+
+func protoExpander(p *Preprocessor, roomName, varName, data string) string {
+	var proto string
+	if p.rooms.GetCertificatePath() != "" && p.rooms.GetPrivateKeyPath() != "" {
+		proto = "https"
+	} else {
+		proto = "http"
+	}
+	return strings.Replace(data, varName, proto, -1)
 }

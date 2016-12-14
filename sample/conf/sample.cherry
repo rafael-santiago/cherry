@@ -3,6 +3,12 @@
 cherry.root (
     # Actually it will be accessible locally only.
     servername = "localhost"
+
+    # If you want to https connections instead of http uncomment the two
+    # sets below and run "cert/mkcert.sh".
+
+#    certificate = "cert/newcert.crt"
+#    private-key = "cert/newcert.key"
 )
 
 cherry.rooms (

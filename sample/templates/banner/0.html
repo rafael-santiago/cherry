@@ -3,7 +3,7 @@
     <body bgcolor="#FFFFFF" text="#000000" onload="setfocus()">
         <table cellpadding="0" cellspacing="2" border="0" width="100%" valign="top">
             <tr valign="top"><td valign="top">
-                <form method="post" action="http://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" name="banner">
+                <form method="post" action="{{.proto}}://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" name="banner">
                     <input type="hidden" name="user" value="{{.nickname}}">
                     <input type="hidden" name="id" value="{{.session-id}}">
                     <input type="hidden" name="image" value="">
@@ -20,7 +20,7 @@
                     </select>
                     <input name="says" type="text" size=110>
                     <input type="submit" size=30 value="send"><br>
-                    <a href="http://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&" target="_top">exit</a>&nbsp;&nbsp;
+                    <a href="{{.proto}}://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&" target="_top">exit</a>&nbsp;&nbsp;
                 </form>
             </tr>
         </table>

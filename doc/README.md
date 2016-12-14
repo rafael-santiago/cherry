@@ -78,11 +78,11 @@ summarizes each special marker supported until now.
 |            ``{{.hour}}``                       |                      The current server hour                           |
 |            ``{{.minute}}``                     |                      The current server minute                         |
 |            ``{{.second}}``                     |                      The current server second                         |
-|            ``{{.greeting-message}}``           |                      The configurated greeting message                 |
-|            ``{{.join-message}}``               |                      The configurated join message                     |
-|            ``{{.exit-message}}``               |                      The configurated exit message                     |
-|            ``{{.on-ignore-message}}``          |                      The configurated ignore message                   |
-|            ``{{.on-deignore-message}}``        |                      The configurated "(de)ignore" message             |
+|            ``{{.greeting-message}}``           |                      The configured greeting message                   |
+|            ``{{.join-message}}``               |                      The configured join message                       |
+|            ``{{.exit-message}}``               |                      The configured exit message                       |
+|            ``{{.on-ignore-message}}``          |                      The configured ignore message                     |
+|            ``{{.on-deignore-message}}``        |                      The configured "(de)ignore" message               |
 |            ``{{.max-users}}``                  |                      The maximium users supported by this room         |
 |            ``{{.all-users-alias}}``            |                      Alias that represents everybody (broadcast)       |
 |            ``{{.action-list}}``                |                      Action list to be included in the "talk-banner"   |
@@ -96,7 +96,7 @@ summarizes each special marker supported until now.
 |          ``{{.exit-template}}``                |                      The room's post-exit document                     |
 |          ``{{.nickclash-template}}``           |                      The room's nickclash warning document             |
 |          ``{{.last-public-messages}}``         |                      Public messages that can be used to compose briefs|
-|          ``{{.servername}}``                   |                      The configurated server name                      |
+|          ``{{.servername}}``                   |                      The configured server name                        |
 |          ``{{.listen-port}}``                  |                      The room's listen port                            |
 |          ``{{.room-name}}``                    |                      The room's name                                   |
 |          ``{{.users-total}}``                  |                      The current amount of connected users on that room|
@@ -113,6 +113,7 @@ summarizes each special marker supported until now.
 |          ``{{.find-result-user}}``             |                      The find result (user nickname)                   |
 |          ``{{.find-result-room-name}}``        |                      The find result (user room)                       |
 |          ``{{.find-result-users-total}}``      |                      The find result (total of users in the user room) |
+|          ``{{.proto}}``                        |                      The current used url scheme (http or https)       |
 
 ## What are actions?
 
@@ -153,7 +154,7 @@ Each action template definition should be: ``<action-identifier-previous-defined
 Similar to the ``actions`` the ``images`` are labels which the user can choose inside a combo when sending messages. This message
 when formatted will include an well-known image. Usually an image should be tematic. Well, things like smiles, emojis, etc.
 
-The images are configurated using two sections. The first one defines the identifiers and their labels.
+The images are configured using two sections. The first one defines the identifiers and their labels.
 
 ```
         cherry.aliens-on-earth.images (
@@ -176,7 +177,7 @@ Now with the identifiers and labels properly defined it is necessary indicate th
 ## What about the misc config?
 
 Misc configurations are generic configurations for a specific room. It can be accessed from section called: ``cherry.[room-name].misc``.
-Take a look at the ``Table 4`` in order to see what can be configurated in this section.
+Take a look at the ``Table 4`` in order to see what can be configured in this section.
 
 |      **Configuration**                   |               **What it does**                             |  **Data type**     |
 |:----------------------------------------:|:----------------------------------------------------------:|:------------------:|
@@ -405,7 +406,7 @@ The fields that need to be posted are: ``says`` (containing anything), ``user`` 
 
 Follows an example:
 
-```
+```html
         <html>
             <title>Room entrance</title>
             <body>
@@ -469,7 +470,7 @@ The ``brief`` template counts with three important ``markers``. The ``Table 5`` 
 
 Look a sample:
 
-```
+```html
         <html>
 
             <h1>What is going on at {{.room-name}}...</h1>
@@ -504,7 +505,7 @@ This document has to post only one field that is ``user``. This field is carried
 
 Yes, a sample:
 
-```
+```html
         <html>
             <h1>Search for user...</h1>
             <form action="http://{{.servername}}:{{.listen-port}}/find" method="post" target="_top">
@@ -528,7 +529,7 @@ The brief template is very straightforward too. Here is included in the ``HTML``
 
 All that was said above is here in ``HTML``:
 
-```
+```html
         <html>
 
             <h1>What is going on at {{.room-name}}...</h1>
@@ -566,7 +567,7 @@ The find feature is a little bit more complicated than others. In the find featu
 The secret behind the ``find bot`` is define a post form with action at ``http://{{.servername}}:{{.listen-port}}/find/``.
 This post must submit only one piece of information that is ``user``. So now we will translated it into ordinary ``HTML``:
 
-```
+```html
         <html>
             <h1>Search for user...</h1>
             <form action="http://{{.servername}}:{{.listen-port}}/find" method="post" target="_top">
@@ -580,7 +581,7 @@ This post must submit only one piece of information that is ``user``. So now we 
 
 The result's header data is the highest information that will be included in a find result report. Nothing so special, look:
 
-```
+```html
         <html>
             <h1>Find results</h1>
             <table border = 0>
@@ -589,7 +590,7 @@ The result's header data is the highest information that will be included in a f
 
 Remember that this is incomplete because it needs to the result's body data:
 
-```
+```html
     <tr><td>{{.find-result-user}}</td><td>{{.find-result-room-name}}</td><td>{{.find-result-users-total}}</td><td><a href="http://{{.servername}}:{{.listen-port}}/join">Join</a></td><td><a href="http://{{.servername}}:{{.listen-port}}/brief">Brief</a></td></tr>
 ```
 
@@ -602,7 +603,7 @@ Note that inside template shown above we are including some important expansive 
 
 However, this template is incomplete because it needs to have the populated table closed. We do this in the result's tail:
 
-```
+```html
     </table>
 </html>
 ```
@@ -615,7 +616,7 @@ The top template stands for the highest frame composing a room.
 
 Here follows a sample:
 
-```
+```html
         <html>
             <head></head>
             <body bgcolor="#FFFFFF" text="#000000">
@@ -647,7 +648,7 @@ This template stands for the frame from the middle in the room's structure. In t
 
 Sample:
 
-```
+```html
 <script>
     function scrollIt() {
         if (top.TOP.document.chatconfig.autoscroll.checked) {
@@ -679,7 +680,7 @@ The posted fields are:
 - ``whoto`` (a ``select input`` composed by the server listing the users)
 - ``says`` (a ``text input`` where you will type your messages)
 
-```
+```html
         <html>
             <head></head>
             <body bgcolor="#FFFFFF" text="#000000" onload="setfocus()">
@@ -717,7 +718,7 @@ The ``JS`` function ``setfocus()`` is just a trick in order to set focus to the 
 
 The ``image input`` originally has the type ``select`` but this sample has no support for images. If you want to put support for this you should use:
 
-```
+```html
         <select name="image" size=1>
                                 <option value="">image:</option>
                                 {{.image-list}}
@@ -730,7 +731,7 @@ and the server your handle it.
 
 The room is composed by three templates: ``top``, ``body`` and ``banner``. When a user request these, only one document is replied, this document can be understood as the skeleton (Does ``frameset`` scare you?). The room's skeleton puts all relevant parts together.
 
-```
+```html
         <html>
             <head>
                 <title>Now you are talking on "{{.room-name}}"</title>
@@ -749,7 +750,7 @@ It is important add to the frame ``src`` field the ``user`` (``{{.nickname}}``) 
 
 When the user requests the virtual document from:
 
-```
+```html
 http://{{.servername}}:{{.listen-port}}/exit&user={{.nickname}}&id={{.session-id}}&exit=1&
 ```
 
@@ -760,7 +761,7 @@ Inside this template you can use anything from the special markers that  you wan
 
 This following content could be used as an ``exit template``, look:
 
-```
+```html
 <html>
     <frame>
         <body>
@@ -781,7 +782,7 @@ These templates are used in order to format the chat room's messages. Indirectly
 special markers are pretty important, otherwise nothing will be shown/said on your chat room. This is one sample of an ``action
 template``:
 
-```
+```html
 <p>({{.hour}}:{{.minute}}:{{.second}}) <b>{{.message-colored-user}}</b> <i>{{.message-private-marker}}</i> {{.message-action-label}} <b>{{.message-whoto}}</b>: {{.message-says}}
 {{.message-image}}
 <script>
@@ -799,7 +800,7 @@ if you have no idea about some marker.
 This template is used in order to (oh God!) highlight personal messages from others. Here, the only ``special marker`` that
 you should use is the ``{{.current-formatted-message}}``. For instance, the template could be something like:
 
-```
+```html
 <p><table bgcolor="#FFFFFF" width="100%" cellspacing="0" border="1">
     <tr>
         <td>
@@ -832,3 +833,41 @@ An entrace form should be spit to you. Go ahead, fill up what it requests and th
 Something like this:
 
 ![Sample](https://github.com/rafael-santiago/cherry/blob/master/etc/sample.gif)
+
+# New stuff from version 1.2
+
+Now you can serve your rooms under ``https`` connections. The steps for getting it configured is pretty straightforward.
+
+Firstly you need to create a certificate, in this case let's create a self-signed certificate:
+
+```
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# mkdir cert
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample# cd cert
+doctor@TARDIS:~/web/git-hub/rafael-santiago/cherry/sample/cert# openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout mycert.key -out mycert.crt
+```
+
+Now you have ``mycert.key`` and ``mycert.crt`` inside ``cert`` sub-directory.
+
+The second step is about indicating the file path of this data inside your server configuration. So, at your ``cherry.root``
+section add the following additional conf sets:
+
+```
+    cherry.root (
+        servername = "mylocalchatserver"
+        certificate = "cert/mycert.crt"
+        private-key = "cert/mycert.key"
+    )
+```
+
+All done! Now your server uses ``https`` instead of ``http``.
+
+**Important**: If some previous defined template uses ``http`` it will not work properly. The trick here is always use
+``{{.proto}}`` instead of putting hardcoded the url scheme (http or https). On this way you can switch easily from
+a unsecure to secure server and vice versa. The sample that you can find at ``sample/...`` is shipped in this way.
+There you will find too a sub-directory named `cert`` and inside of it you will find a suggestive script called
+``mkcert.sh`` ;)
+
+After running ``mkcert.sh`` all you should do is edit ``sample/conf/sample.cherry`` and uncomment ``certificate`` and
+``private-key`` sets.
+
+In this case we have a self-signed certificate, so the explicit acceptance of it at the client host is necessary.

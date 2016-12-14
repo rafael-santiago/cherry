@@ -12,6 +12,7 @@ package parser
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"pkg/config"
 	"strconv"
 	"strings"
@@ -222,11 +223,25 @@ func ParseCherryFile(filepath string) (*config.CherryRooms, *CherryFileError) {
 	set, line, data = GetNextSetFromData(data, line, "=")
 	for len(set) == 2 {
 		switch set[0] {
-		case "servername":
+		case "servername", "certificate", "private-key":
 			if set[1][0] != '"' || set[1][len(set[1])-1] != '"' {
 				return nil, NewCherryFileError(filepath, line, fmt.Sprintf("invalid string."))
 			}
-			cherryRooms.SetServername(set[1][1 : len(set[1])-1])
+			data := set[1][1 : len(set[1])-1]
+
+			if set[0] == "certificate" || set[0] == "private-key" {
+				if _, err := os.Stat(data); os.IsNotExist(err) {
+					return nil, NewCherryFileError(filepath, line, fmt.Sprintf("\"%s\" must receive an accessible file path.", set[0]))
+				}
+			}
+
+			if set[0] == "servername" {
+				cherryRooms.SetServername(data)
+			} else if set[0] == "certificate" {
+				cherryRooms.SetCertificatePath(data)
+			} else if set[0] == "private-key" {
+				cherryRooms.SetPrivateKeyPath(data)
+			}
 			break
 
 		default:

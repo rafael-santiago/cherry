@@ -88,13 +88,15 @@ type RoomConfig struct {
 
 // CherryRooms represents your cherry tree... I mean your cherry server.
 type CherryRooms struct {
-	configs    map[string]*RoomConfig
-	servername string
+	configs     map[string]*RoomConfig
+	servername  string
+	certPath    string
+	privKeyPath string
 }
 
 // NewCherryRooms creates a new server container.
 func NewCherryRooms() *CherryRooms {
-	return &CherryRooms{make(map[string]*RoomConfig), "localhost"}
+	return &CherryRooms{make(map[string]*RoomConfig), "localhost", "", ""}
 }
 
 // GetRoomActionLabel spits a room action label.
@@ -803,4 +805,24 @@ func (c *CherryRooms) SetUserConnection(roomName, user string, conn net.Conn) {
 // GetServerName spits the server name.
 func (c *CherryRooms) GetServerName() string {
 	return c.servername
+}
+
+// GetCertificatePath spits the certificate path.
+func (c *CherryRooms) GetCertificatePath() string {
+	return c.certPath
+}
+
+// GetPrivateKeyPath spits the private key path.
+func (c *CherryRooms) GetPrivateKeyPath() string {
+	return c.privKeyPath
+}
+
+// SetCertificatePath sets the certificate path.
+func (c *CherryRooms) SetCertificatePath(strPath string) {
+	c.certPath = strPath
+}
+
+// SetPrivateKeyPath sets the private key path.
+func (c *CherryRooms) SetPrivateKeyPath(strPath string) {
+	c.privKeyPath = strPath
 }

@@ -4,8 +4,8 @@
         <title>Now you are talking on "{{.room-name}}"</title>
     </head>
     <frameset rows="30,*,75">
-        <frame name="TOP" src="http://{{.servername}}:{{.listen-port}}/top&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
-        <frame name="BODY" src="http://{{.servername}}:{{.listen-port}}/body&user={{.nickname}}&id={{.session-id}}&" scrolling="yes">
-        <frame name="BANNER" src="http://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
+        <frame name="TOP" src="{{.proto}}://{{.servername}}:{{.listen-port}}/top&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
+        <frame name="BODY" src="{{.proto}}://{{.servername}}:{{.listen-port}}/body&user={{.nickname}}&id={{.session-id}}&" scrolling="yes">
+        <frame name="BANNER" src="{{.proto}}://{{.servername}}:{{.listen-port}}/banner&user={{.nickname}}&id={{.session-id}}&" scrolling="no">
     </frameset>
 </html>

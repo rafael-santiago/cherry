@@ -11,8 +11,8 @@ package messageplexer
 
 import (
 	"net"
-	"pkg/config"
-	"pkg/html"
+	"github.com/rafael-santiago/cherry/src/pkg/config"
+	"github.com/rafael-santiago/cherry/src/pkg/html"
 	"runtime"
 )
 

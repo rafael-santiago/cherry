@@ -11,7 +11,7 @@ package html
 
 import (
 	"fmt"
-	"pkg/config"
+	"github.com/rafael-santiago/cherry/src/pkg/config"
 	"strings"
 	"time"
 )
